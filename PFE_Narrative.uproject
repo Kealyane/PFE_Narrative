@@ -7,7 +7,10 @@
 		{
 			"Name": "PFE_Narrative",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"PaperZD"
+			]
 		}
 	],
 	"Plugins": [
