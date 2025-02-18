@@ -13,6 +13,21 @@ class UInputMappingContext;
 class UInputAction;
 class UInputComponent;
 struct FInputActionValue;
+
+USTRUCT(BlueprintType)
+struct FCharacterMetrix
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Max Walk Speed"))
+	float MoveSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Jump Z Velocity"))
+	float JumpForce;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 JumpMaxCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DashForce;
+};
 /**
  * 
  */
@@ -28,8 +43,10 @@ public:
 	TObjectPtr<USpringArmComponent> SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 JumpMax = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
+	FCharacterMetrix SmallFlamesMetrix;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
+	FCharacterMetrix HighFlamesMetrix;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -47,21 +64,30 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);
+	UFUNCTION(BlueprintCallable)
+	void SwitchMetrixUI(bool bCheckBoxValue);
 	
 protected:
 
 	uint8 JumpCount = 0;
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
+	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
+	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
+	FCharacterMetrix CurrentMetrix;
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
+	void InitGame();
 
 	void Move(const FInputActionValue& Value);
 	void JumpStart(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
 	
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+	
+	void SwitchMetrix(FCharacterMetrix NewMetrix);
 };
+
 
 
 

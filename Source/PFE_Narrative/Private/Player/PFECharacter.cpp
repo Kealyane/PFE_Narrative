@@ -29,11 +29,25 @@ void APFECharacter::BeginPlay()
 			Subsystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+	InitGame();
+}
+
+void APFECharacter::InitGame()
+{
+	JumpCount = 0;
+	bIsAlive = true;
+	bCanMove = true;
+
+	if (MovementComponent)
+	{
+		SwitchMetrix(SmallFlamesMetrix);
+	}
 }
 
 void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
 {
 	MovementComponent = InMovementComponent;
+	SwitchMetrix(SmallFlamesMetrix);
 }
 
 void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -44,8 +58,8 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APFECharacter::Move);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APFECharacter::JumpStart);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APFECharacter::JumpEnd);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &APFECharacter::JumpEnd);
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APFECharacter::JumpEnd);
+		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &APFECharacter::JumpEnd);
 	}
 }
 
@@ -55,31 +69,53 @@ void APFECharacter::Move(const FInputActionValue& Value)
 
 	if (bIsAlive && bCanMove)
 	{
-		FVector Direction = FVector(1.f, 0.f, 0.f);
-		AddMovementInput(Direction, MoveValue);
+		AddMovementInput(DirectionRight, MoveValue);
 	}
 }
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
-	if (bIsAlive && bCanMove)
+	if (bIsAlive && bCanMove && JumpCount < CurrentMetrix.JumpMaxCount)
 	{
-		Jump();
+		LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
+		JumpCount++;
 	}
 }
 
 void APFECharacter::JumpEnd(const FInputActionValue& Value)
 {
 	StopJumping();
-	
 }
 
-inline void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 	
 	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
 	{
 		JumpCount = 0;
+	}
+}
+
+void APFECharacter::SwitchMetrix(FCharacterMetrix NewMetrix)
+{
+	CurrentMetrix = NewMetrix;
+	if (MovementComponent)
+	{
+		MovementComponent->MaxWalkSpeed = CurrentMetrix.MoveSpeed;
+		MovementComponent->JumpZVelocity = CurrentMetrix.JumpForce;
+	}
+}
+
+
+void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
+{
+	if (bCheckBoxValue)
+	{
+		SwitchMetrix(SmallFlamesMetrix);
+	}
+	else
+	{
+		SwitchMetrix(HighFlamesMetrix);
 	}
 }
