@@ -6,6 +6,7 @@
 #include "PaperZDCharacter.h"
 #include "PFECharacter.generated.h"
 
+class UCharacterMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -27,8 +28,8 @@ public:
 	TObjectPtr<USpringArmComponent> SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
-
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 JumpMax = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -41,8 +42,16 @@ public:
 	bool bIsAlive = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bCanMove = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsOnGround = true;
 
+	UFUNCTION(BlueprintCallable)
+	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);
+	
 protected:
+
+	uint8 JumpCount = 0;
+	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
@@ -50,4 +59,9 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void JumpStart(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
+	
+	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 };
+
+
+

@@ -4,6 +4,7 @@
 #include "Player/PFECharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
@@ -28,6 +29,11 @@ void APFECharacter::BeginPlay()
 			Subsystem->AddMappingContext(MappingContext, 0);
 		}
 	}
+}
+
+void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
+{
+	MovementComponent = InMovementComponent;
 }
 
 void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,4 +71,15 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 void APFECharacter::JumpEnd(const FInputActionValue& Value)
 {
 	StopJumping();
+	
+}
+
+inline void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+{
+	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+	
+	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
+	{
+		JumpCount = 0;
+	}
 }
