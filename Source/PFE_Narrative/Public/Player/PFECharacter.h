@@ -61,6 +61,8 @@ public:
 	bool bCanMove = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float MoveValue;
 
 	UFUNCTION(BlueprintCallable)
 	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);

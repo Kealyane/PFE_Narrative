@@ -65,7 +65,7 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void APFECharacter::Move(const FInputActionValue& Value)
 {
-	float MoveValue = Value.Get<float>();
+	MoveValue = Value.Get<float>();
 
 	if (bIsAlive && bCanMove)
 	{
@@ -106,7 +106,6 @@ void APFECharacter::SwitchMetrix(FCharacterMetrix NewMetrix)
 		MovementComponent->JumpZVelocity = CurrentMetrix.JumpForce;
 	}
 }
-
 
 void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
 {
