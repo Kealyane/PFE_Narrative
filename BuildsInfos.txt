@@ -2,3 +2,4 @@ Builds :
 
 commit 5a8b631 : 20250218 v1.0.0.0 
 commit 74af9d0 : 20250219 v1.0.0.1
+commit 2c4a8d5 : 20250219 v1.0.0.2
