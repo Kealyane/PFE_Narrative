@@ -8,9 +8,12 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
+#include "Curves/CurveFloat.h"
 
 APFECharacter::APFECharacter()
 {
+	//PrimaryActorTick.bCanEverTick = true;
+
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
 
@@ -37,6 +40,7 @@ void APFECharacter::InitGame()
 	JumpCount = 0;
 	bIsAlive = true;
 	bCanMove = true;
+	bCanDash = true;
 
 	if (MovementComponent)
 	{
@@ -60,6 +64,7 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APFECharacter::JumpStart);
 		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APFECharacter::JumpEnd);
 		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &APFECharacter::JumpEnd);
+		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &APFECharacter::Dash);
 	}
 }
 
@@ -75,6 +80,8 @@ void APFECharacter::Move(const FInputActionValue& Value)
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
+	if (bIsDashing) return;
+	
 	if (bIsAlive && bCanMove && JumpCount < CurrentMetrix.JumpMaxCount)
 	{
 		LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
@@ -87,6 +94,52 @@ void APFECharacter::JumpEnd(const FInputActionValue& Value)
 	StopJumping();
 }
 
+void APFECharacter::Dash(const FInputActionValue& Value)
+{
+	bCanDash = bCanDash && (bIsOnGround || (!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir));
+	
+	if (bCanDash)
+	{
+		if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
+		bCanDash = false;
+		bIsDashing = true;
+		PreviousGravity = MovementComponent->GravityScale;
+		MovementComponent->GravityScale = 0.f;
+		StartDashDelegate.Broadcast();
+	}
+}
+
+void APFECharacter::EndDash()
+{
+	MovementComponent->GravityScale = PreviousGravity;
+	float SpeedX = FMath::Min(FMath::Abs(MovementComponent->Velocity.X), CurrentMetrix.MoveSpeed);
+	MovementComponent->Velocity = FVector(SpeedX*MoveValue, 0.f, MovementComponent->Velocity.Z);
+	bIsDashing = false;
+	if (bIsOnGround)
+	{
+		FTimerHandle DashCooldownHandle;
+		GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
+			CurrentMetrix.DashCooldown, false);
+	}
+}
+
+void APFECharacter::ResetDash()
+{
+	bCanDash = true;
+	DashCountAir = 0;
+}
+
+float APFECharacter::GetDashDuration()
+{
+	return 1/CurrentMetrix.DashDurationInSec;
+}
+
+FVector APFECharacter::GetDashVelocity()
+{
+	return DirectionRight * MoveValue * CurrentMetrix.DashDistance;
+}
+
+
 void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
@@ -94,6 +147,13 @@ void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 
 	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
 	{
 		JumpCount = 0;
+
+		if (!bCanDash)
+		{
+			FTimerHandle DashCooldownHandle;
+			GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
+				CurrentMetrix.DashCooldown, false);
+		}
 	}
 }
 
@@ -105,6 +165,7 @@ void APFECharacter::SwitchMetrix(FCharacterMetrix NewMetrix)
 		MovementComponent->MaxWalkSpeed = CurrentMetrix.MoveSpeed;
 		MovementComponent->JumpZVelocity = CurrentMetrix.JumpForce;
 	}
+	DashSpeed = CurrentMetrix.DashDistance / CurrentMetrix.DashDurationInSec;
 }
 
 void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)

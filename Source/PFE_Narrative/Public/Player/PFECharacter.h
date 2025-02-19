@@ -6,6 +6,7 @@
 #include "PaperZDCharacter.h"
 #include "PFECharacter.generated.h"
 
+class UTimelineComponent;
 class UCharacterMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -14,19 +15,27 @@ class UInputAction;
 class UInputComponent;
 struct FInputActionValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDashDelegate);
+
 USTRUCT(BlueprintType)
 struct FCharacterMetrix
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Max Walk Speed"))
-	float MoveSpeed;
+	float MoveSpeed = 400.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Jump Z Velocity"))
-	float JumpForce;
+	float JumpForce = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 JumpMaxCount;
+	uint8 JumpMaxCount = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashForce;
+	float DashDistance = 1000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DashDurationInSec = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 MaxDashInAir = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DashCooldown = 0.7f;
 };
 /**
  * 
@@ -47,6 +56,7 @@ public:
 	FCharacterMetrix SmallFlamesMetrix;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
 	FCharacterMetrix HighFlamesMetrix;
+	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -54,6 +64,8 @@ public:
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* DashAction;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsAlive = true;
@@ -62,7 +74,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsDashing = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float MoveValue;
+
+	UPROPERTY(BlueprintAssignable)
+	FStartDashDelegate StartDashDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);
@@ -71,11 +88,15 @@ public:
 	
 protected:
 
-	uint8 JumpCount = 0;
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
+	uint8 JumpCount = 0;
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
 	FCharacterMetrix CurrentMetrix;
+	float DashSpeed;
+	float PreviousGravity;
+	bool bCanDash;
+	uint8 DashCountAir = 0;
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
@@ -84,11 +105,24 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void JumpStart(const FInputActionValue& Value);
 	void JumpEnd(const FInputActionValue& Value);
+	void Dash(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintCallable)
+	void EndDash();
+	UFUNCTION()
+	void ResetDash();
+	UFUNCTION(BlueprintCallable)
+	float GetDashDuration();
+	UFUNCTION(BlueprintCallable)
+	FVector GetDashVelocity();
 	
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 	
 	void SwitchMetrix(FCharacterMetrix NewMetrix);
 };
+
+
+
 
 
 
