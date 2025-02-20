@@ -6,9 +6,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
-#include "Curves/CurveFloat.h"
+#include "Math/Vector.h"
 
 APFECharacter::APFECharacter()
 {
@@ -35,6 +36,55 @@ void APFECharacter::BeginPlay()
 	InitGame();
 }
 
+void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor)
+	{
+		FVector Start = GetActorLocation();
+		FVector End = Start + GetActorForwardVector() * 100.0f;
+
+		FHitResult HitResult;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+		if (bHit)
+		{
+			float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
+			
+			if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
+			{
+				if (HitResult.ImpactNormal.X != MoveValue)
+				{
+					bIsNearWall = true;
+					WallNormal = HitResult.ImpactNormal;
+				}
+			}
+		}
+
+		// FColor LineColor = bHit ? FColor::Green : FColor::Red;
+		// DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
+		//
+		// if (bHit)
+		// {
+		// 	DrawDebugPoint(GetWorld(), HitResult.ImpactPoint, 40.0f, FColor::Blue, false, 2.0f);
+		// }
+	}
+}
+
+void APFECharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (bIsNearWall || bIsGrabbingWall)
+	{
+		bIsNearWall = false;
+		bIsGrabbingWall = false;
+		GrabWallDelegate.Broadcast(false);
+		//EnableGravity(PreviousGravityGrab);
+	}
+}
+
 void APFECharacter::InitGame()
 {
 	JumpCount = 0;
@@ -54,6 +104,15 @@ void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovemen
 	SwitchMetrix(SmallFlamesMetrix);
 }
 
+
+void APFECharacter::InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent)
+{
+	CapsuleComponent = InCapsuleComponent;
+	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &APFECharacter::OnOverlapBegin);
+	CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &APFECharacter::OnOverlapEnd);
+}
+
+
 void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -61,6 +120,7 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APFECharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APFECharacter::MoveEnd);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APFECharacter::JumpStart);
 		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APFECharacter::JumpEnd);
 		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &APFECharacter::JumpEnd);
@@ -74,9 +134,39 @@ void APFECharacter::Move(const FInputActionValue& Value)
 
 	if (bIsAlive && bCanMove)
 	{
-		AddMovementInput(DirectionRight, MoveValue);
+		if (!bIsGrabbingWall && bIsNearWall)
+		{
+			if (WallNormal.X != MoveValue)
+			{
+				GrabWallDelegate.Broadcast(true);
+				bIsGrabbingWall = true;
+				//PreviousGravityGrab = MovementComponent->GravityScale;
+				//DisableGravity();
+			}
+		}
+		else
+		{
+			if (bIsGrabbingWall && bIsNearWall && WallNormal.X == MoveValue)
+			{
+				GrabWallDelegate.Broadcast(false);
+				bIsGrabbingWall = false;
+				//EnableGravity(PreviousGravityGrab);
+			}
+			AddMovementInput(DirectionRight, MoveValue);
+		}
 	}
 }
+
+void APFECharacter::MoveEnd(const FInputActionValue& Value)
+{
+	if (bIsGrabbingWall || bIsNearWall)
+	{
+		GrabWallDelegate.Broadcast(false);
+		bIsGrabbingWall = false;
+		//EnableGravity(PreviousGravityGrab);
+	}
+}
+
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
@@ -103,15 +193,15 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 		if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
 		bCanDash = false;
 		bIsDashing = true;
-		PreviousGravity = MovementComponent->GravityScale;
-		MovementComponent->GravityScale = 0.f;
+		PreviousGravityDash = MovementComponent->GravityScale;
+		DisableGravity();
 		StartDashDelegate.Broadcast();
 	}
 }
 
 void APFECharacter::EndDash()
 {
-	MovementComponent->GravityScale = PreviousGravity;
+	EnableGravity(PreviousGravityDash);
 	float SpeedX = FMath::Min(FMath::Abs(MovementComponent->Velocity.X), CurrentMetrix.MoveSpeed);
 	MovementComponent->Velocity = FVector(SpeedX*MoveValue, 0.f, MovementComponent->Velocity.Z);
 	bIsDashing = false;
@@ -179,3 +269,14 @@ void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
 		SwitchMetrix(HighFlamesMetrix);
 	}
 }
+
+void APFECharacter::EnableGravity(float InPreviousGravity)
+{
+	MovementComponent->GravityScale = InPreviousGravity;
+}
+
+void APFECharacter::DisableGravity()
+{
+	MovementComponent->GravityScale = 0.f;
+}
+
