@@ -59,6 +59,8 @@ public:
 	FCharacterMetrix HighFlamesMetrix;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
 	float GravityValue = 2.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
+	float WallJumpForce = 600.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -116,7 +118,7 @@ protected:
 	float MoveThreashold = 0.01f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
-	
+	bool bisDoingWallJump = false;
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
@@ -131,7 +133,6 @@ protected:
 	
 	void InitGame();
 	
-
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
 	void JumpStart(const FInputActionValue& Value);
@@ -151,6 +152,10 @@ protected:
 	void WallGrabStart();
 	UFUNCTION()
 	void WallGrabEnd();
+	UFUNCTION()
+	void WallJump();
+	UFUNCTION()
+	void WallJumpReset();
 	
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 	

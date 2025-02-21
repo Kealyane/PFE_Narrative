@@ -130,7 +130,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 {
 	MoveValue = Value.Get<float>();
 
-	if (bIsAlive && bCanMove)
+	if (bIsAlive && bCanMove && !bisDoingWallJump)
 	{
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
@@ -168,6 +168,8 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 		if (bIsGrabbingWall)
 		{
 			WallGrabEnd();
+			WallJump();
+			return;
 		}
 		
 		if (JumpCount < CurrentMetrix.JumpMaxCount)
@@ -248,6 +250,22 @@ void APFECharacter::WallGrabEnd()
 	GrabWallDelegate.Broadcast(false);
 	bIsGrabbingWall = false;
 	EnableGravity();
+}
+
+void APFECharacter::WallJump()
+{
+	bisDoingWallJump = true;
+	FVector JumpVelocity = (WallNormal + DirectionUp) * WallJumpForce;
+	MovementComponent->Velocity = JumpVelocity;
+
+	FTimerHandle JumpWallHandle;
+	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
+		0.2f, false);
+}
+
+void APFECharacter::WallJumpReset()
+{
+	bisDoingWallJump = false;
 }
 
 
