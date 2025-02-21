@@ -57,7 +57,8 @@ public:
 	FCharacterMetrix SmallFlamesMetrix;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
 	FCharacterMetrix HighFlamesMetrix;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
+	float GravityValue = 2.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -101,12 +102,12 @@ protected:
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
 	FCharacterMetrix CurrentMetrix;
 
+	float PreviousGravity;
 	// Jump
 	uint8 JumpCount = 0;
 
 	// Dash
 	float DashSpeed;
-	float PreviousGravityDash;
 	bool bCanDash;
 	uint8 DashCountAir = 0;
 
@@ -115,7 +116,7 @@ protected:
 	float MoveThreashold = 0.01f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
-	float PreviousGravityGrab;
+	
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay();
@@ -129,6 +130,7 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	void InitGame();
+	
 
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
@@ -144,14 +146,23 @@ protected:
 	float GetDashDuration();
 	UFUNCTION(BlueprintCallable)
 	FVector GetDashVelocity();
+
+	UFUNCTION()
+	void WallGrabStart();
+	UFUNCTION()
+	void WallGrabEnd();
 	
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 	
-	void SwitchMetrix(FCharacterMetrix NewMetrix);
-	UFUNCTION()
-	void EnableGravity(float InPreviousGravity);
-	UFUNCTION()
+	void SwitchMetrix(const FCharacterMetrix& NewMetrix);
+	
+	UFUNCTION(BlueprintCallable)
+	void EnableGravity();
+	UFUNCTION(BlueprintCallable)
 	void DisableGravity();
+
+	UFUNCTION()
+	void PrintOnScreen(const FString& InText);
 };
 
 

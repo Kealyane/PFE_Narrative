@@ -79,9 +79,7 @@ void APFECharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	if (bIsNearWall || bIsGrabbingWall)
 	{
 		bIsNearWall = false;
-		bIsGrabbingWall = false;
-		GrabWallDelegate.Broadcast(false);
-		//EnableGravity(PreviousGravityGrab);
+		WallGrabEnd();
 	}
 }
 
@@ -138,19 +136,14 @@ void APFECharacter::Move(const FInputActionValue& Value)
 		{
 			if (WallNormal.X != MoveValue)
 			{
-				GrabWallDelegate.Broadcast(true);
-				bIsGrabbingWall = true;
-				//PreviousGravityGrab = MovementComponent->GravityScale;
-				//DisableGravity();
+				WallGrabStart();
 			}
 		}
 		else
 		{
 			if (bIsGrabbingWall && bIsNearWall && WallNormal.X == MoveValue)
 			{
-				GrabWallDelegate.Broadcast(false);
-				bIsGrabbingWall = false;
-				//EnableGravity(PreviousGravityGrab);
+				WallGrabEnd();
 			}
 			AddMovementInput(DirectionRight, MoveValue);
 		}
@@ -161,21 +154,27 @@ void APFECharacter::MoveEnd(const FInputActionValue& Value)
 {
 	if (bIsGrabbingWall || bIsNearWall)
 	{
-		GrabWallDelegate.Broadcast(false);
-		bIsGrabbingWall = false;
-		//EnableGravity(PreviousGravityGrab);
+		WallGrabEnd();
 	}
 }
 
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
-	if (bIsDashing) return;
-	
-	if (bIsAlive && bCanMove && JumpCount < CurrentMetrix.JumpMaxCount)
+	if (bIsAlive && bCanMove)
 	{
-		LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
-		JumpCount++;
+		if (bIsDashing) return;
+
+		if (bIsGrabbingWall)
+		{
+			WallGrabEnd();
+		}
+		
+		if (JumpCount < CurrentMetrix.JumpMaxCount)
+		{
+			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
+			JumpCount++;
+		}
 	}
 }
 
@@ -186,25 +185,32 @@ void APFECharacter::JumpEnd(const FInputActionValue& Value)
 
 void APFECharacter::Dash(const FInputActionValue& Value)
 {
-	bCanDash = bCanDash && (bIsOnGround || (!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir));
-	
-	if (bCanDash)
+	if (bIsAlive && bCanMove)
 	{
-		if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
-		bCanDash = false;
-		bIsDashing = true;
-		PreviousGravityDash = MovementComponent->GravityScale;
-		DisableGravity();
-		StartDashDelegate.Broadcast();
+		bCanDash = bCanDash &&
+					(bIsOnGround ||
+					(!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir) ||
+					!bIsGrabbingWall);
+	
+		if (bCanDash)
+		{
+			if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
+			bCanDash = false;
+			bIsDashing = true;
+			DisableGravity();
+			StartDashDelegate.Broadcast();
+		}
 	}
 }
 
 void APFECharacter::EndDash()
 {
-	EnableGravity(PreviousGravityDash);
+	// BP : enable gravity if not grabbing
+	
 	float SpeedX = FMath::Min(FMath::Abs(MovementComponent->Velocity.X), CurrentMetrix.MoveSpeed);
 	MovementComponent->Velocity = FVector(SpeedX*MoveValue, 0.f, MovementComponent->Velocity.Z);
 	bIsDashing = false;
+
 	if (bIsOnGround)
 	{
 		FTimerHandle DashCooldownHandle;
@@ -229,6 +235,21 @@ FVector APFECharacter::GetDashVelocity()
 	return DirectionRight * MoveValue * CurrentMetrix.DashDistance;
 }
 
+void APFECharacter::WallGrabStart()
+{
+	GrabWallDelegate.Broadcast(true);
+	bIsGrabbingWall = true;
+	DisableGravity();
+	MovementComponent->Velocity = FVector::Zero();
+}
+
+void APFECharacter::WallGrabEnd()
+{
+	GrabWallDelegate.Broadcast(false);
+	bIsGrabbingWall = false;
+	EnableGravity();
+}
+
 
 void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
@@ -247,7 +268,7 @@ void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 
 	}
 }
 
-void APFECharacter::SwitchMetrix(FCharacterMetrix NewMetrix)
+void APFECharacter::SwitchMetrix(const FCharacterMetrix& NewMetrix)
 {
 	CurrentMetrix = NewMetrix;
 	if (MovementComponent)
@@ -270,13 +291,21 @@ void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
 	}
 }
 
-void APFECharacter::EnableGravity(float InPreviousGravity)
+void APFECharacter::EnableGravity()
 {
-	MovementComponent->GravityScale = InPreviousGravity;
+	MovementComponent->GravityScale = GravityValue;
 }
 
 void APFECharacter::DisableGravity()
 {
 	MovementComponent->GravityScale = 0.f;
+}
+
+void APFECharacter::PrintOnScreen(const FString& InText)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, InText);
+	}
 }
 
