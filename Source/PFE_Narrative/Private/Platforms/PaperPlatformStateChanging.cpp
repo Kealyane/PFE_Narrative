@@ -4,6 +4,7 @@
 #include "Platforms/PaperPlatformStateChanging.h"
 
 #include "Components/BoxComponent.h"
+#include "PaperSpriteComponent.h"
 #include "Player/PFECharacter.h"
 
 APaperPlatformStateChanging::APaperPlatformStateChanging()
@@ -31,6 +32,19 @@ void APaperPlatformStateChanging::OnHit(AActor* SelfActor, AActor* OtherActor, F
 {
 	if (OtherActor && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
+		if (bShowDebug)
+		{
+			// Debug : Draw Impact Normal (Red - length : 50)
+			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
+			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
+			UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
+
+			// Debug : Draw Down Vector (Blue - length 25)
+			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
+			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
+			UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
+		}
+		
 		if (Hit.ImpactNormal == FVector::DownVector)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Collision avec le joueur !"));			
@@ -69,5 +83,6 @@ void APaperPlatformStateChanging::SwitchCollisionPreset()
 	}
 	StateChanged.Broadcast(bIsOpen);
 }
+
 
 
