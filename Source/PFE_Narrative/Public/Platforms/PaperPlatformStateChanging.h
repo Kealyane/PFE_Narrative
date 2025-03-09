@@ -6,10 +6,8 @@
 #include "PaperSpriteActor.h"
 #include "PaperPlatformStateChanging.generated.h"
 
-class UBoxComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStateChangedDelegate, bool, bIsPlatformOpen);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStateChangeDelegate, bool, bIsPlatformOpen);
 /**
  * 
  */
@@ -22,33 +20,28 @@ public:
 	APaperPlatformStateChanging();
 
 	UPROPERTY(BlueprintAssignable)
-	FStateChangedDelegate StateChanged;
+	FStateChangeDelegate StatusChanged;
 
 	void InitPlatform();
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
-	float DelayWhenPlayerOn = 0.2f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
-	float DelayBeforeSwitch = 2.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings|Initialization")
+	bool bAtStartIsOpen;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Platform Settings")
 	bool bIsOpen;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings|Debug")
-	bool bShowDebug = true;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings|Debug")
-	FLinearColor OpenColor = FLinearColor(1.f,0.06f,0.f,1.f);
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings|Debug")
-	FLinearColor CloseColor = FLinearColor(0.04f,1.f,0.87f,1.f);
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings", meta = (ToolTip="Delay before disable collider"))
+	float DelayBeforeOpening = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings", meta = (ToolTip="Delay before enable collider"))
+	float DelayBeforeClosing = 0.2f;
 	
 	virtual void BeginPlay() override;
-	
-	UFUNCTION()
-	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
-	UFUNCTION()
-	void SwitchCollisionPreset();
 
+	UFUNCTION()
+	void SwitchState();
+	
 private:
 	TObjectPtr<UPrimitiveComponent> PrimitiveComponent;
-	
+	UFUNCTION()
+	void SwitchCollider();
 };

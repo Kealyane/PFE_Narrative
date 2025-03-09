@@ -2,76 +2,61 @@
 
 
 #include "Platforms/PaperPlatformStateChanging.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
+
+
 
 APaperPlatformStateChanging::APaperPlatformStateChanging()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bAtStartIsOpen = false;
 	bIsOpen = false;
 }
 
 void APaperPlatformStateChanging::InitPlatform()
 {
-	bIsOpen = false;
-	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-	StateChanged.Broadcast(bIsOpen);
+	bIsOpen = bAtStartIsOpen;
+	SwitchCollider();
 }
 
 void APaperPlatformStateChanging::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	PrimitiveComponent = Cast<UPrimitiveComponent>(GetRootComponent());
 	
 	if (PrimitiveComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PrimitiveComponent not cast properly"));
 	}
-	
-	OnActorHit.AddDynamic(this, &APaperPlatformStateChanging::OnHit);
-}
 
-void APaperPlatformStateChanging::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
-	const FHitResult& Hit)
-{
-	if (OtherActor && OtherActor->IsA(APFECharacter::StaticClass()))
+	APFECharacter* PFECharacter = Cast<APFECharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
+	if (PFECharacter == nullptr)
 	{
-		if (bShowDebug)
-		{
-			// Debug : Draw Impact Normal (Red - length : 50)
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
-			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
-			UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
-
-			// Debug : Draw Down Vector (Blue - length 25)
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
-			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
-			UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
-		}
-		
-		if (Hit.ImpactNormal == FVector::DownVector)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Collision avec le joueur !"));			
-
-			bIsOpen = true;
-			FTimerHandle PlayerOnTimer;
-			FTimerHandle SwitchTimer;
-
-			
-			GetWorld()->GetTimerManager().SetTimer(PlayerOnTimer, this,
-				&APaperPlatformStateChanging::SwitchCollisionPreset, DelayWhenPlayerOn, false);
-
-			GetWorld()->GetTimerManager().SetTimer(SwitchTimer,
-				[this]()
-				{
-					bIsOpen = false;
-					SwitchCollisionPreset();
-				}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Fail to cast character to PFECharacter"));
+	}
+	else
+	{
+		PFECharacter->JumpDelegate.AddDynamic(this, &APaperPlatformStateChanging::SwitchState);
 	}
 }
 
-void APaperPlatformStateChanging::SwitchCollisionPreset()
+void APaperPlatformStateChanging::SwitchState()
+{
+	bIsOpen = !bIsOpen;
+	
+	StatusChanged.Broadcast(bIsOpen);
+
+	float DelayToApply = bIsOpen ? DelayBeforeClosing : DelayBeforeOpening;
+	
+	FTimerHandle SwitchStateTimer;
+	GetWorld()->GetTimerManager().SetTimer(SwitchStateTimer, this,
+		&APaperPlatformStateChanging::SwitchCollider, DelayToApply, false);
+}
+
+void APaperPlatformStateChanging::SwitchCollider()
 {
 	if (PrimitiveComponent == nullptr) return;
 	
@@ -85,8 +70,5 @@ void APaperPlatformStateChanging::SwitchCollisionPreset()
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
 	}
-	StateChanged.Broadcast(bIsOpen);
 }
-
-
 
