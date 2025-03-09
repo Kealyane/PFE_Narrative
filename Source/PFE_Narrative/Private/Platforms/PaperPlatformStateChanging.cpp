@@ -2,15 +2,19 @@
 
 
 #include "Platforms/PaperPlatformStateChanging.h"
-
-#include "Components/BoxComponent.h"
-#include "PaperSpriteComponent.h"
 #include "Player/PFECharacter.h"
 
 APaperPlatformStateChanging::APaperPlatformStateChanging()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bIsOpen = false;
+}
+
+void APaperPlatformStateChanging::InitPlatform()
+{
+	bIsOpen = false;
+	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	StateChanged.Broadcast(bIsOpen);
 }
 
 void APaperPlatformStateChanging::BeginPlay()

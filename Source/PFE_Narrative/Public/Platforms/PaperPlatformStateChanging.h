@@ -23,6 +23,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FStateChangedDelegate StateChanged;
+
+	void InitPlatform();
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
