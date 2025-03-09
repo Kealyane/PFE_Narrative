@@ -17,6 +17,7 @@ struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDashDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrabWallDelegate, bool, bIsTouching);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpDelegate);
 
 USTRUCT(BlueprintType)
 struct FCharacterMetrix
@@ -88,6 +89,8 @@ public:
 	FStartDashDelegate StartDashDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FGrabWallDelegate GrabWallDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FJumpDelegate JumpDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);

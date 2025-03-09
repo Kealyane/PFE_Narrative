@@ -174,6 +174,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 		
 		if (JumpCount < CurrentMetrix.JumpMaxCount)
 		{
+			JumpDelegate.Broadcast();
 			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
 			JumpCount++;
 		}
