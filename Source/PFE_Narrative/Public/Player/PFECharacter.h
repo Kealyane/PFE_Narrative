@@ -84,6 +84,8 @@ public:
 	float MoveValue = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingWall = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsJumping = false;
 
 	UPROPERTY(BlueprintAssignable)
 	FStartDashDelegate StartDashDelegate;

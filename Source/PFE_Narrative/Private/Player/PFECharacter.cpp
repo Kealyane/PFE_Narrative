@@ -174,6 +174,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 		
 		if (JumpCount < CurrentMetrix.JumpMaxCount)
 		{
+			bIsJumping = true;
 			JumpDelegate.Broadcast();
 			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
 			JumpCount++;
@@ -203,6 +204,7 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 			DisableGravity();
 			StartDashDelegate.Broadcast();
 		}
+		bIsJumping = false;
 	}
 }
 
@@ -240,6 +242,7 @@ FVector APFECharacter::GetDashVelocity()
 
 void APFECharacter::WallGrabStart()
 {
+	bIsJumping = false;
 	GrabWallDelegate.Broadcast(true);
 	bIsGrabbingWall = true;
 	DisableGravity();
@@ -276,6 +279,7 @@ void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 
 	
 	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
 	{
+		bIsJumping = false;
 		JumpCount = 0;
 
 		if (!bCanDash)
