@@ -7,7 +7,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/PFEGameMode.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
 #include "Math/Vector.h"
 
@@ -34,6 +36,7 @@ void APFECharacter::BeginPlay()
 		}
 	}
 	InitGame();
+	InitGameMode();
 }
 
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -94,6 +97,13 @@ void APFECharacter::InitGame()
 	{
 		SwitchMetrix(SmallFlamesMetrix);
 	}
+}
+
+void APFECharacter::InitGameMode()
+{
+	PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this));
+	check(PFEGameMode);
+	PFEGameMode->OnDeath.AddDynamic(this, &APFECharacter::LaunchRespawn);
 }
 
 void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
@@ -322,6 +332,19 @@ void APFECharacter::EnableGravity()
 void APFECharacter::DisableGravity()
 {
 	MovementComponent->GravityScale = 0.f;
+}
+
+void APFECharacter::LaunchRespawn()
+{
+	FTimerHandle RespawnHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
+}
+
+void APFECharacter::Respawn()
+{
+	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
+	SetActorLocation(RespawnLocation);
 }
 
 void APFECharacter::PrintOnScreen(const FString& InText)
