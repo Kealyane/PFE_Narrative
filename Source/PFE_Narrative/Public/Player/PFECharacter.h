@@ -6,6 +6,7 @@
 #include "PaperZDCharacter.h"
 #include "PFECharacter.generated.h"
 
+class APFEGameMode;
 class UTimelineComponent;
 class UCharacterMovementComponent;
 class USpringArmComponent;
@@ -38,6 +39,7 @@ struct FCharacterMetrix
 	uint8 MaxDashInAir = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DashCooldown = 0.7f;
+	
 };
 /**
  * 
@@ -62,6 +64,8 @@ public:
 	float GravityValue = 2.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
 	float WallJumpForce = 600.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DelayBeforeRespawn = 2.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* MappingContext;
@@ -100,6 +104,9 @@ public:
 	void InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent);
 	UFUNCTION(BlueprintCallable)
 	void SwitchMetrixUI(bool bCheckBoxValue);
+
+	UFUNCTION()
+	APFEGameMode* GetGameMode() const { return PFEGameMode; }
 	
 protected:
 
@@ -137,6 +144,7 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	void InitGame();
+	void InitGameMode();
 	
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
@@ -172,7 +180,14 @@ protected:
 	void DisableGravity();
 
 	UFUNCTION()
+	void LaunchRespawn();
+	void Respawn();
+
+	UFUNCTION()
 	void PrintOnScreen(const FString& InText);
+
+private:
+	TObjectPtr<APFEGameMode> PFEGameMode;
 };
 
 
