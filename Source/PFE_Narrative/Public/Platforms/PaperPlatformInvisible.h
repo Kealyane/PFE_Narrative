@@ -29,8 +29,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess="true"), Category="Platform")
 	float DistanceWithReflexion = 100.f;
 
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
-	virtual void PostEditMove(bool bFinished) override;
+	#if WITH_EDITOR
+	virtual void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+	#endif
 	virtual void BeginPlay() override;
 
 private:

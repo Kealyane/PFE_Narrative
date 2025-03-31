@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PaperSpriteComponent.h"
 #include "Platforms/PaperPlatformInvisible.h"
+#include "PaperSpriteComponent.h"
 
 APaperPlatformInvisible::APaperPlatformInvisible()
 {
@@ -20,20 +20,14 @@ APaperPlatformInvisible::APaperPlatformInvisible()
 	MirrorPosition = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z-DistanceWithReflexion);
 	MirrorRenderComponent->SetWorldLocation(MirrorPosition);
 }
-
-void APaperPlatformInvisible::PostEditMove(bool bFinished)
+#if WITH_EDITOR
+void APaperPlatformInvisible::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
 {
-	Super::PostEditMove(bFinished);
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
 	MirrorPosition = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z-DistanceWithReflexion);
 	MirrorRenderComponent->SetWorldLocation(MirrorPosition);
 }
-
-void APaperPlatformInvisible::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	MirrorPosition = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z-DistanceWithReflexion);
-	MirrorRenderComponent->SetWorldLocation(MirrorPosition);
-}
+#endif
 
 void APaperPlatformInvisible::BeginPlay()
 {
