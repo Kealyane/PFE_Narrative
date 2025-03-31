@@ -6,6 +6,7 @@
 #include "PaperZDCharacter.h"
 #include "PFECharacter.generated.h"
 
+class UFlameComponent;
 class APFEGameMode;
 class UTimelineComponent;
 class UCharacterMovementComponent;
@@ -107,11 +108,17 @@ public:
 
 	UFUNCTION()
 	APFEGameMode* GetGameMode() const { return PFEGameMode; }
+	UFUNCTION(BlueprintCallable)
+	UFlameComponent* GetFlameComponent() const { return FlameComponent; }
 	
 protected:
 
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UFlameComponent> FlameComponent;
+	
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
 	FCharacterMetrix CurrentMetrix;

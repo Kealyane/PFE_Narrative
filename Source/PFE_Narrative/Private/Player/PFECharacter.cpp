@@ -12,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
 #include "Math/Vector.h"
+#include "Player/FlameComponent.h"
 
 APFECharacter::APFECharacter()
 {
@@ -22,6 +23,8 @@ APFECharacter::APFECharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	
+	FlameComponent = CreateDefaultSubobject<UFlameComponent>(TEXT("FlameComponent"));
 }
 
 void APFECharacter::BeginPlay()
@@ -37,6 +40,11 @@ void APFECharacter::BeginPlay()
 	}
 	InitGame();
 	InitGameMode();
+
+	if (FlameComponent != nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
+	}
 }
 
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
