@@ -119,6 +119,8 @@ public:
 	void StoreKey();
 	UFUNCTION()
 	void UseKey();
+	UFUNCTION()
+	bool HasKey() const { return NumberOfKeyPickedUp > 0; }
 	
 protected:
 
