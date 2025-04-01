@@ -332,6 +332,21 @@ void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
 	}
 }
 
+void APFECharacter::StoreKey()
+{
+	NumberOfKeyPickedUp++;
+	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
+}
+
+void APFECharacter::UseKey()
+{
+	if (NumberOfKeyPickedUp > 0)
+	{
+		NumberOfKeyPickedUp--;
+		UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
+	}
+}
+
 void APFECharacter::EnableGravity()
 {
 	MovementComponent->GravityScale = GravityValue;
@@ -347,6 +362,9 @@ void APFECharacter::LaunchRespawn()
 	FTimerHandle RespawnHandle;
 	GetWorld()->GetTimerManager().SetTimer(
 	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
+	
+	NumberOfKeyPickedUp = 0;
+	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
 }
 
 void APFECharacter::Respawn()

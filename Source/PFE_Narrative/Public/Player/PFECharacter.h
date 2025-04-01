@@ -20,6 +20,7 @@ struct FInputActionValue;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDashDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrabWallDelegate, bool, bIsTouching);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey);
 
 USTRUCT(BlueprintType)
 struct FCharacterMetrix
@@ -98,6 +99,9 @@ public:
 	FGrabWallDelegate GrabWallDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FJumpDelegate JumpDelegate;
+	
+	UPROPERTY(BlueprintAssignable)
+	FUpdateKeyNumberDelegate UpdateKeyNumberDelegate;
 
 	UFUNCTION(BlueprintCallable)
 	void InitMovementComponent(UCharacterMovementComponent* InMovementComponent);
@@ -110,6 +114,13 @@ public:
 	APFEGameMode* GetGameMode() const { return PFEGameMode; }
 	UFUNCTION(BlueprintCallable)
 	UFlameComponent* GetFlameComponent() const { return FlameComponent; }
+
+	UFUNCTION()
+	void StoreKey();
+	UFUNCTION()
+	void UseKey();
+	UFUNCTION()
+	bool HasKey() const { return NumberOfKeyPickedUp > 0; }
 	
 protected:
 
@@ -195,6 +206,7 @@ protected:
 
 private:
 	TObjectPtr<APFEGameMode> PFEGameMode;
+	int NumberOfKeyPickedUp = 0;
 };
 
 
