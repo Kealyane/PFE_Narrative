@@ -35,6 +35,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	UPROPERTY(SaveGame)
 	FVector MirrorPosition;
 };
 
