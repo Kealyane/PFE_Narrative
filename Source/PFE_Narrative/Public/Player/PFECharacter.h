@@ -88,10 +88,16 @@ public:
 	bool bIsDashing = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float MoveValue = 0.f;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingWall = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsDoingWallJump = false;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsJumping = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	uint8 JumpCount = 0;
 
 	UPROPERTY(BlueprintAssignable)
 	FStartDashDelegate StartDashDelegate;
@@ -140,8 +146,7 @@ protected:
 	FCharacterMetrix CurrentMetrix;
 
 	float PreviousGravity;
-	// Jump
-	uint8 JumpCount = 0;
+
 
 	// Dash
 	float DashSpeed;
@@ -153,7 +158,7 @@ protected:
 	float MoveThreashold = 0.01f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
-	bool bisDoingWallJump = false;
+
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;

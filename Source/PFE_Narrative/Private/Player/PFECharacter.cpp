@@ -168,7 +168,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 {
 	MoveValue = Value.Get<float>();
 
-	if (bIsAlive && bCanMove && !bisDoingWallJump)
+	if (bIsAlive && bCanMove && !bIsDoingWallJump)
 	{
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
@@ -296,7 +296,7 @@ void APFECharacter::WallGrabEnd()
 
 void APFECharacter::WallJump()
 {
-	bisDoingWallJump = true;
+	bIsDoingWallJump = true;
 	FVector JumpVelocity = (WallNormal + DirectionUp) * WallJumpForce;
 	MovementComponent->Velocity = JumpVelocity;
 
@@ -307,7 +307,7 @@ void APFECharacter::WallJump()
 
 void APFECharacter::WallJumpReset()
 {
-	bisDoingWallJump = false;
+	bIsDoingWallJump = false;
 }
 
 
@@ -395,6 +395,7 @@ void APFECharacter::DisableGravity()
 
 void APFECharacter::LaunchRespawn()
 {
+	bIsAlive = false;
 	FTimerHandle RespawnHandle;
 	GetWorld()->GetTimerManager().SetTimer(
 	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
@@ -407,6 +408,7 @@ void APFECharacter::Respawn()
 {
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
 	SetActorLocation(RespawnLocation);
+	bIsAlive = true;
 }
 
 void APFECharacter::PrintOnScreen(const FString& InText)
