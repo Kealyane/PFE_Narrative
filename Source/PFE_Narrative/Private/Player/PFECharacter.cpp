@@ -54,7 +54,7 @@ void APFECharacter::Tick(float DeltaSeconds)
 	if (bIsInReflexionArea)
 	{
 		float Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().Z);
-		FVector NewLocation = FVector(ReflexionPlaneLocation.X, ReflexionPlaneLocation.Y, -(Distance*2 + 140));
+		FVector NewLocation = FVector(ReflexionPlaneLocation.X, ReflexionPlaneLocation.Y, -(Distance*2));
 		ReflexionPlane->SetRelativeLocation(NewLocation);
 	}
 }
