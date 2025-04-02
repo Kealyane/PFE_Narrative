@@ -16,7 +16,7 @@
 
 APFECharacter::APFECharacter()
 {
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
@@ -47,8 +47,20 @@ void APFECharacter::BeginPlay()
 	}
 }
 
+void APFECharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (bIsInReflexionArea)
+	{
+		float Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().Z);
+		FVector NewLocation = FVector(ReflexionPlaneLocation.X, ReflexionPlaneLocation.Y, -(Distance*2 + 140));
+		ReflexionPlane->SetRelativeLocation(NewLocation);
+	}
+}
+
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor)
 	{
@@ -100,6 +112,7 @@ void APFECharacter::InitGame()
 	bIsAlive = true;
 	bCanMove = true;
 	bCanDash = true;
+	bIsInReflexionArea = false;
 
 	if (MovementComponent)
 	{
@@ -126,6 +139,13 @@ void APFECharacter::InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent)
 	CapsuleComponent = InCapsuleComponent;
 	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &APFECharacter::OnOverlapBegin);
 	CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &APFECharacter::OnOverlapEnd);
+}
+
+void APFECharacter::InitReflexionPlane(UStaticMeshComponent* InReflexionPlane)
+{
+	ReflexionPlane = InReflexionPlane;
+	ReflexionPlaneLocation = ReflexionPlane->GetRelativeLocation();
+	ReflexionPlane->SetHiddenInGame(true);
 }
 
 
@@ -344,6 +364,22 @@ void APFECharacter::UseKey()
 	{
 		NumberOfKeyPickedUp--;
 		UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
+	}
+}
+
+void APFECharacter::SetReflexionArea(bool bIsInside, float ZPos)
+{
+	bIsInReflexionArea = bIsInside;
+	ReflexionAreaGround = ZPos;
+	
+	if (!bIsInReflexionArea)
+	{
+		ReflexionPlane->SetRelativeLocation(ReflexionPlaneLocation);
+		ReflexionPlane->SetHiddenInGame(true);
+	}
+	else
+	{
+		ReflexionPlane->SetHiddenInGame(false);
 	}
 }
 

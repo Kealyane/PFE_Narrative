@@ -108,6 +108,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent);
 	UFUNCTION(BlueprintCallable)
+	void InitReflexionPlane(UStaticMeshComponent* InReflexionPlane);
+	UFUNCTION(BlueprintCallable)
 	void SwitchMetrixUI(bool bCheckBoxValue);
 
 	UFUNCTION()
@@ -121,6 +123,9 @@ public:
 	void UseKey();
 	UFUNCTION()
 	bool HasKey() const { return NumberOfKeyPickedUp > 0; }
+
+	UFUNCTION()
+	void SetReflexionArea(bool bIsInside, float ZPos);
 	
 protected:
 
@@ -151,7 +156,8 @@ protected:
 	bool bisDoingWallJump = false;
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	// For Wall Grab
 	UFUNCTION()
@@ -207,6 +213,10 @@ protected:
 private:
 	TObjectPtr<APFEGameMode> PFEGameMode;
 	int NumberOfKeyPickedUp = 0;
+	bool bIsInReflexionArea;
+	float ReflexionAreaGround;
+	TObjectPtr<UStaticMeshComponent> ReflexionPlane;
+	FVector ReflexionPlaneLocation;
 };
 
 
