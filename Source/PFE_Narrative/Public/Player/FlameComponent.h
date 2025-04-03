@@ -8,8 +8,22 @@
 #include "FlameComponent.generated.h"
 
 
+class APFECharacter;
 class AArea;
 class APFEGameMode;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSmallFlameSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNormalFlameSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHighFlameSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFlameStateOnDeathSignature, bool, bIsHighFlame);
+
+UENUM()
+enum class EFlameStatus : uint8
+{
+	SMALL,
+	NORMAL,
+	HIGH,
+};
 
 USTRUCT()
 struct FAreaEffect
@@ -47,6 +61,15 @@ public:
 	UFUNCTION()
 	void EndEffect(AArea* AreaRef);
 
+	UPROPERTY(BlueprintAssignable)
+	FSmallFlameSignature OnSmallFlame;
+	UPROPERTY(BlueprintAssignable)
+	FNormalFlameSignature OnNormalFlame;
+	UPROPERTY(BlueprintAssignable)
+	FHighFlameSignature OnHighFlame;
+	UPROPERTY(BlueprintAssignable)
+	FFlameStateOnDeathSignature OnDeathFlameState;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Flame Properties", meta = (AllowPrivateAccess = "true"))
 	float MaxFlameValue = 100.0f;
@@ -66,4 +89,9 @@ protected:
 
 private:
 	TArray<FAreaEffect> Areas;
+
+	TObjectPtr<APFECharacter> PFECharacter;
+
+	EFlameStatus CurrentFlameStatus;
+	bool bIsDead = false;
 };

@@ -133,13 +133,14 @@ public:
 	UFUNCTION()
 	void SetReflexionArea(bool bIsInside, float ZPos);
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UFlameComponent> FlameComponent;
+	
 protected:
 
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UFlameComponent> FlameComponent;
 	
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);

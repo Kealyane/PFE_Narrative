@@ -41,7 +41,7 @@ void APFECharacter::BeginPlay()
 	InitGame();
 	InitGameMode();
 
-	if (FlameComponent != nullptr)
+	if (FlameComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
@@ -117,6 +117,10 @@ void APFECharacter::InitGame()
 	if (MovementComponent)
 	{
 		SwitchMetrix(SmallFlamesMetrix);
+	}
+	if (FlameComponent)
+	{
+		FlameComponent->InitFlame();
 	}
 }
 
@@ -408,7 +412,7 @@ void APFECharacter::Respawn()
 {
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
 	SetActorLocation(RespawnLocation);
-	bIsAlive = true;
+	InitGame();
 }
 
 void APFECharacter::PrintOnScreen(const FString& InText)

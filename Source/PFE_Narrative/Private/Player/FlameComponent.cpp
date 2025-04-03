@@ -15,27 +15,47 @@ UFlameComponent::UFlameComponent()
 void UFlameComponent::InitFlame()
 {
 	CurrentFlameValue = MaxFlameValue / 2.f;
+	OnNormalFlame.Broadcast();
+	CurrentFlameStatus = EFlameStatus::NORMAL;
 }
 
 void UFlameComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	PFECharacter = Cast<APFECharacter>(GetOwner());
+	check(PFECharacter);
 	InitFlame();
 }
 
 void UFlameComponent::UpdateFlameValue(float Value)
 {
+	if (PFECharacter->bIsAlive == false) return;
+	
 	CurrentFlameValue += Value;
+	
+	if (CurrentFlameValue < 30.f && CurrentFlameStatus != EFlameStatus::SMALL)
+	{
+		OnSmallFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::SMALL;
+	}
+	if (CurrentFlameValue >= 30.f && CurrentFlameValue < 70.f && CurrentFlameStatus != EFlameStatus::NORMAL)
+	{
+		OnNormalFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::NORMAL;
+	}
+	if (CurrentFlameValue >= 70.f && CurrentFlameStatus != EFlameStatus::HIGH)
+	{
+		OnHighFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::HIGH;
+	}
 	
 	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::UpdateFlameValue : death"));
 		CurrentFlameValue = FMath::Clamp(CurrentFlameValue, 0.f, MaxFlameValue);
 		
-		if (APFECharacter* PFECharacter = Cast<APFECharacter>(GetOwner()))
-		{
-			PFECharacter->GetGameMode()->OnDeath.Broadcast();
-		}
+		PFECharacter->GetGameMode()->OnDeath.Broadcast();
+		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
 	}
 }
 
