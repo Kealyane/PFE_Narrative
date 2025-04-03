@@ -116,6 +116,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitReflexionPlane(UStaticMeshComponent* InReflexionPlane);
 	UFUNCTION(BlueprintCallable)
+	void InitFlameComponent(UFlameComponent* InFlameComponent);
+	UFUNCTION(BlueprintCallable)
 	void SwitchMetrixUI(bool bCheckBoxValue);
 
 	UFUNCTION()
@@ -133,13 +135,13 @@ public:
 	UFUNCTION()
 	void SetReflexionArea(bool bIsInside, float ZPos);
 	
+	
 protected:
 
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UFlameComponent> FlameComponent;
+	
 	
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
