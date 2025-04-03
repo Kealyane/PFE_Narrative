@@ -23,8 +23,6 @@ APFECharacter::APFECharacter()
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	
-	FlameComponent = CreateDefaultSubobject<UFlameComponent>(TEXT("FlameComponent"));
 }
 
 void APFECharacter::BeginPlay()
@@ -41,7 +39,7 @@ void APFECharacter::BeginPlay()
 	InitGame();
 	InitGameMode();
 
-	if (FlameComponent != nullptr)
+	if (FlameComponent == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
@@ -118,6 +116,10 @@ void APFECharacter::InitGame()
 	{
 		SwitchMetrix(SmallFlamesMetrix);
 	}
+	if (FlameComponent)
+	{
+		FlameComponent->InitFlame();
+	}
 }
 
 void APFECharacter::InitGameMode()
@@ -146,6 +148,12 @@ void APFECharacter::InitReflexionPlane(UStaticMeshComponent* InReflexionPlane)
 	ReflexionPlane = InReflexionPlane;
 	ReflexionPlaneLocation = ReflexionPlane->GetRelativeLocation();
 	ReflexionPlane->SetHiddenInGame(true);
+}
+
+void APFECharacter::InitFlameComponent(UFlameComponent* InFlameComponent)
+{
+	FlameComponent = InFlameComponent;
+	FlameComponent->InitFlame();
 }
 
 
@@ -408,7 +416,7 @@ void APFECharacter::Respawn()
 {
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
 	SetActorLocation(RespawnLocation);
-	bIsAlive = true;
+	InitGame();
 }
 
 void APFECharacter::PrintOnScreen(const FString& InText)

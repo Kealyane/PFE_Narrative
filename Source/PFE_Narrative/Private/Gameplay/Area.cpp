@@ -23,7 +23,17 @@ void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
-		Character->GetFlameComponent()->StartEffect(FlameImpactValue, DelayBetweenEffect, bIsDecreasingFlame,this);
+		if (bIsOneShot)
+		{
+			float FlameValue = bIsDecreasingFlame ? PointDownValue : PointUpValue;
+			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameValue,
+				DelayBeforeNormalFlame, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
+		}
+		else
+		{
+			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameImpactValue,
+				DelayBetweenEffect, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
+		}
 	}
 }
 
@@ -33,6 +43,6 @@ void AArea::ExitArea(AActor* OverlappedActor, AActor* OtherActor)
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
-		Character->GetFlameComponent()->EndEffect(this);
+		Character->GetFlameComponent()->EndEffect(bIsOneShot, this);
 	}
 }
