@@ -56,10 +56,19 @@ void UFlameComponent::SetFlameValue(float Value)
 
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
 {
+	if ((bInIsOneShot && bDecrease && CurrentFlameStatus == EFlameStatus::SMALL) ||
+	(bInIsOneShot && !bDecrease && CurrentFlameStatus == EFlameStatus::HIGH))
+	{
+		PFECharacter->GetGameMode()->OnDeath.Broadcast();
+		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
+		return;
+	}
+	
 	// stop current area effect to apply new one
 	if (Areas.Num() > 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 	}
 	// store new effect
 	float EffectValue = bDecrease ? -Value : Value;

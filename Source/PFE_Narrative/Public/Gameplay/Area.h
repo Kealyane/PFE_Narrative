@@ -39,6 +39,8 @@ protected:
 	float PointUpValue = 75.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
 	float PointDownValue = 15.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
+	float DisableDuration = 5.f;
 	
 	UFUNCTION()
 	void EnterArea(AActor* OverlappedActor, AActor* OtherActor);
