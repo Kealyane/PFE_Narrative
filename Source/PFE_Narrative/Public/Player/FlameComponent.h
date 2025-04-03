@@ -29,15 +29,20 @@ USTRUCT()
 struct FAreaEffect
 {
 	GENERATED_BODY()
-	
+
+	bool bIsOneShot;
 	bool bDecrease;
 	float Value;
 	float Delay;
+	float DelayBeforeNormalFlame;
 	TObjectPtr<AArea> AreaRef;
 
-	FAreaEffect() : bDecrease(false), Value(0.0f), Delay(0.0f), AreaRef(nullptr) {}
-	FAreaEffect(bool InDecrease, float InValue, float InDelay, AArea* InAreaRef) :
-		bDecrease(InDecrease), Value(InValue), Delay(InDelay), AreaRef(InAreaRef) {}
+	FAreaEffect() : bIsOneShot(false), bDecrease(false), Value(0.0f),
+		Delay(0.0f), DelayBeforeNormalFlame(0.0), AreaRef(nullptr) {}
+	
+	FAreaEffect(bool InOneShot, bool InDecrease, float InValue, float InDelay, float InDelayNormal, AArea* InAreaRef) :
+		bIsOneShot(InOneShot), bDecrease(InDecrease), Value(InValue),
+		Delay(InDelay), DelayBeforeNormalFlame(InDelayNormal), AreaRef(InAreaRef) {}
 };
 /**
  * 
@@ -56,10 +61,10 @@ public:
 	float GetFlameValue()  const { return CurrentFlameValue; }
 	
 	UFUNCTION()
-	void StartEffect(float Value, float Delay, bool bDecrease, AArea* AreaRef);
+	void StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* AreaRef);
 
 	UFUNCTION()
-	void EndEffect(AArea* AreaRef);
+	void EndEffect(bool bInIsOneShot, AArea* AreaRef);
 
 	UPROPERTY(BlueprintAssignable)
 	FSmallFlameSignature OnSmallFlame;
@@ -82,10 +87,17 @@ protected:
 	UFUNCTION()
 	void UpdateFlameValue(float Value);
 
+	void SetFlameValue(float Value);
+
 	FTimerHandle FlameEffectTimer;
+	FTimerHandle ResetFlameTimer;
 	
 	UFUNCTION()
 	void LaunchEffect(float Value, float Delay);
+	UFUNCTION()
+	void ResetFlameOverTime(float Value);
+
+	void UpdateFlameStatus();
 
 private:
 	TArray<FAreaEffect> Areas;

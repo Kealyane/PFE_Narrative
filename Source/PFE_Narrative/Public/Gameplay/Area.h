@@ -19,16 +19,26 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
+		meta = (AllowPrivateAccess = "true", ToolTip = "True if it's a one shot area, the value doesn't not change over time"))
+	bool bIsOneShot = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Zone type"))
 	bool bIsDecreasingFlame = true;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
-		meta = (AllowPrivateAccess = "true", ToolTip = "value applied to flame, positive value"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",meta = (AllowPrivateAccess = "true"))
+	float DelayBeforeNormalFlame = 2.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OverTime",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Value applied to flame, positive value"))
 	float FlameImpactValue = 1.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
-		meta = (AllowPrivateAccess = "true", ToolTip = "value applied every X seconds"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OverTime",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Value applied every X seconds"))
 	float DelayBetweenEffect = 0.5f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
+	float PointUpValue = 75.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
+	float PointDownValue = 15.f;
 	
 	UFUNCTION()
 	void EnterArea(AActor* OverlappedActor, AActor* OtherActor);
