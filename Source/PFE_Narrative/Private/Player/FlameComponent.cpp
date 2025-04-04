@@ -99,15 +99,16 @@ void UFlameComponent::LaunchEffect(float Value, float Delay)
 
 void UFlameComponent::ResetFlameOverTime(float Value)
 {
-	if ((Value > 0 && CurrentFlameValue >= 50.f) || (Value < 0 && CurrentFlameValue <= 50.f))
+	if ((Value > 0 && CurrentFlameValue >= 49.5f) || (Value < 0 && CurrentFlameValue <= 50.5f))
 	{
 		CurrentFlameValue = 50.f;
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
 		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 		return;
 	}
 	CurrentFlameValue += Value;
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-		FString::Printf(TEXT("ResetFlameOverTime Flame = %f"), CurrentFlameValue));
+		FString::Printf(TEXT("ResetFlameOverTime Flame = %f, Value = %f"), CurrentFlameValue, Value));
 	UpdateFlameStatus();
 }
 
@@ -133,49 +134,69 @@ void UFlameComponent::UpdateFlameStatus()
 void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 {
 	GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+	GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 
-	int32 IndexToRemove = Areas.IndexOfByPredicate(
-		[InAreaRef](const FAreaEffect& Effect)
-		{
-			return Effect.AreaRef == InAreaRef;
-		});
-
-	FAreaEffect CurrentArea = Areas[IndexToRemove];
-
-	if (IndexToRemove != INDEX_NONE)
+	if (!Areas.IsEmpty())
 	{
-		Areas.RemoveAt(IndexToRemove);
-	}
-
-	if (Areas.Num() > 0)
-	{
-		FAreaEffect PreviousArea = Areas.Last();
-		
-		if (PreviousArea.bIsOneShot)
-		{
-			SetFlameValue(PreviousArea.Value);
-		}
-		else
-		{
-			LaunchEffect(PreviousArea.Value, PreviousArea.Delay);
-		}
-	}
-
-	if (Areas.Num() == 0)
-	{
-		float IncrementValue = (50.f - CurrentFlameValue) / (CurrentArea.DelayBeforeNormalFlame / 0.1f);
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-	FString::Printf(TEXT("EndEffect : increment value = %f, current %f, delay %f"),
-		IncrementValue, CurrentFlameValue, CurrentArea.DelayBeforeNormalFlame));
-
-		GetWorld()->GetTimerManager().SetTimer(
-			ResetFlameTimer,
-			[this, IncrementValue]()
+		int32 IndexToRemove = Areas.IndexOfByPredicate(
+			[InAreaRef](const FAreaEffect& Effect)
 			{
-				ResetFlameOverTime(IncrementValue);
-			},
-			0.1f,
-			true
-		);
+				return Effect.AreaRef == InAreaRef;
+			});
+
+		FAreaEffect CurrentArea; 
+		bool bHasValidArea = false; 
+
+		if (IndexToRemove != INDEX_NONE) 
+		{
+			CurrentArea = Areas[IndexToRemove]; 
+			bHasValidArea = true; 
+			Areas.RemoveAt(IndexToRemove);
+		}
+
+		if (!Areas.IsEmpty()) 
+		{			
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
+				FString::Printf(TEXT("EndEffect > 0 : Num = %d"), Areas.Num()));
+			
+			FAreaEffect PreviousArea = Areas.Last();
+			
+			if (PreviousArea.bIsOneShot)
+			{
+				SetFlameValue(PreviousArea.Value);
+			}
+			else
+			{
+				LaunchEffect(PreviousArea.Value, PreviousArea.Delay);
+			}
+			return;
+		}
+		
+		if (Areas.IsEmpty() && bHasValidArea) 
+		{
+			if (CurrentFlameValue == 50.f) return;
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
+				FString::Printf(TEXT("EndEffect 0 : Num = %d"), Areas.Num()));
+			
+			UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::EndEffect 0 : Num = %d"), Areas.Num());
+
+			float IncrementValue = (50.f - CurrentFlameValue) / (CurrentArea.DelayBeforeNormalFlame / 0.1f);
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
+				FString::Printf(TEXT("EndEffect : increment value = %f, current %f, delay %f"),
+					IncrementValue, CurrentFlameValue, CurrentArea.DelayBeforeNormalFlame));
+			
+			UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::EndEffect : increment value = %f, current %f, delay %f"), 
+				IncrementValue, CurrentFlameValue, CurrentArea.DelayBeforeNormalFlame);
+
+			GetWorld()->GetTimerManager().SetTimer(
+				ResetFlameTimer,
+				[this, IncrementValue]()
+				{
+					ResetFlameOverTime(IncrementValue);
+				},
+				0.1f,
+				true
+			);
+		}
 	}
 }
