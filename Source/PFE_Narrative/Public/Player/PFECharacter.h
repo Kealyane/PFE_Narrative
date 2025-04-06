@@ -161,6 +161,8 @@ protected:
 	FVector WallNormal;
 	bool bIsNearWall = false;
 
+	bool bBlockHorizontalInput = false;
+
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;

@@ -111,6 +111,7 @@ void APFECharacter::InitGame()
 	bCanMove = true;
 	bCanDash = true;
 	bIsInReflexionArea = false;
+	bBlockHorizontalInput = false;
 
 	if (MovementComponent)
 	{
@@ -176,11 +177,16 @@ void APFECharacter::Move(const FInputActionValue& Value)
 {
 	MoveValue = Value.Get<float>();
 
-	if (bIsAlive && bCanMove && !bIsDoingWallJump)
+	if (bIsAlive && bCanMove && (!bIsDoingWallJump || MovementComponent->IsFalling()))
 	{
+		if (bBlockHorizontalInput)
+		{
+			MoveValue = 0.f;
+		}
+		
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
-			if (WallNormal.X != MoveValue)
+			if (!bBlockHorizontalInput && WallNormal.X != MoveValue)
 			{
 				WallGrabStart();
 			}
@@ -210,7 +216,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 	if (bIsAlive && bCanMove)
 	{
 		if (bIsDashing) return;
-
+		
 		if (bIsGrabbingWall)
 		{
 			WallGrabEnd();
@@ -222,6 +228,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 		{
 			bIsJumping = true;
 			JumpDelegate.Broadcast();
+			MovementComponent->SetMovementMode(MOVE_Falling);
 			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
 			JumpCount++;
 		}
@@ -305,9 +312,11 @@ void APFECharacter::WallGrabEnd()
 void APFECharacter::WallJump()
 {
 	bIsDoingWallJump = true;
+	bBlockHorizontalInput = true;
+
 	FVector JumpVelocity = (WallNormal + DirectionUp) * WallJumpForce;
 	MovementComponent->Velocity = JumpVelocity;
-
+	
 	FTimerHandle JumpWallHandle;
 	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
 		0.2f, false);
@@ -316,6 +325,7 @@ void APFECharacter::WallJump()
 void APFECharacter::WallJumpReset()
 {
 	bIsDoingWallJump = false;
+	bBlockHorizontalInput = false;
 }
 
 
