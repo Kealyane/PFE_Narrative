@@ -75,6 +75,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FFlameStateOnDeathSignature OnDeathFlameState;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SmallFlameThreshold = 30.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float BigFlameThreshold = 70.f;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Flame Properties", meta = (AllowPrivateAccess = "true"))
 	float MaxFlameValue = 100.0f;

@@ -119,17 +119,17 @@ FString::Printf(TEXT("CurrentFlame = %f"), CurrentFlameValue));
 
 void UFlameComponent::UpdateFlameStatus()
 {
-	if (CurrentFlameValue < 30.f && CurrentFlameStatus != EFlameStatus::SMALL)
+	if (CurrentFlameValue < SmallFlameThreshold && CurrentFlameStatus != EFlameStatus::SMALL)
 	{
 		OnSmallFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::SMALL;
 	}
-	if (CurrentFlameValue >= 30.f && CurrentFlameValue < 70.f && CurrentFlameStatus != EFlameStatus::NORMAL)
+	if (CurrentFlameValue >= SmallFlameThreshold && CurrentFlameValue < BigFlameThreshold && CurrentFlameStatus != EFlameStatus::NORMAL)
 	{
 		OnNormalFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::NORMAL;
 	}
-	if (CurrentFlameValue >= 70.f && CurrentFlameStatus != EFlameStatus::HIGH)
+	if (CurrentFlameValue >= BigFlameThreshold && CurrentFlameStatus != EFlameStatus::HIGH)
 	{
 		OnHighFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::HIGH;
