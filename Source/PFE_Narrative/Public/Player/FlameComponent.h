@@ -16,6 +16,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSmallFlameSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNormalFlameSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHighFlameSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFlameStateOnDeathSignature, bool, bIsHighFlame);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeFlameValueSignature, bool, bIsChangeFlameValueActive);
 
 UENUM()
 enum class EFlameStatus : uint8
@@ -74,6 +75,8 @@ public:
 	FHighFlameSignature OnHighFlame;
 	UPROPERTY(BlueprintAssignable)
 	FFlameStateOnDeathSignature OnDeathFlameState;
+	UPROPERTY(BlueprintAssignable)
+	FChangeFlameValueSignature OnChangeFlameValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SmallFlameThreshold = 30.f;
