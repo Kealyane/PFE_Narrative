@@ -41,6 +41,8 @@ void APaperPlatformStateChanging::BeginPlay()
 	{
 		PFECharacter->JumpDelegate.AddDynamic(this, &APaperPlatformStateChanging::SwitchState);
 	}
+
+	InitPlatform();
 }
 
 void APaperPlatformStateChanging::SwitchState()
