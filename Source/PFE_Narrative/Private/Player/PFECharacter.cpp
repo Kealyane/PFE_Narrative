@@ -55,6 +55,18 @@ void APFECharacter::Tick(float DeltaSeconds)
 		FVector NewLocation = FVector(ReflexionPlaneLocation.X, ReflexionPlaneLocation.Y, -(Distance*2));
 		ReflexionPlane->SetRelativeLocation(NewLocation);
 	}
+
+	if (bShowDebug)
+	{
+		//if (bIsOnGround) PrintOnScreen("Is On Ground");
+		if (bIsDashing) PrintOnScreen("Is Dashing");
+		if (bIsNearWall) PrintOnScreen("Is Near Wall");
+		if (bIsGrabbingWall) PrintOnScreen("Is Grabbing Wall");
+		if (bIsDoingWallJump) PrintOnScreen("Is Doing Wall Jump");
+		if (bIsJumping) PrintOnScreen("Is Jumping");
+		if (bBlockHorizontalInput) PrintOnScreen("Block Horizontal Input");
+		if (MovementComponent->MovementMode == MOVE_Falling) PrintOnScreen("Movement Falling");
+	}
 }
 
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -130,6 +142,20 @@ void APFECharacter::InitGameMode()
 	PFEGameMode->OnDeath.AddDynamic(this, &APFECharacter::LaunchRespawn);
 }
 
+void APFECharacter::FlipCharacter(float Direction)
+{
+	if (Direction < 0.0)
+	{
+		SetActorRotation(LeftOrientation);
+		GetController()->SetControlRotation(LeftOrientation);
+	}
+	else
+	{
+		SetActorRotation(RightOrientation);
+		GetController()->SetControlRotation(RightOrientation);
+	}
+}
+
 void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
 {
 	MovementComponent = InMovementComponent;
@@ -175,15 +201,12 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void APFECharacter::Move(const FInputActionValue& Value)
 {
-	MoveValue = Value.Get<float>();
+	RawMoveInput = Value.Get<float>();
 
 	if (bIsAlive && bCanMove && (!bIsDoingWallJump || MovementComponent->IsFalling()))
 	{
-		if (bBlockHorizontalInput)
-		{
-			MoveValue = 0.f;
-		}
-		
+		MoveValue = bBlockHorizontalInput ? WallNormal.X : RawMoveInput;
+
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
 			if (!bBlockHorizontalInput && WallNormal.X != MoveValue)
@@ -197,6 +220,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 			{
 				WallGrabEnd();
 			}
+			FlipCharacter(MoveValue);
 			AddMovementInput(DirectionRight, MoveValue);
 		}
 	}
@@ -316,6 +340,8 @@ void APFECharacter::WallJump()
 
 	FVector JumpVelocity = (WallNormal + DirectionUp) * WallJumpForce;
 	MovementComponent->Velocity = JumpVelocity;
+	MoveValue = WallNormal.X;
+	FlipCharacter(MoveValue);
 	
 	FTimerHandle JumpWallHandle;
 	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
@@ -324,6 +350,7 @@ void APFECharacter::WallJump()
 
 void APFECharacter::WallJumpReset()
 {
+	MoveValue = WallNormal.X;
 	bIsDoingWallJump = false;
 	bBlockHorizontalInput = false;
 }

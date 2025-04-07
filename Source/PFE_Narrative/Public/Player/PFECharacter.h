@@ -99,6 +99,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	uint8 JumpCount = 0;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bBlockHorizontalInput = false;
+
 	UPROPERTY(BlueprintAssignable)
 	FStartDashDelegate StartDashDelegate;
 	UPROPERTY(BlueprintAssignable)
@@ -149,7 +152,8 @@ protected:
 
 	float PreviousGravity;
 
-
+	float RawMoveInput = 0.f;
+	
 	// Dash
 	float DashSpeed;
 	bool bCanDash;
@@ -161,7 +165,7 @@ protected:
 	FVector WallNormal;
 	bool bIsNearWall = false;
 
-	bool bBlockHorizontalInput = false;
+
 
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
@@ -178,6 +182,8 @@ protected:
 	
 	void InitGame();
 	void InitGameMode();
+
+	void FlipCharacter(float Direction);
 	
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
@@ -226,6 +232,10 @@ private:
 	float ReflexionAreaGround;
 	TObjectPtr<UStaticMeshComponent> ReflexionPlane;
 	FVector ReflexionPlaneLocation;
+	FRotator LeftOrientation = FRotator(0.0f, 180.0f, 0.0f);
+	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
+
+	bool bShowDebug = false;
 };
 
 
