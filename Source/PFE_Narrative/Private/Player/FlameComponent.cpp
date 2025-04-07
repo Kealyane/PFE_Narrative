@@ -87,6 +87,7 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 
 void UFlameComponent::LaunchEffect(float Value, float Delay)
 {
+	OnChangeFlameValue.Broadcast(true);
 	GetWorld()->GetTimerManager().SetTimer(
 		FlameEffectTimer,
 		[this, Value]()
@@ -102,6 +103,7 @@ void UFlameComponent::ResetFlameOverTime(float Value)
 {
 	if ((Value > 0 && CurrentFlameValue >= 49.5f) || (Value < 0 && CurrentFlameValue <= 50.5f))
 	{
+		OnChangeFlameValue.Broadcast(false);
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
 		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 		CurrentFlameValue = 50.f;
