@@ -7,7 +7,7 @@
 #include "PaperPlatformStateChanging.generated.h"
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStateChangeDelegate, bool, bIsPlatformOpen);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateChangeDelegate, APaperPlatformStateChanging*, Platform, bool, bIsPlatformOpen);
 /**
  * 
  */

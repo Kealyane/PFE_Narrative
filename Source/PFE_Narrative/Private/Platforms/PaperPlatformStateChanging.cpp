@@ -49,7 +49,7 @@ void APaperPlatformStateChanging::SwitchState()
 {
 	bIsOpen = !bIsOpen;
 	
-	StatusChanged.Broadcast(bIsOpen);
+	StatusChanged.Broadcast(this, bIsOpen);
 
 	float DelayToApply = bIsOpen ? DelayBeforeClosing : DelayBeforeOpening;
 	
