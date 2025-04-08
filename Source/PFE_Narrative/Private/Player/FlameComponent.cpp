@@ -18,6 +18,7 @@ void UFlameComponent::InitFlame()
 	CurrentFlameValue = MaxFlameValue / 2.f;
 	OnNormalFlame.Broadcast();
 	CurrentFlameStatus = EFlameStatus::NORMAL;
+	OnChangeFlameValue.Broadcast(false);
 }
 
 void UFlameComponent::BeginPlay()
@@ -28,35 +29,16 @@ void UFlameComponent::BeginPlay()
 	InitFlame();
 }
 
-void UFlameComponent::UpdateFlameValue(float Value)
-{
-	if (PFECharacter->bIsAlive == false) return;
-	
-	CurrentFlameValue += Value;
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-	FString::Printf(TEXT("CurrentFlame = %f"), CurrentFlameValue));
-	UpdateFlameStatus();
-	
-	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::UpdateFlameValue : death"));
-		CurrentFlameValue = FMath::Clamp(CurrentFlameValue, 0.f, MaxFlameValue);
-		
-		PFECharacter->GetGameMode()->OnDeath.Broadcast();
-		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
-	}
-}
-
-void UFlameComponent::SetFlameValue(float Value)
-{
-	CurrentFlameValue = Value;
-	UpdateFlameStatus();
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-	FString::Printf(TEXT("CurrentFlame = %f"), CurrentFlameValue));
-}
-
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
 {
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+	
 	if ((bInIsOneShot && bDecrease && CurrentFlameStatus == EFlameStatus::SMALL) ||
 	(bInIsOneShot && !bDecrease && CurrentFlameStatus == EFlameStatus::HIGH))
 	{
@@ -66,14 +48,16 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 	}
 	
 	// stop current area effect to apply new one
+	GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 	if (Areas.Num() > 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 	}
+	
 	// store new effect
 	float EffectValue = bDecrease ? -Value : Value;
 	Areas.Add(FAreaEffect(bInIsOneShot, bDecrease, EffectValue, Delay, DelayNormal, InAreaRef));
+	
 	// apply new effect
 	if (bInIsOneShot)
 	{
@@ -85,63 +69,16 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 	}
 }
 
-void UFlameComponent::LaunchEffect(float Value, float Delay)
-{
-	OnChangeFlameValue.Broadcast(true);
-	GetWorld()->GetTimerManager().SetTimer(
-		FlameEffectTimer,
-		[this, Value]()
-		{
-			UpdateFlameValue(Value);
-		},
-		Delay,
-		true
-	);
-}
-
-void UFlameComponent::ResetFlameOverTime(float Value)
-{
-	if ((Value > 0 && CurrentFlameValue >= 49.5f) || (Value < 0 && CurrentFlameValue <= 50.5f))
-	{
-		OnChangeFlameValue.Broadcast(false);
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		CurrentFlameValue = 50.f;
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-FString::Printf(TEXT("CurrentFlame = %f"), CurrentFlameValue));
-		return;
-	}
-	CurrentFlameValue += Value;
-	// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-	// 	FString::Printf(TEXT("ResetFlameOverTime Flame = %f, Value = %f"), CurrentFlameValue, Value));
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-	FString::Printf(TEXT("CurrentFlame = %f"), CurrentFlameValue));
-	UpdateFlameStatus();
-}
-
-void UFlameComponent::UpdateFlameStatus()
-{
-	if (CurrentFlameValue < SmallFlameThreshold && CurrentFlameStatus != EFlameStatus::SMALL)
-	{
-		OnSmallFlame.Broadcast();
-		CurrentFlameStatus = EFlameStatus::SMALL;
-	}
-	if (CurrentFlameValue >= SmallFlameThreshold && CurrentFlameValue < BigFlameThreshold && CurrentFlameStatus != EFlameStatus::NORMAL)
-	{
-		OnNormalFlame.Broadcast();
-		CurrentFlameStatus = EFlameStatus::NORMAL;
-	}
-	if (CurrentFlameValue >= BigFlameThreshold && CurrentFlameStatus != EFlameStatus::HIGH)
-	{
-		OnHighFlame.Broadcast();
-		CurrentFlameStatus = EFlameStatus::HIGH;
-	}
-}
-
 void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 {
 	GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
 	GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+	
+	if (PFECharacter->bIsAlive == false)
+	{
+		Areas.Reset();
+		return;
+	}
 
 	if (!Areas.IsEmpty())
 	{
@@ -163,9 +100,6 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 
 		if (!Areas.IsEmpty()) 
 		{			
-			// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-			// 	FString::Printf(TEXT("EndEffect > 0 : Num = %d"), Areas.Num()));
-			
 			FAreaEffect PreviousArea = Areas.Last();
 			
 			if (PreviousArea.bIsOneShot)
@@ -182,28 +116,120 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 		if (Areas.IsEmpty() && bHasValidArea) 
 		{
 			if (CurrentFlameValue == 50.f) return;
-			// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-			// 	FString::Printf(TEXT("EndEffect 0 : Num = %d"), Areas.Num()));
-			//
-			// UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::EndEffect 0 : Num = %d"), Areas.Num());
-			//
-			float IncrementValue = (50.f - CurrentFlameValue) / (CurrentArea.DelayBeforeNormalFlame / 0.1f);
-			// GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green,
-			// 	FString::Printf(TEXT("EndEffect : increment value = %f, current %f, delay %f"),
-			// 		IncrementValue, CurrentFlameValue, CurrentArea.DelayBeforeNormalFlame));
-			
-			// UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::EndEffect : increment value = %f, current %f, delay %f"), 
-			// 	IncrementValue, CurrentFlameValue, CurrentArea.DelayBeforeNormalFlame);
 
+			float TickInterval = 0.1f;
+			int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
+			float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
+
+			OnChangeFlameValue.Broadcast(false);
 			GetWorld()->GetTimerManager().SetTimer(
 				ResetFlameTimer,
 				[this, IncrementValue]()
 				{
 					ResetFlameOverTime(IncrementValue);
 				},
-				0.1f,
+				TickInterval,
 				true
 			);
 		}
+	}
+}
+
+void UFlameComponent::LaunchEffect(float Value, float Delay)
+{
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+	
+	OnChangeFlameValue.Broadcast(true);
+	GetWorld()->GetTimerManager().SetTimer(
+		FlameEffectTimer,
+		[this, Value]()
+		{
+			UpdateFlameValue(Value);
+		},
+		Delay,
+		true
+	);
+}
+
+void UFlameComponent::UpdateFlameValue(float Value)
+{
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+	
+	CurrentFlameValue += Value;
+	UpdateFlameStatus();
+	
+	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
+	{
+		CurrentFlameValue = FMath::Clamp(CurrentFlameValue, 0.f, MaxFlameValue);
+		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
+		
+		PFECharacter->GetGameMode()->OnDeath.Broadcast();
+	}
+}
+
+void UFlameComponent::SetFlameValue(float Value)
+{
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+	
+	CurrentFlameValue = Value;
+	UpdateFlameStatus();
+}
+
+void UFlameComponent::ResetFlameOverTime(float Value)
+{
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+
+	if ((Value > 0 && CurrentFlameValue >= 49.5f) || (Value < 0 && CurrentFlameValue <= 50.5f))
+	{
+		OnChangeFlameValue.Broadcast(false);
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		CurrentFlameValue = 50.f;
+		return;
+	}
+	CurrentFlameValue += Value;
+	UpdateFlameStatus();
+}
+
+void UFlameComponent::UpdateFlameStatus()
+{
+	if (CurrentFlameValue < SmallFlameThreshold && CurrentFlameStatus != EFlameStatus::SMALL)
+	{
+		OnSmallFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::SMALL;
+	}
+	if (CurrentFlameValue >= SmallFlameThreshold && CurrentFlameValue < BigFlameThreshold && CurrentFlameStatus != EFlameStatus::NORMAL)
+	{
+		OnNormalFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::NORMAL;
+	}
+	if (CurrentFlameValue >= BigFlameThreshold && CurrentFlameStatus != EFlameStatus::HIGH)
+	{
+		OnHighFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::HIGH;
 	}
 }
