@@ -114,4 +114,7 @@ private:
 
 	EFlameStatus CurrentFlameStatus;
 	bool bIsDead = false;
+
+	void CheckDeath();
+	void UpdateProgressBars();
 };

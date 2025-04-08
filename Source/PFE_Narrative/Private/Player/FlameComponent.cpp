@@ -19,6 +19,8 @@ void UFlameComponent::InitFlame()
 	OnNormalFlame.Broadcast();
 	CurrentFlameStatus = EFlameStatus::NORMAL;
 	OnChangeFlameValue.Broadcast(false);
+	PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+	PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
 }
 
 void UFlameComponent::BeginPlay()
@@ -31,13 +33,7 @@ void UFlameComponent::BeginPlay()
 
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
 {
-	if (PFECharacter->bIsAlive == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		Areas.Reset();
-		return;
-	}
+	CheckDeath();
 	
 	if ((bInIsOneShot && bDecrease && CurrentFlameStatus == EFlameStatus::SMALL) ||
 	(bInIsOneShot && !bDecrease && CurrentFlameStatus == EFlameStatus::HIGH))
@@ -137,13 +133,7 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 
 void UFlameComponent::LaunchEffect(float Value, float Delay)
 {
-	if (PFECharacter->bIsAlive == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		Areas.Reset();
-		return;
-	}
+	CheckDeath();
 	
 	OnChangeFlameValue.Broadcast(true);
 	GetWorld()->GetTimerManager().SetTimer(
@@ -159,15 +149,11 @@ void UFlameComponent::LaunchEffect(float Value, float Delay)
 
 void UFlameComponent::UpdateFlameValue(float Value)
 {
-	if (PFECharacter->bIsAlive == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		Areas.Reset();
-		return;
-	}
+	CheckDeath();
 	
 	CurrentFlameValue += Value;
+	
+	UpdateProgressBars();
 	UpdateFlameStatus();
 	
 	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
@@ -181,37 +167,34 @@ void UFlameComponent::UpdateFlameValue(float Value)
 
 void UFlameComponent::SetFlameValue(float Value)
 {
-	if (PFECharacter->bIsAlive == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		Areas.Reset();
-		return;
-	}
+	CheckDeath();
+
+	PFECharacter->UpdateSmallFlameDelegate.Broadcast(0);
+	PFECharacter->UpdateHighFlameDelegate.Broadcast(0);
 	
 	CurrentFlameValue = Value;
+
+	UpdateProgressBars();
 	UpdateFlameStatus();
 }
 
 void UFlameComponent::ResetFlameOverTime(float Value)
 {
-	if (PFECharacter->bIsAlive == false)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
-		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
-		Areas.Reset();
-		return;
-	}
+	CheckDeath();
 
 	if ((Value > 0 && CurrentFlameValue >= 49.5f) || (Value < 0 && CurrentFlameValue <= 50.5f))
 	{
 		OnChangeFlameValue.Broadcast(false);
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
 		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
 		CurrentFlameValue = 50.f;
 		return;
 	}
+	
 	CurrentFlameValue += Value;
+	UpdateProgressBars();
 	UpdateFlameStatus();
 }
 
@@ -231,5 +214,30 @@ void UFlameComponent::UpdateFlameStatus()
 	{
 		OnHighFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::HIGH;
+	}
+}
+
+void UFlameComponent::CheckDeath()
+{
+	if (PFECharacter->bIsAlive == false)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+		Areas.Reset();
+		return;
+	}
+}
+
+void UFlameComponent::UpdateProgressBars()
+{
+	if (CurrentFlameValue < 50.f)
+	{
+		float PercentSmall = (50 - CurrentFlameValue) / 50;
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(PercentSmall);
+	}
+	else
+	{
+		float PercentBig = (CurrentFlameValue - 50) / 50;
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(PercentBig);
 	}
 }
