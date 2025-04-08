@@ -18,9 +18,16 @@ class PFE_NARRATIVE_API ACheckpoint : public APaperSpriteActor
 public:
 	ACheckpoint();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsActive = false;
+
+	void ResetCheckpoint();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateCheckpoint(bool InIsActive);
+
 protected:
 	virtual void BeginPlay() override;
-	
 
 	UFUNCTION()
 	void CheckpointReached(AActor* OverlappedActor, AActor* OtherActor);

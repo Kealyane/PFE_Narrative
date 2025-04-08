@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "PFEGameMode.generated.h"
 
+class ACheckpoint;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCharacterDeathSignature);
 
 /**
@@ -23,7 +24,7 @@ public:
 	FCharacterDeathSignature OnDeath;
 
 	UFUNCTION()
-	void SetCheckpoint(const FVector& CheckpointPosition);
+	void SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition);
 	UFUNCTION()
 	FVector GetCheckpointPosition() const { return LastCheckpointLocation; }
 
@@ -32,4 +33,7 @@ public:
 	
 protected:
 	FVector LastCheckpointLocation;
+	TObjectPtr<ACheckpoint> CurrentCheckpoint;
+
+	virtual void BeginPlay() override;
 };

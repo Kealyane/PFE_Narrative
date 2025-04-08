@@ -3,15 +3,24 @@
 
 #include "Core/PFEGameMode.h"
 
+#include "Gameplay/Checkpoint.h"
+
 APFEGameMode::APFEGameMode()
 {
 
 }
 
-void APFEGameMode::SetCheckpoint(const FVector& CheckpointPosition)
+void APFEGameMode::SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition)
 {
+	if (CurrentCheckpoint != nullptr && CurrentCheckpoint != InCheckpoint) CurrentCheckpoint->ResetCheckpoint();
+	
+	CurrentCheckpoint = InCheckpoint;
 	LastCheckpointLocation = CheckpointPosition;
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("GameMode::Checkpoint"));
-	UE_LOG(LogTemp, Warning, TEXT("GameMode::Checkpoint"));
+}
+
+void APFEGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+	CurrentCheckpoint == nullptr;
 }
 

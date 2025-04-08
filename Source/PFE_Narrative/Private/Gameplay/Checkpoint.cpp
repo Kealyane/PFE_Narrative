@@ -13,12 +13,16 @@ ACheckpoint::ACheckpoint()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+void ACheckpoint::ResetCheckpoint()
+{
+	bIsActive = false;
+	UpdateCheckpoint(bIsActive);
+}
+
 void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
 	OnActorBeginOverlap.AddDynamic(this, &ACheckpoint::CheckpointReached);
-	GetRenderComponent()->SetVisibility(false);
-
 }
 
 void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
@@ -27,8 +31,9 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 	{
 		if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
 		{
-			PFEGameMode->SetCheckpoint(GetActorLocation());
-			UE_LOG(LogTemp, Display, TEXT("ACheckpoint::Checkpoint Reached"));
+			bIsActive = true;
+			UpdateCheckpoint(bIsActive);
+			PFEGameMode->SetCheckpoint(this, GetActorLocation());
 		}
 	}
 }
