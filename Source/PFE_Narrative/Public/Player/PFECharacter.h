@@ -21,6 +21,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDashDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrabWallDelegate, bool, bIsTouching);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateSmallFlameDelegate, float, Percent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHighFlameDelegate, float, Percent);
 
 USTRUCT(BlueprintType)
 struct FCharacterMetrix
@@ -108,6 +110,10 @@ public:
 	FGrabWallDelegate GrabWallDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FJumpDelegate JumpDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FUpdateSmallFlameDelegate UpdateSmallFlameDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FUpdateHighFlameDelegate UpdateHighFlameDelegate;
 	
 	UPROPERTY(BlueprintAssignable)
 	FUpdateKeyNumberDelegate UpdateKeyNumberDelegate;
@@ -137,7 +143,6 @@ public:
 
 	UFUNCTION()
 	void SetReflexionArea(bool bIsInside, float ZPos);
-	
 	
 protected:
 
