@@ -3,6 +3,7 @@
 
 #include "Platforms/PaperPlatformStateChanging.h"
 
+#include "Core/PFEGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
 
@@ -13,6 +14,12 @@ APaperPlatformStateChanging::APaperPlatformStateChanging()
 	PrimaryActorTick.bCanEverTick = false;
 	bAtStartIsOpen = false;
 	bIsOpen = false;
+	
+	StartPoint = CreateDefaultSubobject<USceneComponent>(TEXT("StartPoint"));
+	StartPoint->SetupAttachment(RootComponent);
+	
+	EndPoint = CreateDefaultSubobject<USceneComponent>(TEXT("EndPoint"));
+	EndPoint->SetupAttachment(RootComponent);
 }
 
 void APaperPlatformStateChanging::InitPlatform()
@@ -65,12 +72,47 @@ void APaperPlatformStateChanging::SwitchCollider()
 	if (bIsOpen)
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		UE_LOG(LogTemp, Warning, TEXT("Collision Ignore !"));
 	}
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
+		CheckPlayerInPlatform();
+	}
+}
+
+void APaperPlatformStateChanging::CheckPlayerInPlatform()
+{
+	FVector Start = StartPoint->GetComponentLocation();
+	FVector End = EndPoint->GetComponentLocation();
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.bTraceComplex = false;
+	QueryParams.AddIgnoredActor(this);
+
+	TArray<FHitResult> HitResults;
+
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_Pawn, 
+		FCollisionShape::MakeSphere(SphereRadius),
+		QueryParams
+	);
+
+	if (bHit)
+	{
+		for (const FHitResult& Hit : HitResults)
+		{
+			if (APFECharacter* HitCharacter = Cast<APFECharacter>(Hit.GetActor()))
+			{
+				if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(HitCharacter->GetGameMode()))
+				{
+					PFEGameMode->LaunchDeathEvent();
+				}
+			}
+		}
 	}
 }
 
