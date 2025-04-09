@@ -7,6 +7,7 @@
 #include "Checkpoint.generated.h"
 
 
+class USoundComponent;
 /**
  * 
  */
@@ -26,10 +27,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateCheckpoint(bool InIsActive);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UFUNCTION(BlueprintCallable)
+	void InitSoundComponent(USoundComponent* InSoundComponent)	{ SoundComponent = InSoundComponent; }
+protected:
 	TObjectPtr<class USoundComponent> SoundComponent;
 
-protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION()

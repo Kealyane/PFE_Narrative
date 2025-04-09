@@ -12,7 +12,6 @@
 ACheckpoint::ACheckpoint()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	SoundComponent = CreateDefaultSubobject<USoundComponent>(TEXT("SoundComponent"));
 }
 
 void ACheckpoint::ResetCheckpoint()
@@ -24,6 +23,7 @@ void ACheckpoint::ResetCheckpoint()
 void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
+	bIsActive = false;
 	OnActorBeginOverlap.AddDynamic(this, &ACheckpoint::CheckpointReached);
 }
 
