@@ -22,11 +22,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void PlaySound(ESoundType Type);
 
+	UFUNCTION(BlueprintCallable)
+	void StopSound();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UAudioComponent> AudioComponent;
+	
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
-	TObjectPtr<UAudioComponent> AudioComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess=true))
 	TMap<ESoundType, USoundCue*> Sounds;

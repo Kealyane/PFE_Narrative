@@ -24,6 +24,15 @@ void USoundComponent::PlaySound(ESoundType Type)
 		AudioComponent->SetSound(Sounds[Type]);
 		AudioComponent->Play();
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning, TEXT("Can't play sound not found %d"), Sounds.Num());
+	}
+}
+
+void USoundComponent::StopSound()
+{
+	AudioComponent->Stop();
 }
 
 
