@@ -22,6 +22,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FStateChangeDelegate StatusChanged;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection")
+	TObjectPtr<USceneComponent> StartPoint;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection")
+	TObjectPtr<USceneComponent> EndPoint;
+	
 	void InitPlatform();
 	
 protected:
@@ -44,4 +49,9 @@ private:
 	TObjectPtr<UPrimitiveComponent> PrimitiveComponent;
 	UFUNCTION()
 	void SwitchCollider();
+
+	UFUNCTION()
+	void CheckPlayerInPlatform();
+
+	float SphereRadius = 10.f;
 };

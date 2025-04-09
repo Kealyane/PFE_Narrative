@@ -31,6 +31,7 @@ void UFlameComponent::BeginPlay()
 	PFECharacter = Cast<APFECharacter>(GetOwner());
 	check(PFECharacter);
 	InitFlame();
+	bIsPlayingSound = false;
 }
 
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
@@ -52,11 +53,13 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 			if (bIsDownSound && !bDecrease)
 			{
 				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+				AreaSoundPlaying = InAreaRef;
 				bIsDownSound = false;
 			}
 			else if (!bIsDownSound && bDecrease)
 			{
 				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
+				AreaSoundPlaying = InAreaRef;
 				bIsDownSound = true;
 			}
 		}
@@ -66,10 +69,14 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 			if (bDecrease)
 			{
 				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
+				AreaSoundPlaying = InAreaRef;
+				bIsDownSound = true;
 			}
 			else
 			{
 				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+				AreaSoundPlaying = InAreaRef;
+				bIsDownSound = false;
 			}
 		}
 	}
@@ -135,10 +142,18 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 
 			if (CurrentArea.bDecrease != PreviousArea.bDecrease)
 			{
-				CurrentArea.AreaRef->GetSoundComponent()->StopSound();
+				AreaSoundPlaying->GetSoundComponent()->StopSound();
 				if (PreviousArea.bDecrease)
+				{
 					PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
-				else PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+					bIsDownSound = true;
+				}
+				else
+				{
+					PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+					bIsDownSound = false;
+				}
+				AreaSoundPlaying = PreviousArea.AreaRef;
 			}
 			
 			if (PreviousArea.bIsOneShot)
@@ -154,9 +169,9 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 		
 		if (Areas.IsEmpty() && bHasValidArea) 
 		{
-			if (!CurrentArea.bIsOneShot)
+			if (AreaSoundPlaying)
 			{
-				CurrentArea.AreaRef->GetSoundComponent()->StopSound();
+				AreaSoundPlaying->GetSoundComponent()->StopSound();
 				bIsPlayingSound = false;
 			}
 			
