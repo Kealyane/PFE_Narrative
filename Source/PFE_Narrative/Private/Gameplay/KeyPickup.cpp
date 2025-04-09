@@ -36,7 +36,6 @@ void AKeyPickup::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 	{
 		if (APFECharacter* Character = Cast<APFECharacter>(OtherActor))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("AKeyPickup::StoreKey"));
 			Character->StoreKey();
 			SetActorEnableCollision(false);
 			GetRenderComponent()->SetVisibility(false);
