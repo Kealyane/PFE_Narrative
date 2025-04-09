@@ -13,6 +13,7 @@
 #include "PFE_Narrative/PFE_NarrativeCharacter.h"
 #include "Math/Vector.h"
 #include "Player/FlameComponent.h"
+#include "Core/SoundComponent.h"
 
 APFECharacter::APFECharacter()
 {
@@ -255,6 +256,15 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 			MovementComponent->SetMovementMode(MOVE_Falling);
 			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
 			JumpCount++;
+			
+			if (JumpCount == 1)
+			{
+				SoundComponent->PlaySound(ESoundType::Jump);
+			}
+			else if (JumpCount == 2)
+			{
+				SoundComponent->PlaySound(ESoundType::DoubleJump);
+			}
 		}
 	}
 }
@@ -275,6 +285,8 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 	
 		if (bCanDash)
 		{
+			SoundComponent->PlaySound(ESoundType::Dash);
+			
 			if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
 			bCanDash = false;
 			bIsDashing = true;
