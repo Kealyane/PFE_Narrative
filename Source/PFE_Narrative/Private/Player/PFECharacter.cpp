@@ -44,6 +44,8 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
+
+	bShowDebug = false;
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -59,9 +61,15 @@ void APFECharacter::Tick(float DeltaSeconds)
 
 	if (bShowDebug)
 	{
-		//if (bIsOnGround) PrintOnScreen("Is On Ground");
+		if (bIsOnGround) PrintOnScreen("Is On Ground");
 		if (bIsDashing) PrintOnScreen("Is Dashing");
 		if (bIsNearWall) PrintOnScreen("Is Near Wall");
+		 if (bIsNearWall && bCanMove)
+		 {
+		 	UE_LOG(LogTemp, Display, TEXT("velocity %f,%f,%f"), MovementComponent->Velocity.X, MovementComponent->Velocity.Y, MovementComponent->Velocity.Z);
+		 	PrintOnScreen("Can Move near wall");
+		 }
+		if (bIsNearWall && !bCanMove) PrintOnScreen("Can not Move near wall");
 		if (bIsGrabbingWall) PrintOnScreen("Is Grabbing Wall");
 		if (bIsDoingWallJump) PrintOnScreen("Is Doing Wall Jump");
 		if (bIsJumping) PrintOnScreen("Is Jumping");
@@ -194,8 +202,6 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &APFECharacter::Move);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &APFECharacter::MoveEnd);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &APFECharacter::JumpStart);
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &APFECharacter::JumpEnd);
-		// EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Canceled, this, &APFECharacter::JumpEnd);
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Started, this, &APFECharacter::Dash);
 	}
 }
@@ -203,16 +209,23 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void APFECharacter::Move(const FInputActionValue& Value)
 {
 	RawMoveInput = Value.Get<float>();
-
+	
 	if (bIsAlive && bCanMove && (!bIsDoingWallJump || MovementComponent->IsFalling()))
 	{
 		MoveValue = bBlockHorizontalInput ? WallNormal.X : RawMoveInput;
 
+		// wall not grabbed and near wall
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
+			// input not blocked and wall normal different from input
 			if (!bBlockHorizontalInput && WallNormal.X != MoveValue)
 			{
 				WallGrabStart();
+			}
+			else
+			{
+				FlipCharacter(MoveValue);
+				AddMovementInput(DirectionRight, MoveValue);
 			}
 		}
 		else
