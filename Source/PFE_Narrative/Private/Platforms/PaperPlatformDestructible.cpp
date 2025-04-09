@@ -3,12 +3,14 @@
 
 #include "Platforms/PaperPlatformDestructible.h"
 
+#include "Core/SoundComponent.h"
 #include "Player/PFECharacter.h"
 
 APaperPlatformDestructible::APaperPlatformDestructible()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bIsDestroyed = false;
+	SoundComponent = CreateDefaultSubobject<USoundComponent>(TEXT("SoundComponent"));
 }
 
 void APaperPlatformDestructible::InitPlatform()
@@ -80,13 +82,14 @@ void APaperPlatformDestructible::SwitchCollisionPreset()
 	
 	if (bIsDestroyed)
 	{
+		SoundComponent->PlaySound(ESoundType::PlatformDestructible);
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		UE_LOG(LogTemp, Warning, TEXT("Collision Ignore !"));
+		//UE_LOG(LogTemp, Warning, TEXT("Collision Ignore !"));
 	}
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
+		//UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
 	}
 	StateChanged.Broadcast(bIsDestroyed);
 }

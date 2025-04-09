@@ -6,6 +6,7 @@
 #include "PaperSpriteActor.h"
 #include "PaperPlatformDestructible.generated.h"
 
+class USoundComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDestructionDelegate, bool, bIsPlatformDestroyed);
 /**
  * 
@@ -21,6 +22,9 @@ public:
 	FDestructionDelegate StateChanged;
 
 	void InitPlatform();
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundComponent> SoundComponent;
 	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
