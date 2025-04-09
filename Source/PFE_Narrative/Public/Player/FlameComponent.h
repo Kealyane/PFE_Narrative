@@ -111,6 +111,7 @@ private:
 	TArray<FAreaEffect> Areas;
 
 	TObjectPtr<APFECharacter> PFECharacter;
+	TObjectPtr<AArea> AreaSoundPlaying;
 
 	EFlameStatus CurrentFlameStatus;
 	bool bIsDead = false;
