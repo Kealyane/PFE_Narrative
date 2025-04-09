@@ -10,7 +10,6 @@ APaperPlatformDestructible::APaperPlatformDestructible()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bIsDestroyed = false;
-	SoundComponent = CreateDefaultSubobject<USoundComponent>(TEXT("SoundComponent"));
 }
 
 void APaperPlatformDestructible::InitPlatform()

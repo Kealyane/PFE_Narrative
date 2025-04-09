@@ -23,10 +23,12 @@ public:
 
 	void InitPlatform();
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<USoundComponent> SoundComponent;
+	UFUNCTION(BlueprintCallable)
+	void InitSoundComponent(USoundComponent* InSoundComponent)	{ SoundComponent = InSoundComponent; }
 	
 protected:
+	
+	TObjectPtr<USoundComponent> SoundComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
 	float DelayWhenPlayerOn = 0.2f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings")
