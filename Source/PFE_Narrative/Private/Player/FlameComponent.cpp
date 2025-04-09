@@ -208,6 +208,14 @@ void UFlameComponent::UpdateFlameValue(float Value)
 	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
 	{
 		CurrentFlameValue = FMath::Clamp(CurrentFlameValue, 0.f, MaxFlameValue);
+		if (CurrentFlameValue <= 0.f)
+		{
+			PFECharacter->GetSoundComponent()->PlaySound(ESoundType::DeathSmallFlame);
+		}
+		else
+		{
+			PFECharacter->GetSoundComponent()->PlaySound(ESoundType::DeathBigFlame);
+		}
 		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
 		
 		PFECharacter->GetGameMode()->OnDeath.Broadcast();

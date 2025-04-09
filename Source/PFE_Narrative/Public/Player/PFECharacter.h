@@ -127,12 +127,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitFlameComponent(UFlameComponent* InFlameComponent);
 	UFUNCTION(BlueprintCallable)
+	void InitSoundComponent(USoundComponent* InSoundComponent) { SoundComponent = InSoundComponent; }
+	UFUNCTION(BlueprintCallable)
 	void SwitchMetrixUI(bool bCheckBoxValue);
 
 	UFUNCTION()
 	APFEGameMode* GetGameMode() const { return PFEGameMode; }
 	UFUNCTION(BlueprintCallable)
 	UFlameComponent* GetFlameComponent() const { return FlameComponent; }
+	UFUNCTION()
+	USoundComponent* GetSoundComponent() const { return SoundComponent; }
 
 	UFUNCTION()
 	void StoreKey();
@@ -149,7 +153,7 @@ protected:
 	TObjectPtr<UCharacterMovementComponent> MovementComponent;
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
 	TObjectPtr<UFlameComponent> FlameComponent;
-	
+	TObjectPtr<class USoundComponent> SoundComponent;
 	
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
@@ -169,8 +173,6 @@ protected:
 	float MoveThreashold = 0.01f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
-
-
 
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
