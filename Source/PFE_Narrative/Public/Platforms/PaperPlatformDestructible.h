@@ -42,11 +42,13 @@ protected:
 	FLinearColor OpenColor = FLinearColor(1.f,0.06f,0.f,1.f);
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings|Debug")
 	FLinearColor CloseColor = FLinearColor(0.04f,1.f,0.87f,1.f);
-	
+
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()
 	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION()
+	void OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor);
 	UFUNCTION()
 	void SwitchCollisionPreset();
 

@@ -31,6 +31,7 @@ void APaperPlatformDestructible::BeginPlay()
 	}
 	
 	OnActorHit.AddDynamic(this, &APaperPlatformDestructible::OnHit);
+	OnActorBeginOverlap.AddDynamic(this, &APaperPlatformDestructible::OnOverlapBegin);
 
 	InitPlatform();
 }
@@ -53,7 +54,7 @@ void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FV
 			UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
 		}
 		
-		if (Hit.ImpactNormal == FVector::DownVector)
+		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Collision avec le joueur !"));			
 
@@ -72,6 +73,25 @@ void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FV
 					SwitchCollisionPreset();
 				}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
 		}
+	}
+}
+
+void APaperPlatformDestructible::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (!bIsDestroyed)
+	{
+		FTimerHandle PlayerOnTimer;
+		FTimerHandle SwitchTimer;
+		
+		GetWorld()->GetTimerManager().SetTimer(PlayerOnTimer, this,
+	&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
+
+		GetWorld()->GetTimerManager().SetTimer(SwitchTimer,
+			[this]()
+			{
+				bIsDestroyed = false;
+				SwitchCollisionPreset();
+			}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
 	}
 }
 
