@@ -5,12 +5,14 @@
 
 #include "PaperSpriteComponent.h"
 #include "Core/PFEGameMode.h"
+#include "Core/SoundComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
 
 ACheckpoint::ACheckpoint()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	SoundComponent = CreateDefaultSubobject<USoundComponent>(TEXT("SoundComponent"));
 }
 
 void ACheckpoint::ResetCheckpoint()
@@ -31,8 +33,11 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 	{
 		if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
 		{
-			bIsActive = true;
-			UpdateCheckpoint(bIsActive);
+			if (!bIsActive)
+			{
+				bIsActive = true;
+				UpdateCheckpoint(bIsActive);
+			}
 			PFEGameMode->SetCheckpoint(this, GetActorLocation());
 		}
 	}

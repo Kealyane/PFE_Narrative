@@ -26,6 +26,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateCheckpoint(bool InIsActive);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TObjectPtr<class USoundComponent> SoundComponent;
+
 protected:
 	virtual void BeginPlay() override;
 
