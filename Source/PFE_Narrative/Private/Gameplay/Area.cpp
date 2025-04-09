@@ -3,6 +3,7 @@
 
 #include "Gameplay/Area.h"
 
+#include "Core/SoundComponent.h"
 #include "Player/FlameComponent.h"
 #include "Player/PFECharacter.h"
 
@@ -19,12 +20,15 @@ void AArea::BeginPlay()
 
 void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 {
-	UE_LOG(LogTemp, Display, TEXT("AArea::EnterArea"));
+	//UE_LOG(LogTemp, Display, TEXT("AArea::EnterArea"));
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
 		if (bIsOneShot)
 		{
+			if (bIsDecreasingFlame) SoundComponent->PlaySound(ESoundType::AreaPointDown);
+			else SoundComponent->PlaySound(ESoundType::AreaPointUp);
+			
 			float FlameValue = bIsDecreasingFlame ? PointDownValue : PointUpValue;
 			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameValue,
 				DelayBeforeNormalFlame, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
@@ -39,7 +43,7 @@ void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 
 void AArea::ExitArea(AActor* OverlappedActor, AActor* OtherActor)
 {
-	UE_LOG(LogTemp, Display, TEXT("AArea::ExitArea"));
+	//UE_LOG(LogTemp, Display, TEXT("AArea::ExitArea"));
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);

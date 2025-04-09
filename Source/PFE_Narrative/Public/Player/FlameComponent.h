@@ -115,6 +115,9 @@ private:
 	EFlameStatus CurrentFlameStatus;
 	bool bIsDead = false;
 
+	bool bIsPlayingSound = false;
+	bool bIsDownSound = false;
+
 	void CheckDeath();
 	void UpdateProgressBars();
 };

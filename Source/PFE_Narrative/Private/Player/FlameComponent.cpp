@@ -4,6 +4,8 @@
 #include "Player/FlameComponent.h"
 
 #include "Core/PFEGameMode.h"
+#include "Core/SoundComponent.h"
+#include "Gameplay/Area.h"
 #include "Player/PFECharacter.h"
 
 UFlameComponent::UFlameComponent()
@@ -42,6 +44,35 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
 		return;
 	}
+
+	if (!bInIsOneShot)
+	{
+		if (bIsPlayingSound)
+		{
+			if (bIsDownSound && !bDecrease)
+			{
+				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+				bIsDownSound = false;
+			}
+			else if (!bIsDownSound && bDecrease)
+			{
+				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
+				bIsDownSound = true;
+			}
+		}
+		else
+		{
+			bIsPlayingSound = true;
+			if (bDecrease)
+			{
+				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
+			}
+			else
+			{
+				InAreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+			}
+		}
+	}
 	
 	// stop current area effect to apply new one
 	GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
@@ -72,6 +103,10 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 	
 	if (PFECharacter->bIsAlive == false)
 	{
+		for (FAreaEffect AreaElt : Areas)
+		{
+			AreaElt.AreaRef->GetSoundComponent()->StopSound();
+		}
 		Areas.Reset();
 		return;
 	}
@@ -97,6 +132,14 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 		if (!Areas.IsEmpty()) 
 		{			
 			FAreaEffect PreviousArea = Areas.Last();
+
+			if (CurrentArea.bDecrease != PreviousArea.bDecrease)
+			{
+				CurrentArea.AreaRef->GetSoundComponent()->StopSound();
+				if (PreviousArea.bDecrease)
+					PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
+				else PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneUp);
+			}
 			
 			if (PreviousArea.bIsOneShot)
 			{
@@ -111,6 +154,12 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 		
 		if (Areas.IsEmpty() && bHasValidArea) 
 		{
+			if (!CurrentArea.bIsOneShot)
+			{
+				CurrentArea.AreaRef->GetSoundComponent()->StopSound();
+				bIsPlayingSound = false;
+			}
+			
 			if (CurrentFlameValue == 50.f) return;
 
 			float TickInterval = 0.1f;
@@ -221,10 +270,14 @@ void UFlameComponent::CheckDeath()
 {
 	if (PFECharacter->bIsAlive == false)
 	{
+		for (FAreaEffect AreaElt : Areas)
+		{
+			AreaElt.AreaRef->GetSoundComponent()->StopSound();
+		}
+		bIsPlayingSound = false;
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
 		GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
 		Areas.Reset();
-		return;
 	}
 }
 

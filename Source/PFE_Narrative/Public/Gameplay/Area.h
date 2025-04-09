@@ -6,6 +6,7 @@
 #include "PaperSpriteActor.h"
 #include "Area.generated.h"
 
+class USoundComponent;
 /**
  * 
  */
@@ -17,8 +18,16 @@ class PFE_NARRATIVE_API AArea : public APaperSpriteActor
 public:
 	AArea();
 
+	UFUNCTION(BlueprintCallable)
+	void InitSoundComponent(USoundComponent* InSoundComponent)	{ SoundComponent = InSoundComponent; }
+	UFUNCTION()
+	USoundComponent* GetSoundComponent() { return SoundComponent; }
+	
 protected:
+
+	TObjectPtr<USoundComponent> SoundComponent;
 	virtual void BeginPlay() override;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
 		meta = (AllowPrivateAccess = "true", ToolTip = "True if it's a one shot area, the value doesn't not change over time"))
 	bool bIsOneShot = false;
