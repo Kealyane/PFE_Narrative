@@ -360,6 +360,7 @@ void APFECharacter::WallGrabEnd()
 
 void APFECharacter::WallJump()
 {
+	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
 	bBlockHorizontalInput = true;
 
