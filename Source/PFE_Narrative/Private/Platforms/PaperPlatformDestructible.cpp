@@ -3,6 +3,7 @@
 
 #include "Platforms/PaperPlatformDestructible.h"
 
+#include "Core/PFEGameMode.h"
 #include "Core/SoundComponent.h"
 #include "Player/PFECharacter.h"
 
@@ -10,6 +11,12 @@ APaperPlatformDestructible::APaperPlatformDestructible()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bIsDestroyed = false;
+
+	StartPoint = CreateDefaultSubobject<USceneComponent>(TEXT("StartPoint"));
+	StartPoint->SetupAttachment(RootComponent);
+	
+	EndPoint = CreateDefaultSubobject<USceneComponent>(TEXT("EndPoint"));
+	EndPoint->SetupAttachment(RootComponent);
 }
 
 void APaperPlatformDestructible::InitPlatform()
@@ -56,7 +63,7 @@ void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FV
 		
 		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Collision avec le joueur !"));			
+			//UE_LOG(LogTemp, Warning, TEXT("hit"));			
 
 			bIsDestroyed = true;
 			FTimerHandle PlayerOnTimer;
@@ -80,6 +87,8 @@ void APaperPlatformDestructible::OnOverlapBegin(AActor* OverlappedActor, AActor*
 {
 	if (!bIsDestroyed)
 	{
+		bIsDestroyed = true;
+		//UE_LOG(LogTemp, Warning, TEXT("overlap !"));
 		FTimerHandle PlayerOnTimer;
 		FTimerHandle SwitchTimer;
 		
@@ -108,7 +117,44 @@ void APaperPlatformDestructible::SwitchCollisionPreset()
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		CheckPlayerInPlatform();
 		//UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
 	}
 	StateChanged.Broadcast(bIsDestroyed);
+}
+
+void APaperPlatformDestructible::CheckPlayerInPlatform()
+{
+	FVector Start = StartPoint->GetComponentLocation();
+	FVector End = EndPoint->GetComponentLocation();
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.bTraceComplex = false;
+	QueryParams.AddIgnoredActor(this);
+
+	TArray<FHitResult> HitResults;
+
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults,
+		Start,
+		End,
+		FQuat::Identity,
+		ECC_Pawn, 
+		FCollisionShape::MakeSphere(SphereRadius),
+		QueryParams
+	);
+	//DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Green, false, 1.0f);
+	if (bHit)
+	{
+		for (const FHitResult& Hit : HitResults)
+		{
+			if (APFECharacter* HitCharacter = Cast<APFECharacter>(Hit.GetActor()))
+			{
+				if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(HitCharacter->GetGameMode()))
+				{
+					PFEGameMode->LaunchDeathEvent();
+				}
+			}
+		}
+	}
 }
