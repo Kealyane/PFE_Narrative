@@ -7,7 +7,7 @@
 #include "PFEEnums.generated.h"
 
 
-UENUM()
+UENUM(BlueprintType)
 enum class ESoundType : uint8
 {
 	Jump,
@@ -21,6 +21,7 @@ enum class ESoundType : uint8
 	AreaPointUp,
 	AreaZoneDown,
 	AreaZoneUp,
+	SwitchState,
 };
 
 /**
