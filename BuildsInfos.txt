@@ -6,3 +6,4 @@ commit 2c4a8d5 : 20250219 v1.0.0.2
 commit 1e18601 : 20250221 v1.0.0.3
 commit b95cda6 : 20250221 v1.0.0.4
 commit cf64976 : 20250331 v1.0.0.5
+commit 5ea8655 : Soutenance v1.0.0.6
