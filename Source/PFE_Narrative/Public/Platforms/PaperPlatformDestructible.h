@@ -21,6 +21,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDestructionDelegate StateChanged;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection")
+	TObjectPtr<USceneComponent> StartPoint;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Detection")
+	TObjectPtr<USceneComponent> EndPoint;
+
 	void InitPlatform();
 
 	UFUNCTION(BlueprintCallable)
@@ -54,4 +59,9 @@ protected:
 
 private:
 	TObjectPtr<UPrimitiveComponent> PrimitiveComponent;
+
+	UFUNCTION()
+	void CheckPlayerInPlatform();
+
+	float SphereRadius = 30.f;
 };
