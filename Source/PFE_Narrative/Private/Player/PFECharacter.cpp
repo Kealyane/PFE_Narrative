@@ -45,6 +45,9 @@ void APFECharacter::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
 
+	PFEMovementComponent = Cast<UPFECharacterMovementComponent>(GetCharacterMovement());
+	check(PFEMovementComponent);
+
 	bShowDebug = false;
 }
 
@@ -289,25 +292,26 @@ void APFECharacter::JumpEnd(const FInputActionValue& Value)
 
 void APFECharacter::Dash(const FInputActionValue& Value)
 {
-	if (bIsAlive && bCanMove)
-	{
-		bCanDash = bCanDash &&
-					(bIsOnGround ||
-					(!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir) ||
-					!bIsGrabbingWall);
-	
-		if (bCanDash)
-		{
-			SoundComponent->PlaySound(ESoundType::Dash);
-			
-			if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
-			bCanDash = false;
-			bIsDashing = true;
-			DisableGravity();
-			StartDashDelegate.Broadcast();
-		}
-		bIsJumping = false;
-	}
+	PFEMovementComponent->StartDash(FVector(RawMoveInput, 0,0));
+	// if (bIsAlive && bCanMove)
+	// {
+	// 	bCanDash = bCanDash &&
+	// 				(bIsOnGround ||
+	// 				(!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir) ||
+	// 				!bIsGrabbingWall);
+	//
+	// 	if (bCanDash)
+	// 	{
+	// 		SoundComponent->PlaySound(ESoundType::Dash);
+	// 		
+	// 		if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
+	// 		bCanDash = false;
+	// 		bIsDashing = true;
+	// 		DisableGravity();
+	// 		StartDashDelegate.Broadcast();
+	// 	}
+	// 	bIsJumping = false;
+	// }
 }
 
 void APFECharacter::EndDash()

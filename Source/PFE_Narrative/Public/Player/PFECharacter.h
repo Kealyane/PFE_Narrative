@@ -234,6 +234,7 @@ protected:
 
 private:
 	TObjectPtr<APFEGameMode> PFEGameMode;
+	TObjectPtr<UPFECharacterMovementComponent> PFEMovementComponent;
 	int NumberOfKeyPickedUp = 0;
 	bool bIsInReflexionArea;
 	float ReflexionAreaGround;
