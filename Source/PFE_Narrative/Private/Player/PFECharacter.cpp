@@ -80,6 +80,11 @@ void APFECharacter::Tick(float DeltaSeconds)
 		if (bBlockHorizontalInput) PrintOnScreen("Block Horizontal Input");
 		if (MovementComponent->MovementMode == MOVE_Falling) PrintOnScreen("Movement Falling");
 	}
+
+	if (bIsOnGround)
+	{
+		LastTimeOnGround = GetWorld()->GetTimeSeconds();
+	}
 }
 
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -255,35 +260,46 @@ void APFECharacter::MoveEnd(const FInputActionValue& Value)
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
-	if (bIsAlive && bCanMove)
+	LastJumpInputTime = GetWorld()->GetTimeSeconds();
+	
+	const float TimeSinceGrounded = GetWorld()->GetTimeSeconds() - LastTimeOnGround;
+
+	const bool bCanUseCoyoteTime = TimeSinceGrounded <= PFEMovementComponent->GetCoyoteTime();
+
+	if (bIsOnGround || bCanUseCoyoteTime)
 	{
-		if (bIsDashing) return;
-		
-		if (bIsGrabbingWall)
-		{
-			WallGrabEnd();
-			WallJump();
-			return;
-		}
-		
-		if (JumpCount < CurrentMetrix.JumpMaxCount)
-		{
-			bIsJumping = true;
-			JumpDelegate.Broadcast();
-			MovementComponent->SetMovementMode(MOVE_Falling);
-			LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
-			JumpCount++;
-			
-			if (JumpCount == 1)
-			{
-				SoundComponent->PlaySound(ESoundType::Jump);
-			}
-			else if (JumpCount == 2)
-			{
-				SoundComponent->PlaySound(ESoundType::DoubleJump);
-			}
-		}
+		PFEMovementComponent->StartJump();
 	}
+	
+	// if (bIsAlive && bCanMove)
+	// {
+	// 	if (bIsDashing) return;
+	// 	
+	// 	if (bIsGrabbingWall)
+	// 	{
+	// 		WallGrabEnd();
+	// 		WallJump();
+	// 		return;
+	// 	}
+	// 	
+	// 	if (JumpCount < CurrentMetrix.JumpMaxCount)
+	// 	{
+	// 		bIsJumping = true;
+	// 		JumpDelegate.Broadcast();
+	// 		MovementComponent->SetMovementMode(MOVE_Falling);
+	// 		LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
+	// 		JumpCount++;
+	// 		
+	// 		if (JumpCount == 1)
+	// 		{
+	// 			SoundComponent->PlaySound(ESoundType::Jump);
+	// 		}
+	// 		else if (JumpCount == 2)
+	// 		{
+	// 			SoundComponent->PlaySound(ESoundType::DoubleJump);
+	// 		}
+	// 	}
+	// }
 }
 
 void APFECharacter::JumpEnd(const FInputActionValue& Value)
@@ -387,21 +403,43 @@ void APFECharacter::WallJumpReset()
 }
 
 
-void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
-{
-	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
-	
-	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
-	{
-		bIsJumping = false;
-		JumpCount = 0;
+// void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
+// {
+// 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
+// 	
+// 	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
+// 	{
+// 		bIsJumping = false;
+// 		JumpCount = 0;
+//
+// 		const bool bCanUseBuffer = (GetWorld()->GetTimeSeconds() - LastJumpInputTime) <= PFEMovementComponent->GetJumpBuffer();
+//
+// 		if (bCanUseBuffer)
+// 		{
+// 			PrintOnScreen("APFECharacter::OnMovementModeChanged falling to walking -> jump buffer ok");
+// 			PFEMovementComponent->StartJump();
+// 		}
+// 		// if (!bCanDash)
+// 		// {
+// 		// 	FTimerHandle DashCooldownHandle;
+// 		// 	GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
+// 		// 		CurrentMetrix.DashCooldown, false);
+// 		// }
+// 	}
+// }
 
-		if (!bCanDash)
-		{
-			FTimerHandle DashCooldownHandle;
-			GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
-				CurrentMetrix.DashCooldown, false);
-		}
+void APFECharacter::NotifyGround()
+{
+	bIsOnGround = true;
+	bIsJumping = false;
+	JumpCount = 0;
+
+	const bool bCanUseBuffer = (GetWorld()->GetTimeSeconds() - LastJumpInputTime) <= PFEMovementComponent->GetJumpBuffer();
+
+	if (bCanUseBuffer)
+	{
+		PrintOnScreen("APFECharacter::NotifyGround falling to walking -> jump buffer ok");
+		PFEMovementComponent->StartJump();
 	}
 }
 

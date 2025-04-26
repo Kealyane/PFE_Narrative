@@ -20,6 +20,9 @@ enum class EPFEMovementMode : uint8
 };
 
 class APFECharacter;
+/**
+ * 
+ */
 UCLASS()
 class PFE_NARRATIVE_API UPFECharacterMovementComponent : public UCharacterMovementComponent
 {
@@ -27,11 +30,25 @@ class PFE_NARRATIVE_API UPFECharacterMovementComponent : public UCharacterMoveme
 
 public:
 	UPFECharacterMovementComponent();
+	float GetCoyoteTime() const { return CoyoteTime; }
+	float GetJumpBuffer() const { return JumpBuffer; }
+
 protected:
 	TObjectPtr<APFECharacter> PFECharacterOwner;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement")
 	EPFEMovementMode CurrentMovementMode;
+
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Gravity",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Gravity applied through the game"))
+	float GlobalGravityScale;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Fall")
+	float MaxFallSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Fall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier to gravity scale when falling"))
+	float FallGravityMult;
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
@@ -46,6 +63,34 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Smaller value => slide"))
 	float WalkGroundFriction = 8.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Force applied upward"))
+	float JumpForce = 800.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Height of jump"))
+	float JumpHeight = 420.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Max jumps"))
+	int MaxJumpCount = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Time between applying jump force and reaching the apex"))
+	float JumpTimeToApex = 0.4f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Reduce gravity at apex",
+			ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float GravityAtApexMult = 0.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Need to be near 0 (player velocity) at the apex"))
+	float JumpSpeedAtApexThreshold = 0.1f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Grace period for jump",
+		ClampMin = "0.01", ClampMax = "0.5", UIMin = "0.01", UIMax = "0.5"))
+	float CoyoteTime = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Grace period for jump automatically",
+		ClampMin = "0.01", ClampMax = "0.5", UIMin = "0.01", UIMax = "0.5"))
+	float JumpBuffer = 0.15f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Direction of the dash"))
@@ -78,10 +123,15 @@ protected:
 	void InitVariables();	
 
 	void PhysDash(float DeltaTime, int32 Iterations);
+	virtual void PhysFalling(float deltaTime, int32 Iterations) override;
+
+	FVector ActorJumpLocation;
+	
 public:
 	void StartDash(const FVector& InDirection);
 	void StopDash();
 	void ResetDash();
+	void StartJump();
 
 	// DEBUG
 	UPROPERTY(EditAnywhere, Category = "Debug")
@@ -89,4 +139,10 @@ public:
 	UFUNCTION()
 	void ToggleDebugWalkMovement() { bDebugWalkMovement = !bDebugWalkMovement; }
 	void DebugWalkAccel();
+
+	//UPROPERTY(EditAnywhere, Category = "Debug")
+	bool bDebugJumpMovement = true;
+	bool bRecordedApex;
+	FVector ApexLocation;
+	void DebugJump();
 };

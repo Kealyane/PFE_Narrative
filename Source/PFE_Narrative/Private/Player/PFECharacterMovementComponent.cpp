@@ -59,6 +59,24 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 			GetWorld()->GetTimerManager().SetTimer(DashCooldownHandle, this, &UPFECharacterMovementComponent::ResetDash, DashCooldown, false);
 		}
 	}
+	if (PreviousMovementMode == MOVE_Falling && MovementMode == MOVE_Walking)
+	{
+		PFECharacterOwner->NotifyGround();
+
+#if WITH_EDITOR
+		if (bDebugJumpMovement)
+		{
+			FVector LandLocation = PFECharacterOwner->GetActorLocation();
+			const float Distance = FVector::Dist2D(ActorJumpLocation, LandLocation);
+			FString DistanceStr = FString::Printf(TEXT("Jump Distance: %.1f cm"), Distance);
+
+			DrawDebugString(GetWorld(), (ActorJumpLocation + LandLocation) * 0.5f + FVector(0.f, 0.f, 50.f), 
+						DistanceStr,nullptr, FColor::White,	5.f, true);
+			
+			DrawDebugSphere(GetWorld(), LandLocation, 20.f, 12, FColor::Red, false, 5.f);
+		}
+#endif
+	}
 }
 
 void UPFECharacterMovementComponent::InitVariables()
@@ -80,6 +98,46 @@ void UPFECharacterMovementComponent::PhysDash(float DeltaTime, int32 Iterations)
 	if (Hit.IsValidBlockingHit()) StopDash();
 }
 
+// V1
+
+void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
+{
+	Super::PhysFalling(deltaTime, Iterations);
+
+
+	if (Velocity.Z > 0 && Velocity.Z < JumpSpeedAtApexThreshold)
+	{
+		GravityScale = GlobalGravityScale;
+	}
+	else if (FMath::Abs(Velocity.Z) < JumpSpeedAtApexThreshold)
+	{
+		GravityScale = GlobalGravityScale * GravityAtApexMult;
+	}
+	else
+	{
+		GravityScale = GlobalGravityScale * FallGravityMult;
+		Velocity.Z = FMath::Max(Velocity.Z, -MaxFallSpeed);
+	}
+	
+#if WITH_EDITOR
+	if (bDebugJumpMovement)
+	{
+		DrawDebugPoint(GetWorld(), PFECharacterOwner->GetActorLocation(), 5.f, FColor::Yellow, false, 5.f);
+
+		if (!bRecordedApex && Velocity.Z <= 0.f)
+		{
+			DrawDebugSphere(GetWorld(), PFECharacterOwner->GetActorLocation(), 20.f, 12, FColor::Blue, false, 5.0f);
+			ApexLocation = PFECharacterOwner->GetActorLocation();
+			bRecordedApex = true;
+			
+			const float Height = ApexLocation.Z - ActorJumpLocation.Z;
+			FString HeightStr = FString::Printf(TEXT("Jump Height: %.1f cm"), Height);
+			DrawDebugString(GetWorld(), ApexLocation + FVector(20.f, 0.f, 50.f), 
+			HeightStr,nullptr, FColor::White,	5.f, true);
+		}
+	}
+#endif
+}
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 {
 	if (!bCanDash) return;
@@ -109,6 +167,30 @@ void UPFECharacterMovementComponent::ResetDash()
 {
 	bCanDash = true;
 
+void UPFECharacterMovementComponent::StartJump()
+{
+	if (PFECharacterOwner->JumpCount >= MaxJumpCount) return;
+	
+	PFECharacterOwner->JumpCount++;
+
+	PFECharacterOwner->bIsJumping = true;
+
+	Velocity.Z = (2 * JumpHeight) / JumpTimeToApex;
+
+	ApexTimeRemaining = 0.f;
+	PreviousVelocityZ = Velocity.Z;
+
+	SetMovementMode(MOVE_Falling);
+
+#if WITH_EDITOR
+	if (bDebugJumpMovement)
+	{
+		ActorJumpLocation = PFECharacterOwner->GetActorLocation();
+		bRecordedApex = false;
+	}
+#endif
+}
+
 void UPFECharacterMovementComponent::DebugWalkAccel()
 {
 	if (PFECharacterOwner)
@@ -132,4 +214,20 @@ void UPFECharacterMovementComponent::DebugWalkAccel()
 			FString::Printf(TEXT("Speed: %.1f / %.1f"), CurrentSpeed, MaxWalkSpeed),
 			nullptr, FColor::White, 0.f, true);
 	}
+}
+
+void UPFECharacterMovementComponent::DebugJump()
+{
+	//FVector ActorLocation = PFECharacterOwner->GetActorLocation();
+	FVector Up = PFECharacterOwner->GetActorUpVector();
+
+	FVector Start = ActorJumpLocation;
+	FVector EndJump = Start + Up * JumpHeight * 2;
+
+	// Max Speed (RED)
+	DrawDebugLine(GetWorld(), Start, EndJump, FColor::Red, false, -1.f, 0, 2.f);
+
+	DrawDebugString(GetWorld(), Start + FVector(50,0,100),
+	FString::Printf(TEXT("Jump Speed: %.1f"), Velocity.Z),
+	nullptr, FColor::White, 0.f, true);
 }

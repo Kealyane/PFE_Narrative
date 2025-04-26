@@ -131,6 +131,8 @@ public:
 	void InitSoundComponent(USoundComponent* InSoundComponent) { SoundComponent = InSoundComponent; }
 	UFUNCTION(BlueprintCallable)
 	void SwitchMetrixUI(bool bCheckBoxValue);
+	UFUNCTION(BlueprintCallable)
+	void NotifyGround();
 
 	UFUNCTION()
 	APFEGameMode* GetGameMode() const { return PFEGameMode; }
@@ -217,7 +219,8 @@ protected:
 	UFUNCTION()
 	void WallJumpReset();
 	
-	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+	//virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
+
 	
 	void SwitchMetrix(const FCharacterMetrix& NewMetrix);
 	
@@ -245,7 +248,10 @@ private:
 	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
 
 	bool bShowDebug = false;
+	float LastTimeOnGround;
+	float LastJumpInputTime;
 
+	// DEBUG
 public:
 	UFUNCTION(Exec)
 	void ToggleDebugWalkMovement();
