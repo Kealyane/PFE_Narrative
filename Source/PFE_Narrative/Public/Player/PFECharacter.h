@@ -88,6 +88,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bCanDash;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsDashing = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float MoveValue = 0.f;
@@ -168,7 +170,6 @@ protected:
 	
 	// Dash
 	float DashSpeed;
-	bool bCanDash;
 	uint8 DashCountAir = 0;
 
 	// Wall Grab

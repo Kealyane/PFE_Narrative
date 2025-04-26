@@ -50,11 +50,11 @@ void UPFECharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
-
-	if (MovementMode == MOVE_Walking)
+	
+	if (PreviousCustomMode == ((uint8) EPFEMovementMode::PFEMOVE_DASHING) && MovementMode == MOVE_Walking)
 	{
 		DashCountAir = 0;
-		if (!bCanDash)
+		if (!PFECharacterOwner->bCanDash)
 		{
 			GetWorld()->GetTimerManager().SetTimer(DashCooldownHandle, this, &UPFECharacterMovementComponent::ResetDash, DashCooldown, false);
 		}
@@ -140,14 +140,14 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 }
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 {
-	if (!bCanDash) return;
+	if (!PFECharacterOwner->bCanDash) return;
 
 	const bool bIsInAir = !IsMovingOnGround();
 
 	if (bIsInAir && DashCountAir >= MaxDashInAir) return;
 
 	if (bIsInAir) DashCountAir++;
-	else bCanDash = false;
+	else PFECharacterOwner->bCanDash = false;
 
 	PFECharacterOwner->bIsDashing = true;
 	DashDirection = InDirection.GetSafeNormal();
@@ -165,7 +165,8 @@ void UPFECharacterMovementComponent::StopDash()
 
 void UPFECharacterMovementComponent::ResetDash()
 {
-	bCanDash = true;
+	PFECharacterOwner->bCanDash = true;
+}
 
 void UPFECharacterMovementComponent::StartJump()
 {

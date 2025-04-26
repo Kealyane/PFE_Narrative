@@ -110,7 +110,6 @@ protected:
 private:
 
 	// Dash
-	bool bCanDash = true;
 	uint8 DashCountAir = 0;
 	FTimerHandle DashCooldownHandle;
 
