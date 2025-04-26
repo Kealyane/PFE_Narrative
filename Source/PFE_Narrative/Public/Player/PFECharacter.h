@@ -10,6 +10,7 @@ class UFlameComponent;
 class APFEGameMode;
 class UTimelineComponent;
 class UCharacterMovementComponent;
+class UPFECharacterMovementComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -244,6 +245,10 @@ private:
 	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
 
 	bool bShowDebug = false;
+
+public:
+	UFUNCTION(Exec)
+	void ToggleDebugWalkMovement();
 };
 
 

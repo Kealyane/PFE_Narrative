@@ -3,6 +3,8 @@
 
 #include "Player/PFECharacterMovementComponent.h"
 
+#include "Player/PFECharacter.h"
+
 UPFECharacterMovementComponent::UPFECharacterMovementComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -14,7 +16,24 @@ void UPFECharacterMovementComponent::BeginPlay()
 	
 	PFECharacterOwner = Cast<APFECharacter>(GetOwner());
 	check(PFECharacterOwner);
+
+	InitVariables();
 }
+
+void UPFECharacterMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	
+#if WITH_EDITOR
+	if (bDebugWalkMovement)
+	{
+		DebugWalkAccel();
+	}
+#endif
+}
+
+
 void UPFECharacterMovementComponent::PhysCustom(float deltaTime, int32 Iterations)
 {
 	switch ((EPFEMovementMode)CustomMovementMode)
@@ -40,6 +59,15 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 			GetWorld()->GetTimerManager().SetTimer(DashCooldownHandle, this, &UPFECharacterMovementComponent::ResetDash, DashCooldown, false);
 		}
 	}
+}
+
+void UPFECharacterMovementComponent::InitVariables()
+{
+	// WALK
+	MaxWalkSpeed = WalkMaxSpeed;
+	MaxAcceleration = WalkAcceleration;
+	BrakingDecelerationWalking = WalkDeceleration;
+	GroundFriction = WalkGroundFriction;
 }
 
 void UPFECharacterMovementComponent::PhysDash(float DeltaTime, int32 Iterations)
@@ -80,4 +108,28 @@ void UPFECharacterMovementComponent::StopDash()
 void UPFECharacterMovementComponent::ResetDash()
 {
 	bCanDash = true;
+
+void UPFECharacterMovementComponent::DebugWalkAccel()
+{
+	if (PFECharacterOwner)
+	{
+		FVector ActorLocation = PFECharacterOwner->GetActorLocation();
+		FVector Forward = PFECharacterOwner->GetActorForwardVector();
+		
+		float CurrentSpeed = FVector::DotProduct(Velocity, Forward);
+		
+		FVector Start = ActorLocation + FVector(100, 0, 100); 
+		FVector EndCurrent = Start + Forward * CurrentSpeed * 0.1f;
+		FVector EndTarget = Start + Forward * MaxWalkSpeed * 0.1f;
+
+		// Max Speed (RED)
+		DrawDebugLine(GetWorld(), Start, EndTarget, FColor::Red, false, -1.f, 0, 2.f);
+		
+		// Current Speed (GREEN)
+		DrawDebugLine(GetWorld(), Start, EndCurrent, FColor::Green, false, -1.f, 0, 5.f);
+		
+		DrawDebugString(GetWorld(), Start + FVector(100,0,0),
+			FString::Printf(TEXT("Speed: %.1f / %.1f"), CurrentSpeed, MaxWalkSpeed),
+			nullptr, FColor::White, 0.f, true);
+	}
 }

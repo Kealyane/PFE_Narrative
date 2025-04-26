@@ -34,6 +34,19 @@ protected:
 	EPFEMovementMode CurrentMovementMode;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Target speed to reach"))
+	float WalkMaxSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
+		meta = (AllowPrivateAccess = "true", ToolTip = "0 if none, same as MaxWalkSpeed for instant acceleration"))
+	float WalkAcceleration;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
+		meta = (AllowPrivateAccess = "true", ToolTip = "In corelation with ground friction"))
+	float WalkDeceleration;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Smaller value => slide"))
+	float WalkGroundFriction = 8.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Direction of the dash"))
 	FVector DashDirection;
@@ -58,12 +71,22 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	
+	void InitVariables();	
 
 	void PhysDash(float DeltaTime, int32 Iterations);
 public:
 	void StartDash(const FVector& InDirection);
 	void StopDash();
 	void ResetDash();
+
+	// DEBUG
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool bDebugWalkMovement = false;
+	UFUNCTION()
+	void ToggleDebugWalkMovement() { bDebugWalkMovement = !bDebugWalkMovement; }
+	void DebugWalkAccel();
 };

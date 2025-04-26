@@ -14,6 +14,7 @@
 #include "Math/Vector.h"
 #include "Player/FlameComponent.h"
 #include "Core/SoundComponent.h"
+#include "Player/PFECharacterMovementComponent.h"
 
 APFECharacter::APFECharacter()
 {
@@ -137,10 +138,10 @@ void APFECharacter::InitGame()
 	bIsInReflexionArea = false;
 	bBlockHorizontalInput = false;
 
-	if (MovementComponent)
-	{
-		SwitchMetrix(SmallFlamesMetrix);
-	}
+	// if (MovementComponent)
+	// {
+	// 	SwitchMetrix(SmallFlamesMetrix);
+	// }
 	if (FlameComponent)
 	{
 		FlameComponent->InitFlame();
@@ -171,7 +172,7 @@ void APFECharacter::FlipCharacter(float Direction)
 void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
 {
 	MovementComponent = InMovementComponent;
-	SwitchMetrix(SmallFlamesMetrix);
+	//SwitchMetrix(SmallFlamesMetrix);
 }
 
 
@@ -494,3 +495,7 @@ void APFECharacter::PrintOnScreen(const FString& InText)
 	}
 }
 
+void APFECharacter::ToggleDebugWalkMovement()
+{
+	PFEMovementComponent->ToggleDebugWalkMovement();
+}
