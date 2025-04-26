@@ -63,6 +63,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Smaller value => slide"))
 	float WalkGroundFriction = 8.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier applied to acceleration rate in air"))
+			//,ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float AccelInAir;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier applied to deceleration rate in air"))
+			//,ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float DecelInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Force applied upward"))
@@ -118,6 +127,8 @@ protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
+	virtual float GetMaxAcceleration() const override;
+	virtual float GetMaxBrakingDeceleration() const override;
 	
 	void InitVariables();	
 

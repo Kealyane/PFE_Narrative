@@ -79,6 +79,24 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 	}
 }
 
+float UPFECharacterMovementComponent::GetMaxAcceleration() const
+{
+	if (IsFalling())
+	{
+		return AccelInAir;
+	}
+	return Super::GetMaxAcceleration();
+}
+
+float UPFECharacterMovementComponent::GetMaxBrakingDeceleration() const
+{
+	if (IsFalling())
+	{
+		return DecelInAir;
+	}
+	return Super::GetMaxBrakingDeceleration();
+}
+
 void UPFECharacterMovementComponent::InitVariables()
 {
 	// WALK
