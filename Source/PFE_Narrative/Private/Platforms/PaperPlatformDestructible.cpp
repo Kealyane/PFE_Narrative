@@ -112,11 +112,13 @@ void APaperPlatformDestructible::SwitchCollisionPreset()
 	{
 		SoundComponent->PlaySound(ESoundType::PlatformDestructible);
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 		//UE_LOG(LogTemp, Warning, TEXT("Collision Ignore !"));
 	}
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 		CheckPlayerInPlatform();
 		//UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
 	}

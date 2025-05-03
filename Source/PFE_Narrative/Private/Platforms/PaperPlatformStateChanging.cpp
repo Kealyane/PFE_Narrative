@@ -72,10 +72,12 @@ void APaperPlatformStateChanging::SwitchCollider()
 	if (bIsOpen)
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	}
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 		CheckPlayerInPlatform();
 	}
 }
