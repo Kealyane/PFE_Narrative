@@ -54,29 +54,31 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 
 #if WITH_EDITOR
-	switch (MovementMode)
+	if (bDebugStateMovement)
 	{
-	case MOVE_Walking :
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Walking"));
-		break;
-	case MOVE_Falling :
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Falling"));
-		break;
-	case MOVE_Custom:
-		switch ((uint8)CustomMovementMode)
+		switch (MovementMode)
 		{
-			case (uint8)EPFEMovementMode::PFEMOVE_DASHING:
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Dashing"));
+			case MOVE_Walking :
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Walking"));
 				break;
-			case (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB:
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Grab"));
+			case MOVE_Falling :
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Falling"));
 				break;
-			default:
+			case MOVE_Custom:
+				switch ((uint8)CustomMovementMode)
+				{
+					case (uint8)EPFEMovementMode::PFEMOVE_DASHING:
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Dashing"));
+						break;
+					case (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB:
+						GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Grab"));
+						break;
+					default:
+						break;
+				}
 				break;
+			default: break;
 		}
-		break;
-	default:
-		break;
 	}
 #endif
 	
@@ -125,6 +127,40 @@ float UPFECharacterMovementComponent::GetMaxBrakingDeceleration() const
 		return DecelInAir;
 	}
 	return Super::GetMaxBrakingDeceleration();
+}
+
+void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult,
+	bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult) const
+{
+
+	FVector Start = CapsuleLocation;
+	FVector End = Start - FVector(0.f, 0.f, 150.f);
+#if WITH_EDITOR
+	if (bDebugFloorCheck)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Magenta, false, 1.f, 0, 2.f);
+	}
+#endif
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(PFECharacterOwner);
+
+	FHitResult Hit;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, QueryParams);
+
+	if (bHit)
+	{
+		bool bWalkable = IsWalkable(Hit);
+
+		OutFloorResult.bBlockingHit = true;
+		OutFloorResult.FloorDist = (Hit.ImpactPoint - CapsuleLocation).Size();
+		OutFloorResult.LineDist = OutFloorResult.FloorDist;
+		OutFloorResult.bWalkableFloor = bWalkable;
+		OutFloorResult.HitResult = Hit;
+	}
+	else
+	{
+		OutFloorResult.Clear();
+	}
 }
 
 void UPFECharacterMovementComponent::InitVariables()
@@ -232,7 +268,7 @@ void UPFECharacterMovementComponent::StartJump()
 
 	ApexTimeRemaining = 0.f;
 	PreviousVelocityZ = Velocity.Z;
-
+	
 	SetMovementMode(MOVE_Falling);
 
 #if WITH_EDITOR

@@ -27,6 +27,7 @@ class PFE_NARRATIVE_API UPFECharacterMovementComponent : public UCharacterMoveme
 
 public:
 	UPFECharacterMovementComponent();
+	
 	float GetCoyoteTime() const { return CoyoteTime; }
 	float GetJumpBuffer() const { return JumpBuffer; }
 	
@@ -36,6 +37,19 @@ public:
 	float GetWallDistance() const { return WallDetectionDistance; }
 	float GetWallBlockInputDelay() const { return WallJumpBlockInputDelay; }
 	float GetWallDetachDelay() const { return WallDetachDelay; }
+
+	// dash
+	void StartDash(const FVector& InDirection);
+	void StopDash();
+	void ResetDash();
+
+	// jump
+	void StartJump();
+
+	// wall grab and jump
+	void StartWallGrab();
+	void StopWallGrab();
+	void StartWallJump(float InWallNormal);
 
 protected:
 	TObjectPtr<APFECharacter> PFECharacterOwner;
@@ -159,6 +173,7 @@ protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual float GetMaxAcceleration() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
+	virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
 	
 	void InitVariables();	
 
@@ -169,19 +184,7 @@ protected:
 
 	FVector ActorJumpLocation;
 	
-public:
-	// dash
-	void StartDash(const FVector& InDirection);
-	void StopDash();
-	void ResetDash();
-
-	// jump
-	void StartJump();
-
-	// wall grab and jump
-	void StartWallGrab();
-	void StopWallGrab();
-	void StartWallJump(float InWallNormal);
+public:	
 
 	// DEBUG
 	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
@@ -202,4 +205,13 @@ public:
 	bool bDebugWallMovement = true;
 	UFUNCTION()
 	void ToggleDebugWallMovement() { bDebugWallMovement = !bDebugWallMovement; }
+
+	bool bDebugFloorCheck = false;
+	UFUNCTION()
+	void ToggleDebugFloorCheck() { bDebugFloorCheck = !bDebugFloorCheck; }
+
+	bool bDebugStateMovement = false;
+	UFUNCTION()
+	void ToggleDebugStateMovement() { bDebugStateMovement = !bDebugStateMovement; }
+	
 };
