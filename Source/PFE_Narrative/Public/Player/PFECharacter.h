@@ -25,27 +25,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateSmallFlameDelegate, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHighFlameDelegate, float, Percent);
 
-USTRUCT(BlueprintType)
-struct FCharacterMetrix
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Max Walk Speed"))
-	float MoveSpeed = 400.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ToolTip = "Jump Z Velocity"))
-	float JumpForce = 600.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 JumpMaxCount = 2;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashDistance = 1000.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashDurationInSec = 0.2f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 MaxDashInAir = 1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DashCooldown = 0.7f;
-	
-};
 /**
  * 
  */
@@ -61,14 +40,7 @@ public:
 	TObjectPtr<USpringArmComponent> SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TObjectPtr<UCameraComponent> Camera;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
-	FCharacterMetrix SmallFlamesMetrix;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
-	FCharacterMetrix HighFlamesMetrix;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
-	float GravityValue = 2.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Metrix")
-	float WallJumpForce = 600.f;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayBeforeRespawn = 2.f;
 
@@ -132,8 +104,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitSoundComponent(USoundComponent* InSoundComponent) { SoundComponent = InSoundComponent; }
 	UFUNCTION(BlueprintCallable)
-	void SwitchMetrixUI(bool bCheckBoxValue);
-	UFUNCTION(BlueprintCallable)
 	void NotifyGround();
 
 	UFUNCTION()
@@ -154,27 +124,18 @@ public:
 	void SetReflexionArea(bool bIsInside, float ZPos);
 	
 protected:
-
-	TObjectPtr<UCharacterMovementComponent> MovementComponent;
+	
 	TObjectPtr<UCapsuleComponent> CapsuleComponent;
 	TObjectPtr<UFlameComponent> FlameComponent;
 	TObjectPtr<class USoundComponent> SoundComponent;
 	
 	FVector DirectionUp = FVector(0.f, 0.f, 1.f);
 	FVector DirectionRight = FVector(1.f, 0.f, 0.f);
-	FCharacterMetrix CurrentMetrix;
-
-	float PreviousGravity;
 
 	float RawMoveInput = 0.f;
-	
-	// Dash
-	float DashSpeed;
-	uint8 DashCountAir = 0;
 
 	// Wall Grab
-	float DotThreashold = 0.1f;
-	float MoveThreashold = 0.01f;
+	float DotThreshold = 0.1f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
 
@@ -199,17 +160,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
 	void JumpStart(const FInputActionValue& Value);
-	void JumpEnd(const FInputActionValue& Value);
 	void Dash(const FInputActionValue& Value);
-
-	UFUNCTION(BlueprintCallable)
-	void EndDash();
-	UFUNCTION()
-	void ResetDash();
-	UFUNCTION(BlueprintCallable)
-	float GetDashDuration();
-	UFUNCTION(BlueprintCallable)
-	FVector GetDashVelocity();
 
 	UFUNCTION()
 	void WallGrabStart();
@@ -221,16 +172,6 @@ protected:
 	void WallJumpReset();
 	UFUNCTION()
 	bool CheckWall();
-	
-	//virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
-
-	
-	void SwitchMetrix(const FCharacterMetrix& NewMetrix);
-	
-	UFUNCTION(BlueprintCallable)
-	void EnableGravity();
-	UFUNCTION(BlueprintCallable)
-	void DisableGravity();
 
 	UFUNCTION()
 	void LaunchRespawn();

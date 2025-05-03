@@ -193,8 +193,6 @@ void UPFECharacterMovementComponent::PhysWallGrab(float DeltaTime, int32 Iterati
 
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 {
-	if (!PFECharacterOwner->bCanDash) return;
-
 	const bool bIsInAir = !IsMovingOnGround();
 
 	if (bIsInAir && DashCountAir >= MaxDashInAir) return;

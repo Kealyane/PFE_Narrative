@@ -45,9 +45,7 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
-
-	PFEMovementComponent = Cast<UPFECharacterMovementComponent>(GetCharacterMovement());
-	check(PFEMovementComponent);
+	
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -74,45 +72,6 @@ void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 	{
 		bIsNearWall = true;
 		CheckWall();
-// 		FVector Start = GetActorLocation();
-// 		FVector End = Start + GetActorForwardVector() * PFEMovementComponent->GetWallDistance();
-//
-// 		FHitResult HitResult;
-// 		FCollisionQueryParams Params;
-// 		Params.AddIgnoredActor(this);
-//
-// 		//bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
-// 		bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity,
-// 			ECC_Visibility, FCollisionShape::MakeSphere(PFEMovementComponent->GetWallSphereRadius()), Params);
-// 		
-// 		if (bHit)
-// 		{
-// 			float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
-// 			
-// 			if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
-// 			{
-// 				if (HitResult.ImpactNormal.X != MoveValue)
-// 				{
-// #if WITH_EDITOR
-// 					if (PFEMovementComponent->bDebugWallMovement)
-// 					{
-// 						DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, PFEMovementComponent->GetWallSphereRadius(), 12.f, FColor::Green, false, 2.0f);
-// 					}
-// #endif
-// 					bIsNearWall = true;
-// 					WallNormal = HitResult.ImpactNormal;
-// 					LastWallContactTime = GetWorld()->GetTimeSeconds();
-// 				}
-// 			}
-// 		}
-
-		// FColor LineColor = bHit ? FColor::Green : FColor::Red;
-		// DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
-		//
-		// if (bHit)
-		// {
-		// 	DrawDebugPoint(GetWorld(), HitResult.ImpactPoint, 40.0f, FColor::Blue, false, 2.0f);
-		// }
 	}
 }
 
@@ -134,11 +93,7 @@ void APFECharacter::InitGame()
 	bCanDash = true;
 	bIsInReflexionArea = false;
 	bBlockHorizontalInput = false;
-
-	// if (MovementComponent)
-	// {
-	// 	SwitchMetrix(SmallFlamesMetrix);
-	// }
+	
 	if (FlameComponent)
 	{
 		FlameComponent->InitFlame();
@@ -168,8 +123,8 @@ void APFECharacter::FlipCharacter(float Direction)
 
 void APFECharacter::InitMovementComponent(UCharacterMovementComponent* InMovementComponent)
 {
-	MovementComponent = InMovementComponent;
-	//SwitchMetrix(SmallFlamesMetrix);
+	PFEMovementComponent = Cast<UPFECharacterMovementComponent>(InMovementComponent);
+	check(PFEMovementComponent);
 }
 
 
@@ -211,7 +166,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 {
 	RawMoveInput = Value.Get<float>();
 	
-	if (bIsAlive && bCanMove && (!bIsDoingWallJump || MovementComponent->IsFalling()))
+	if (bIsAlive && bCanMove && (!bIsDoingWallJump || PFEMovementComponent->IsFalling()))
 	{
 		MoveValue = bBlockHorizontalInput ? WallNormal.X : RawMoveInput;
 
@@ -254,6 +209,8 @@ void APFECharacter::MoveEnd(const FInputActionValue& Value)
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
+	if (!bIsAlive || !bCanMove) return;
+	
 	bool bIsWallCoyoteTimeValid = (GetWorld()->GetTimeSeconds() - LastWallContactTime) <= PFEMovementComponent->GetWallCoyoteTime();
 
 	if (bIsGrabbingWall || bIsWallCoyoteTimeValid)
@@ -272,99 +229,29 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 
 	if (bIsOnGround || bCanUseCoyoteTime)
 	{
+		JumpDelegate.Broadcast();
 		PFEMovementComponent->StartJump();
+		
+		if (JumpCount == 1)
+		{
+			SoundComponent->PlaySound(ESoundType::Jump);
+		}
+		else if (JumpCount == 2)
+		{
+			SoundComponent->PlaySound(ESoundType::DoubleJump);
+		}
 	}
-	
-	// if (bIsAlive && bCanMove)
-	// {
-	// 	if (bIsDashing) return;
-	// 	
-	// 	if (bIsGrabbingWall)
-	// 	{
-	// 		WallGrabEnd();
-	// 		WallJump();
-	// 		return;
-	// 	}
-	// 	
-	// 	if (JumpCount < CurrentMetrix.JumpMaxCount)
-	// 	{
-	// 		bIsJumping = true;
-	// 		JumpDelegate.Broadcast();
-	// 		MovementComponent->SetMovementMode(MOVE_Falling);
-	// 		LaunchCharacter(DirectionUp * MovementComponent->JumpZVelocity, false, true);
-	// 		JumpCount++;
-	// 		
-	// 		if (JumpCount == 1)
-	// 		{
-	// 			SoundComponent->PlaySound(ESoundType::Jump);
-	// 		}
-	// 		else if (JumpCount == 2)
-	// 		{
-	// 			SoundComponent->PlaySound(ESoundType::DoubleJump);
-	// 		}
-	// 	}
-	// }
-}
-
-void APFECharacter::JumpEnd(const FInputActionValue& Value)
-{
-	StopJumping();
 }
 
 void APFECharacter::Dash(const FInputActionValue& Value)
 {
-	PFEMovementComponent->StartDash(FVector(RawMoveInput, 0,0));
-	// if (bIsAlive && bCanMove)
-	// {
-	// 	bCanDash = bCanDash &&
-	// 				(bIsOnGround ||
-	// 				(!bIsOnGround  && DashCountAir < CurrentMetrix.MaxDashInAir) ||
-	// 				!bIsGrabbingWall);
-	//
-	// 	if (bCanDash)
-	// 	{
-	// 		SoundComponent->PlaySound(ESoundType::Dash);
-	// 		
-	// 		if (!bIsOnGround  && CurrentMetrix.MaxDashInAir < 1) DashCountAir++;
-	// 		bCanDash = false;
-	// 		bIsDashing = true;
-	// 		DisableGravity();
-	// 		StartDashDelegate.Broadcast();
-	// 	}
-	// 	bIsJumping = false;
-	// }
-}
-
-void APFECharacter::EndDash()
-{
-	// BP : enable gravity if not grabbing
+	if (!bIsAlive || !bCanMove) return;
 	
-	float SpeedX = FMath::Min(FMath::Abs(MovementComponent->Velocity.X), CurrentMetrix.MoveSpeed);
-	MovementComponent->Velocity = FVector(SpeedX*MoveValue, 0.f, MovementComponent->Velocity.Z);
-	bIsDashing = false;
-
-	if (bIsOnGround)
+	if (bCanDash)
 	{
-		FTimerHandle DashCooldownHandle;
-		GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
-			CurrentMetrix.DashCooldown, false);
+		PFEMovementComponent->StartDash(FVector(RawMoveInput, 0,0));
+		SoundComponent->PlaySound(ESoundType::Dash);
 	}
-}
-
-void APFECharacter::ResetDash()
-{
-	bCanDash = true;
-	DashCountAir = 0;
-}
-
-float APFECharacter::GetDashDuration()
-{
-	return 1/CurrentMetrix.DashDurationInSec;
-}
-
-FVector APFECharacter::GetDashVelocity()
-{
-	return DirectionRight * MoveValue * CurrentMetrix.DashDistance;
 }
 
 void APFECharacter::WallGrabStart()
@@ -373,8 +260,6 @@ void APFECharacter::WallGrabStart()
 	GrabWallDelegate.Broadcast(true);
 	bIsGrabbingWall = true;
 	PFEMovementComponent->StartWallGrab();
-	// DisableGravity();
-	// PFEMovementComponent->Velocity = FVector::Zero();
 }
 
 void APFECharacter::WallGrabEnd()
@@ -382,7 +267,6 @@ void APFECharacter::WallGrabEnd()
 	GrabWallDelegate.Broadcast(false);
 	bIsGrabbingWall = false;
 	PFEMovementComponent->StopWallGrab();
-	// EnableGravity();
 }
 
 void APFECharacter::WallJump()
@@ -418,8 +302,7 @@ bool APFECharacter::CheckWall()
 	FHitResult HitResult;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
-
-	//bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+	
 	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity,
 		ECC_Visibility, FCollisionShape::MakeSphere(PFEMovementComponent->GetWallSphereRadius()), Params);
 		
@@ -427,7 +310,7 @@ bool APFECharacter::CheckWall()
 	{
 		float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
 			
-		if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
+		if (FMath::Abs(DotValue) < DotThreshold) // is a Wall
 		{
 			if (HitResult.ImpactNormal.X != MoveValue)
 			{
@@ -450,7 +333,6 @@ bool APFECharacter::CheckWall()
 					}
 				}
 				
-				//bIsNearWall = true;
 				WallNormal = HitResult.ImpactNormal;
 				LastWallContactTime = GetWorld()->GetTimeSeconds();
 				return true;
@@ -459,31 +341,6 @@ bool APFECharacter::CheckWall()
 	}
 	return false;
 }
-
-// void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
-// {
-// 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
-// 	
-// 	if (PrevMovementMode == MOVE_Falling && MovementComponent->MovementMode == MOVE_Walking)
-// 	{
-// 		bIsJumping = false;
-// 		JumpCount = 0;
-//
-// 		const bool bCanUseBuffer = (GetWorld()->GetTimeSeconds() - LastJumpInputTime) <= PFEMovementComponent->GetJumpBuffer();
-//
-// 		if (bCanUseBuffer)
-// 		{
-// 			PrintOnScreen("APFECharacter::OnMovementModeChanged falling to walking -> jump buffer ok");
-// 			PFEMovementComponent->StartJump();
-// 		}
-// 		// if (!bCanDash)
-// 		// {
-// 		// 	FTimerHandle DashCooldownHandle;
-// 		// 	GetWorldTimerManager().SetTimer(DashCooldownHandle,	this, &APFECharacter::ResetDash,
-// 		// 		CurrentMetrix.DashCooldown, false);
-// 		// }
-// 	}
-// }
 
 void APFECharacter::NotifyGround()
 {
@@ -498,29 +355,6 @@ void APFECharacter::NotifyGround()
 	{
 		PrintOnScreen("APFECharacter::NotifyGround falling to walking -> jump buffer ok");
 		PFEMovementComponent->StartJump();
-	}
-}
-
-void APFECharacter::SwitchMetrix(const FCharacterMetrix& NewMetrix)
-{
-	CurrentMetrix = NewMetrix;
-	if (MovementComponent)
-	{
-		MovementComponent->MaxWalkSpeed = CurrentMetrix.MoveSpeed;
-		MovementComponent->JumpZVelocity = CurrentMetrix.JumpForce;
-	}
-	DashSpeed = CurrentMetrix.DashDistance / CurrentMetrix.DashDurationInSec;
-}
-
-void APFECharacter::SwitchMetrixUI(bool bCheckBoxValue)
-{
-	if (bCheckBoxValue)
-	{
-		SwitchMetrix(SmallFlamesMetrix);
-	}
-	else
-	{
-		SwitchMetrix(HighFlamesMetrix);
 	}
 }
 
@@ -553,16 +387,6 @@ void APFECharacter::SetReflexionArea(bool bIsInside, float ZPos)
 	{
 		ReflexionPlane->SetHiddenInGame(false);
 	}
-}
-
-void APFECharacter::EnableGravity()
-{
-	MovementComponent->GravityScale = GravityValue;
-}
-
-void APFECharacter::DisableGravity()
-{
-	MovementComponent->GravityScale = 0.f;
 }
 
 void APFECharacter::LaunchRespawn()
