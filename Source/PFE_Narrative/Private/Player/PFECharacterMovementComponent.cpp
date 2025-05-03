@@ -2,7 +2,6 @@
 
 
 #include "Player/PFECharacterMovementComponent.h"
-
 #include "Player/PFECharacter.h"
 
 UPFECharacterMovementComponent::UPFECharacterMovementComponent()
@@ -44,9 +43,6 @@ void UPFECharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 	case EPFEMovementMode::PFEMOVE_WALL_GRAB:
 		PhysWallGrab(deltaTime, Iterations);
 		break;
-	// case EPFEMovementMode::PFEMOVE_WALL_JUMP:
-	// 	PhysWallJump(deltaTime, Iterations);
-	// 	break;
 	default:
 		Super::PhysCustom(deltaTime, Iterations);
 		break;
@@ -75,9 +71,6 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 			case (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB:
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Grab"));
 				break;
-			// case (uint8)EPFEMovementMode::PFEMOVE_WALL_JUMP:
-			// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Jump"));
-			// 	break;
 			default:
 				break;
 		}
@@ -213,6 +206,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	DashDirection = InDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
 
+	// TODO : move to a function if needed to reset dash if interrupted
 	FTimerHandle DashTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::StopDash, DashDurationInSec, false);
 }
@@ -314,7 +308,6 @@ void UPFECharacterMovementComponent::DebugWalkAccel()
 
 void UPFECharacterMovementComponent::DebugJump()
 {
-	//FVector ActorLocation = PFECharacterOwner->GetActorLocation();
 	FVector Up = PFECharacterOwner->GetActorUpVector();
 
 	FVector Start = ActorJumpLocation;

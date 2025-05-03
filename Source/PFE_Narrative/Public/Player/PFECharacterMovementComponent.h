@@ -11,11 +11,8 @@ UENUM(BlueprintType)
 enum class EPFEMovementMode : uint8
 {
 	PFEMOVE_NONE		UMETA(Hidden),
-	// PFEMOVE_JUMP		UMETA(DisplayName="Jump"),
-	// PFEMOVE_DOUBLE_JUMP UMETA(DisplayName="Double Jump"),
 	PFEMOVE_DASHING		UMETA(DisplayName="Dashing"),
 	PFEMOVE_WALL_GRAB	UMETA(DisplayName="Wall Grab"),
-	//PFEMOVE_WALL_JUMP	UMETA(DisplayName="Wall Jump"),
 	PFEMOVE_MAX			UMETA(Hidden),
 };
 
@@ -45,7 +42,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Movement")
 	EPFEMovementMode CurrentMovementMode;
-
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Gravity",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Gravity applied through the game"))
@@ -56,8 +52,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Fall",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier to gravity scale when falling"))
 	float FallGravityMult;
-
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Walk",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Target speed to reach"))
 	float WalkMaxSpeed;
@@ -73,13 +68,11 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier applied to acceleration rate in air"))
-			//,ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
 	float AccelInAir;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier applied to deceleration rate in air"))
-			//,ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
 	float DecelInAir;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Half height of jump"))
 	float JumpHeight = 420.f;
@@ -147,18 +140,21 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall|Detection",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Sphere radius for raytrace"))
 	float WallDetectionSphereRadius = 20.f;
+
 private:
 
 	// Dash
 	uint8 DashCountAir = 0;
 	FTimerHandle DashCooldownHandle;
-
-	// jump
+	
 	float ApexTimeRemaining = 0.f;
 	float PreviousVelocityZ = 0.f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	// override
 	virtual void PhysCustom(float deltaTime, int32 Iterations) override;
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual float GetMaxAcceleration() const override;
@@ -166,6 +162,7 @@ protected:
 	
 	void InitVariables();	
 
+	// custom physics
 	void PhysDash(float DeltaTime, int32 Iterations);
 	virtual void PhysFalling(float deltaTime, int32 Iterations) override;
 	void PhysWallGrab(float DeltaTime, int32 Iterations);
@@ -173,14 +170,19 @@ protected:
 	FVector ActorJumpLocation;
 	
 public:
+	// dash
 	void StartDash(const FVector& InDirection);
 	void StopDash();
 	void ResetDash();
+
+	// jump
 	void StartJump();
 
+	// wall grab and jump
 	void StartWallGrab();
 	void StopWallGrab();
 	void StartWallJump(float InWallNormal);
+
 	// DEBUG
 	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
 	bool bDebugWalkMovement = true;
