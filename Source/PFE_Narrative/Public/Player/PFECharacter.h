@@ -206,6 +206,10 @@ public:
 	void ToggleDebugJumpMovement();
 	UFUNCTION(Exec)
 	void ToggleDebugWallMovement();
+	UFUNCTION(Exec)
+	void ToggleDebugFloorCheck();
+	UFUNCTION(Exec)
+	void ToggleDebugStateMovement();
 };
 
 

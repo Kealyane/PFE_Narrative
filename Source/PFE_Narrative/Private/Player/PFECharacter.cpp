@@ -429,3 +429,13 @@ void APFECharacter::ToggleDebugWallMovement()
 {
 	PFEMovementComponent->ToggleDebugWallMovement();
 }
+
+void APFECharacter::ToggleDebugFloorCheck()
+{
+	PFEMovementComponent->ToggleDebugFloorCheck();
+}
+
+void APFECharacter::ToggleDebugStateMovement()
+{
+	PFEMovementComponent->ToggleDebugStateMovement();
+}
