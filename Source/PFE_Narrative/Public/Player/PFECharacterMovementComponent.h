@@ -81,16 +81,13 @@ protected:
 	float DecelInAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
-		meta = (AllowPrivateAccess = "true", ToolTip = "Force applied upward"))
-	float JumpForce = 800.f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
-		meta = (AllowPrivateAccess = "true", ToolTip = "Height of jump"))
+		meta = (AllowPrivateAccess = "true", ToolTip = "Half height of jump"))
 	float JumpHeight = 420.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Max jumps"))
 	int MaxJumpCount = 2;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
-		meta = (AllowPrivateAccess = "true", ToolTip = "Time between applying jump force and reaching the apex"))
+		meta = (AllowPrivateAccess = "true", ToolTip = "Time to reach the apex"))
 	float JumpTimeToApex = 0.4f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Reduce gravity at apex",
@@ -112,7 +109,7 @@ protected:
 		meta = (AllowPrivateAccess = "true", ToolTip = "Direction of the dash"))
 	FVector DashDirection;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
-		meta = (AllowPrivateAccess = "true", ToolTip = "Distance to dash"))
+		meta = (AllowPrivateAccess = "true", ToolTip = "Distance of the dash"))
 	float DashDistance = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Duration of the dash"))
