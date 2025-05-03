@@ -232,7 +232,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 
 	if (bIsOnGround || bCanUseCoyoteTime)
 	{
-		JumpDelegate.Broadcast();
+		if (JumpCount < 2) JumpDelegate.Broadcast();
 
 		PFEMovementComponent->StartJump();
 		
@@ -363,6 +363,7 @@ void APFECharacter::NotifyGround()
 		UE_LOG(LogTemp, Warning, TEXT("APFECharacter::NotifyGround : active jump buffer "));
 #endif
 		PFEMovementComponent->StartJump();
+		JumpDelegate.Broadcast();
 	}
 }
 
