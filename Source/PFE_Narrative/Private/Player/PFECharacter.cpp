@@ -48,8 +48,6 @@ void APFECharacter::BeginPlay()
 
 	PFEMovementComponent = Cast<UPFECharacterMovementComponent>(GetCharacterMovement());
 	check(PFEMovementComponent);
-
-	bShowDebug = false;
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -63,24 +61,6 @@ void APFECharacter::Tick(float DeltaSeconds)
 		ReflexionPlane->SetRelativeLocation(NewLocation);
 	}
 
-	if (bShowDebug)
-	{
-		if (bIsOnGround) PrintOnScreen("Is On Ground");
-		if (bIsDashing) PrintOnScreen("Is Dashing");
-		if (bIsNearWall) PrintOnScreen("Is Near Wall");
-		 if (bIsNearWall && bCanMove)
-		 {
-		 	UE_LOG(LogTemp, Display, TEXT("velocity %f,%f,%f"), MovementComponent->Velocity.X, MovementComponent->Velocity.Y, MovementComponent->Velocity.Z);
-		 	PrintOnScreen("Can Move near wall");
-		 }
-		if (bIsNearWall && !bCanMove) PrintOnScreen("Can not Move near wall");
-		if (bIsGrabbingWall) PrintOnScreen("Is Grabbing Wall");
-		if (bIsDoingWallJump) PrintOnScreen("Is Doing Wall Jump");
-		if (bIsJumping) PrintOnScreen("Is Jumping");
-		if (bBlockHorizontalInput) PrintOnScreen("Block Horizontal Input");
-		if (MovementComponent->MovementMode == MOVE_Falling) PrintOnScreen("Movement Falling");
-	}
-
 	if (bIsOnGround)
 	{
 		LastTimeOnGround = GetWorld()->GetTimeSeconds();
@@ -92,27 +72,39 @@ void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 {
 	if (OtherActor)
 	{
-		FVector Start = GetActorLocation();
-		FVector End = Start + GetActorForwardVector() * 100.0f;
-
-		FHitResult HitResult;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
-		if (bHit)
-		{
-			float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
-			
-			if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
-			{
-				if (HitResult.ImpactNormal.X != MoveValue)
-				{
-					bIsNearWall = true;
-					WallNormal = HitResult.ImpactNormal;
-				}
-			}
-		}
+		bIsNearWall = true;
+		CheckWall();
+// 		FVector Start = GetActorLocation();
+// 		FVector End = Start + GetActorForwardVector() * PFEMovementComponent->GetWallDistance();
+//
+// 		FHitResult HitResult;
+// 		FCollisionQueryParams Params;
+// 		Params.AddIgnoredActor(this);
+//
+// 		//bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+// 		bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity,
+// 			ECC_Visibility, FCollisionShape::MakeSphere(PFEMovementComponent->GetWallSphereRadius()), Params);
+// 		
+// 		if (bHit)
+// 		{
+// 			float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
+// 			
+// 			if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
+// 			{
+// 				if (HitResult.ImpactNormal.X != MoveValue)
+// 				{
+// #if WITH_EDITOR
+// 					if (PFEMovementComponent->bDebugWallMovement)
+// 					{
+// 						DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, PFEMovementComponent->GetWallSphereRadius(), 12.f, FColor::Green, false, 2.0f);
+// 					}
+// #endif
+// 					bIsNearWall = true;
+// 					WallNormal = HitResult.ImpactNormal;
+// 					LastWallContactTime = GetWorld()->GetTimeSeconds();
+// 				}
+// 			}
+// 		}
 
 		// FColor LineColor = bHit ? FColor::Green : FColor::Red;
 		// DrawDebugLine(GetWorld(), Start, End, LineColor, false, 2.0f, 0, 2.0f);
@@ -227,7 +219,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 		if (!bIsGrabbingWall && bIsNearWall)
 		{
 			// input not blocked and wall normal different from input
-			if (!bBlockHorizontalInput && WallNormal.X != MoveValue)
+			if (!bBlockHorizontalInput && CheckWall() && WallNormal.X != MoveValue)
 			{
 				WallGrabStart();
 			}
@@ -241,7 +233,8 @@ void APFECharacter::Move(const FInputActionValue& Value)
 		{
 			if (bIsGrabbingWall && bIsNearWall && WallNormal.X == MoveValue)
 			{
-				WallGrabEnd();
+				FTimerHandle DetachHandle;
+				GetWorld()->GetTimerManager().SetTimer(DetachHandle, this, &APFECharacter::WallGrabEnd, PFEMovementComponent->GetWallDetachDelay(), false);
 			}
 			FlipCharacter(MoveValue);
 			AddMovementInput(DirectionRight, MoveValue);
@@ -253,13 +246,24 @@ void APFECharacter::MoveEnd(const FInputActionValue& Value)
 {
 	if (bIsGrabbingWall || bIsNearWall)
 	{
-		WallGrabEnd();
+		FTimerHandle DetachHandle;
+		GetWorld()->GetTimerManager().SetTimer(DetachHandle, this, &APFECharacter::WallGrabEnd, PFEMovementComponent->GetWallDetachDelay(), false);
 	}
 }
 
 
 void APFECharacter::JumpStart(const FInputActionValue& Value)
 {
+	bool bIsWallCoyoteTimeValid = (GetWorld()->GetTimeSeconds() - LastWallContactTime) <= PFEMovementComponent->GetWallCoyoteTime();
+
+	if (bIsGrabbingWall || bIsWallCoyoteTimeValid)
+	{
+		WallGrabEnd();
+		WallJump();
+		return;
+	}
+
+	LastWallJumpInputTime = GetWorld()->GetTimeSeconds();
 	LastJumpInputTime = GetWorld()->GetTimeSeconds();
 	
 	const float TimeSinceGrounded = GetWorld()->GetTimeSeconds() - LastTimeOnGround;
@@ -368,31 +372,35 @@ void APFECharacter::WallGrabStart()
 	bIsJumping = false;
 	GrabWallDelegate.Broadcast(true);
 	bIsGrabbingWall = true;
-	DisableGravity();
-	MovementComponent->Velocity = FVector::Zero();
+	PFEMovementComponent->StartWallGrab();
+	// DisableGravity();
+	// PFEMovementComponent->Velocity = FVector::Zero();
 }
 
 void APFECharacter::WallGrabEnd()
 {
 	GrabWallDelegate.Broadcast(false);
 	bIsGrabbingWall = false;
-	EnableGravity();
+	PFEMovementComponent->StopWallGrab();
+	// EnableGravity();
 }
 
 void APFECharacter::WallJump()
 {
+	if (!bHasStartWallJump) bHasStartWallJump = true;
+	
 	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
 	bBlockHorizontalInput = true;
 
-	FVector JumpVelocity = (WallNormal + DirectionUp) * WallJumpForce;
-	MovementComponent->Velocity = JumpVelocity;
+	PFEMovementComponent->StartWallJump(WallNormal.X);
+	
 	MoveValue = WallNormal.X;
 	FlipCharacter(MoveValue);
 	
 	FTimerHandle JumpWallHandle;
 	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
-		0.2f, false);
+		PFEMovementComponent->GetWallBlockInputDelay(), false);
 }
 
 void APFECharacter::WallJumpReset()
@@ -402,6 +410,55 @@ void APFECharacter::WallJumpReset()
 	bBlockHorizontalInput = false;
 }
 
+bool APFECharacter::CheckWall()
+{
+	FVector Start = GetActorLocation();
+	FVector End = Start + GetActorForwardVector() * PFEMovementComponent->GetWallDistance();
+
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	//bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity,
+		ECC_Visibility, FCollisionShape::MakeSphere(PFEMovementComponent->GetWallSphereRadius()), Params);
+		
+	if (bHit)
+	{
+		float DotValue = FVector::DotProduct(HitResult.ImpactNormal, FVector::UpVector);
+			
+		if (FMath::Abs(DotValue) < DotThreashold) // is a Wall
+		{
+			if (HitResult.ImpactNormal.X != MoveValue)
+			{
+#if WITH_EDITOR
+				if (PFEMovementComponent->bDebugWallMovement)
+				{
+					DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, PFEMovementComponent->GetWallSphereRadius(), 12.f, FColor::Green, false, 2.0f);
+				}
+#endif
+				if (bHasStartWallJump)
+				{
+					bool bIsWallInputBufferValid = (GetWorld()->GetTimeSeconds() - LastWallJumpInputTime) <= PFEMovementComponent->GetWallJumpBuffer();
+					bool bIsWallCoyoteTimeValid = (GetWorld()->GetTimeSeconds() - LastWallContactTime) <= PFEMovementComponent->GetWallCoyoteTime();
+					if (bIsWallInputBufferValid && (bIsNearWall || bIsWallCoyoteTimeValid))
+					{
+						WallGrabEnd();
+						WallJump();
+						LastWallJumpInputTime = 0.f;
+						return true;
+					}
+				}
+				
+				//bIsNearWall = true;
+				WallNormal = HitResult.ImpactNormal;
+				LastWallContactTime = GetWorld()->GetTimeSeconds();
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 // void APFECharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 // {
@@ -432,6 +489,7 @@ void APFECharacter::NotifyGround()
 {
 	bIsOnGround = true;
 	bIsJumping = false;
+	bHasStartWallJump = false;
 	JumpCount = 0;
 
 	const bool bCanUseBuffer = (GetWorld()->GetTimeSeconds() - LastJumpInputTime) <= PFEMovementComponent->GetJumpBuffer();

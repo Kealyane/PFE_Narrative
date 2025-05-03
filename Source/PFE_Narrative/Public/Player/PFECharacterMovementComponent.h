@@ -15,7 +15,7 @@ enum class EPFEMovementMode : uint8
 	// PFEMOVE_DOUBLE_JUMP UMETA(DisplayName="Double Jump"),
 	PFEMOVE_DASHING		UMETA(DisplayName="Dashing"),
 	PFEMOVE_WALL_GRAB	UMETA(DisplayName="Wall Grab"),
-	PFEMOVE_WALL_JUMP	UMETA(DisplayName="Wall Jump"),
+	//PFEMOVE_WALL_JUMP	UMETA(DisplayName="Wall Jump"),
 	PFEMOVE_MAX			UMETA(Hidden),
 };
 
@@ -32,6 +32,13 @@ public:
 	UPFECharacterMovementComponent();
 	float GetCoyoteTime() const { return CoyoteTime; }
 	float GetJumpBuffer() const { return JumpBuffer; }
+	
+	float GetWallCoyoteTime() const { return WallCoyoteTime; }
+	float GetWallJumpBuffer() const { return WallInputBuffer; }
+	float GetWallSphereRadius() const { return WallDetectionSphereRadius; }
+	float GetWallDistance() const { return WallDetectionDistance; }
+	float GetWallBlockInputDelay() const { return WallJumpBlockInputDelay; }
+	float GetWallDetachDelay() const { return WallDetachDelay; }
 
 protected:
 	TObjectPtr<APFECharacter> PFECharacterOwner;
@@ -116,12 +123,42 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Dash cooldown"))
 	float DashCooldown = 0.7f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Distance for wall jump"))
+	float WallJumpDistance = 600.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Wall jump duration to reach WallJumpDistance"))
+	float WallJumpTime = 0.8f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Time where player movement is blocked after a wall jump",
+		ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float WallJumpBlockInputDelay;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Time where player still stick to the wall if no input",
+		ClampMin = "0.0", ClampMax = "1.0", UIMin = "0.0", UIMax = "1.0"))
+	float WallDetachDelay = 0.15f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Time to jump after leaving the wall"))
+	float WallCoyoteTime = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Wall buffer"))
+	float WallInputBuffer = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall|Detection",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Distance to check wall"))
+	float WallDetectionDistance = 100.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall|Detection",
+		meta = (AllowPrivateAccess = "true", ToolTip = "Sphere radius for raytrace"))
+	float WallDetectionSphereRadius = 20.f;
 private:
 
 	// Dash
 	uint8 DashCountAir = 0;
 	FTimerHandle DashCooldownHandle;
 
+	// jump
+	float ApexTimeRemaining = 0.f;
+	float PreviousVelocityZ = 0.f;
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -134,6 +171,7 @@ protected:
 
 	void PhysDash(float DeltaTime, int32 Iterations);
 	virtual void PhysFalling(float deltaTime, int32 Iterations) override;
+	void PhysWallGrab(float DeltaTime, int32 Iterations);
 
 	FVector ActorJumpLocation;
 	
@@ -143,6 +181,9 @@ public:
 	void ResetDash();
 	void StartJump();
 
+	void StartWallGrab();
+	void StopWallGrab();
+	void StartWallJump(float InWallNormal);
 	// DEBUG
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool bDebugWalkMovement = false;

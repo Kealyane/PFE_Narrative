@@ -219,6 +219,8 @@ protected:
 	void WallJump();
 	UFUNCTION()
 	void WallJumpReset();
+	UFUNCTION()
+	bool CheckWall();
 	
 	//virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
@@ -247,10 +249,13 @@ private:
 	FVector ReflexionPlaneLocation;
 	FRotator LeftOrientation = FRotator(0.0f, 180.0f, 0.0f);
 	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
+	
+	float LastTimeOnGround = 0.f;
+	float LastJumpInputTime = 0.f;
+	float LastWallContactTime = 0.f;
+	float LastWallJumpInputTime = 0.f;
 
-	bool bShowDebug = false;
-	float LastTimeOnGround;
-	float LastJumpInputTime;
+	bool bHasStartWallJump = false;
 
 	// DEBUG
 public:

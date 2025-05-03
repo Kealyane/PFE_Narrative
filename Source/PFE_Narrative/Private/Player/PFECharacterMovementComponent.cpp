@@ -41,6 +41,12 @@ void UPFECharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 	case EPFEMovementMode::PFEMOVE_DASHING:
 		PhysDash(deltaTime, Iterations);
 		break;
+	case EPFEMovementMode::PFEMOVE_WALL_GRAB:
+		PhysWallGrab(deltaTime, Iterations);
+		break;
+	// case EPFEMovementMode::PFEMOVE_WALL_JUMP:
+	// 	PhysWallJump(deltaTime, Iterations);
+	// 	break;
 	default:
 		Super::PhysCustom(deltaTime, Iterations);
 		break;
@@ -50,6 +56,37 @@ void UPFECharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteration
 void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
+
+#if WITH_EDITOR
+	switch (MovementMode)
+	{
+	case MOVE_Walking :
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Walking"));
+		break;
+	case MOVE_Falling :
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Falling"));
+		break;
+	case MOVE_Custom:
+		switch ((uint8)CustomMovementMode)
+		{
+			case (uint8)EPFEMovementMode::PFEMOVE_DASHING:
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Dashing"));
+				break;
+			case (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB:
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Grab"));
+				break;
+			// case (uint8)EPFEMovementMode::PFEMOVE_WALL_JUMP:
+			// 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Wall Jump"));
+			// 	break;
+			default:
+				break;
+		}
+		break;
+	default:
+		break;
+	}
+#endif
+	
 	
 	if (PreviousCustomMode == ((uint8) EPFEMovementMode::PFEMOVE_DASHING) && MovementMode == MOVE_Walking)
 	{
@@ -122,7 +159,6 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 {
 	Super::PhysFalling(deltaTime, Iterations);
 
-
 	if (Velocity.Z > 0 && Velocity.Z < JumpSpeedAtApexThreshold)
 	{
 		GravityScale = GlobalGravityScale;
@@ -140,7 +176,7 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 #if WITH_EDITOR
 	if (bDebugJumpMovement)
 	{
-		DrawDebugPoint(GetWorld(), PFECharacterOwner->GetActorLocation(), 5.f, FColor::Yellow, false, 5.f);
+		DrawDebugPoint(GetWorld(), PFECharacterOwner->GetActorLocation(), 5.f, FColor::Black, false, 5.f);
 
 		if (!bRecordedApex && Velocity.Z <= 0.f)
 		{
@@ -156,6 +192,12 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 	}
 #endif
 }
+
+void UPFECharacterMovementComponent::PhysWallGrab(float DeltaTime, int32 Iterations)
+{
+	Velocity = FVector::ZeroVector;
+}
+
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 {
 	if (!PFECharacterOwner->bCanDash) return;
@@ -206,6 +248,41 @@ void UPFECharacterMovementComponent::StartJump()
 	{
 		ActorJumpLocation = PFECharacterOwner->GetActorLocation();
 		bRecordedApex = false;
+	}
+#endif
+}
+
+void UPFECharacterMovementComponent::StartWallGrab()
+{
+	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
+	GravityScale = 0.f;
+}
+
+void UPFECharacterMovementComponent::StopWallGrab()
+{
+	SetMovementMode(MOVE_Falling);
+	GravityScale = GlobalGravityScale;
+}
+
+void UPFECharacterMovementComponent::StartWallJump(float InWallNormal)
+{
+	Velocity.X = InWallNormal * WallJumpDistance / WallJumpTime;
+	Velocity.Z = 980 * GravityScale * WallJumpTime;
+	
+#if WITH_EDITOR
+	if (bDebugWallMovement)
+	{
+		FVector StartLocation = GetActorLocation();
+		FVector SimulatedVelocity = Velocity;
+
+		for (int32 i = 0; i < 7; ++i)
+		{
+			FVector NextLocation = StartLocation + SimulatedVelocity * 0.05f;
+			DrawDebugLine(GetWorld(), StartLocation, NextLocation, FColor::Yellow, false, 2.0f, 0, 4.0f);
+    
+			SimulatedVelocity += FVector(0.f, 0.f, -980.f) * 0.05f; 
+			StartLocation = NextLocation;
+		}
 	}
 #endif
 }
