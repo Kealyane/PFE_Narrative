@@ -595,3 +595,13 @@ void APFECharacter::ToggleDebugWalkMovement()
 {
 	PFEMovementComponent->ToggleDebugWalkMovement();
 }
+
+void APFECharacter::ToggleDebugJumpMovement()
+{
+	PFEMovementComponent->ToggleDebugJumpMovement();
+}
+
+void APFECharacter::ToggleDebugWallMovement()
+{
+	PFEMovementComponent->ToggleDebugWallMovement();
+}

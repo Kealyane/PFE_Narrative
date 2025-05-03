@@ -182,15 +182,22 @@ public:
 	void StopWallGrab();
 	void StartWallJump(float InWallNormal);
 	// DEBUG
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	bool bDebugWalkMovement = false;
+	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
+	bool bDebugWalkMovement = true;
 	UFUNCTION()
 	void ToggleDebugWalkMovement() { bDebugWalkMovement = !bDebugWalkMovement; }
 	void DebugWalkAccel();
 
-	//UPROPERTY(EditAnywhere, Category = "Debug")
+	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
 	bool bDebugJumpMovement = true;
+	UFUNCTION()
+	void ToggleDebugJumpMovement() { bDebugJumpMovement = !bDebugJumpMovement; }
 	bool bRecordedApex;
 	FVector ApexLocation;
 	void DebugJump();
+
+	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
+	bool bDebugWallMovement = true;
+	UFUNCTION()
+	void ToggleDebugWallMovement() { bDebugWallMovement = !bDebugWallMovement; }
 };

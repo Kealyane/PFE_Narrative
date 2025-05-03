@@ -261,6 +261,10 @@ private:
 public:
 	UFUNCTION(Exec)
 	void ToggleDebugWalkMovement();
+	UFUNCTION(Exec)
+	void ToggleDebugJumpMovement();
+	UFUNCTION(Exec)
+	void ToggleDebugWallMovement();
 };
 
 
