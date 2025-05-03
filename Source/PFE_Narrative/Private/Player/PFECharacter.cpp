@@ -93,6 +93,9 @@ void APFECharacter::InitGame()
 	bCanDash = true;
 	bIsInReflexionArea = false;
 	bBlockHorizontalInput = false;
+	bIsJumping = false;
+
+	PFEMovementComponent->ResetVariables();
 	
 	if (FlameComponent)
 	{
@@ -230,6 +233,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 	if (bIsOnGround || bCanUseCoyoteTime)
 	{
 		JumpDelegate.Broadcast();
+
 		PFEMovementComponent->StartJump();
 		
 		if (JumpCount == 1)

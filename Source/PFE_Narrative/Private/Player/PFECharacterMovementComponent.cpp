@@ -315,6 +315,18 @@ void UPFECharacterMovementComponent::StartWallJump(float InWallNormal)
 #endif
 }
 
+void UPFECharacterMovementComponent::ResetVariables()
+{
+	DashCountAir = 0;
+	GetWorld()->GetTimerManager().ClearTimer(DashCooldownHandle);
+
+#if WITH_EDITOR
+	bRecordedApex = false;
+	ApexTimeRemaining = 0.f;
+	PreviousVelocityZ = 0.f;
+#endif
+}
+
 void UPFECharacterMovementComponent::DebugWalkAccel()
 {
 	if (PFECharacterOwner)

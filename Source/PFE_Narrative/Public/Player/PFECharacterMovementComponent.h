@@ -51,6 +51,8 @@ public:
 	void StopWallGrab();
 	void StartWallJump(float InWallNormal);
 
+	void ResetVariables();
+
 protected:
 	TObjectPtr<APFECharacter> PFECharacterOwner;
 
