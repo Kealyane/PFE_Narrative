@@ -182,8 +182,6 @@ void UPFECharacterMovementComponent::PhysDash(float DeltaTime, int32 Iterations)
 	if (Hit.IsValidBlockingHit()) StopDash();
 }
 
-// V1
-
 void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
 {
 	Super::PhysFalling(deltaTime, Iterations);
@@ -229,9 +227,13 @@ void UPFECharacterMovementComponent::PhysWallGrab(float DeltaTime, int32 Iterati
 
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 {
-	const bool bIsInAir = !IsMovingOnGround();
+	const bool bIsInAir = !IsWalking();
 
-	if (bIsInAir && DashCountAir >= MaxDashInAir) return;
+	if (bIsInAir && DashCountAir >= MaxDashInAir)
+	{
+		PFECharacterOwner->bCanDash = false;
+		return;
+	}
 
 	if (bIsInAir) DashCountAir++;
 	else PFECharacterOwner->bCanDash = false;
@@ -239,8 +241,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	PFECharacterOwner->bIsDashing = true;
 	DashDirection = InDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
-
-	// TODO : move to a function if needed to reset dash if interrupted
+	
 	FTimerHandle DashTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::StopDash, DashDurationInSec, false);
 }
@@ -248,12 +249,27 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 void UPFECharacterMovementComponent::StopDash()
 {
 	PFECharacterOwner->bIsDashing = false;
-	SetMovementMode(MOVE_Walking);
+	
+	if (IsMovingOnGround() || MovementMode == MOVE_Walking)
+	{
+		SetMovementMode(MOVE_Walking);
+	}
+	else
+	{
+		SetMovementMode(MOVE_Falling);
+	}
 }
 
 void UPFECharacterMovementComponent::ResetDash()
 {
 	PFECharacterOwner->bCanDash = true;
+	DashCountAir = 0;
+}
+
+void UPFECharacterMovementComponent::StartTimerResetDash()
+{
+	FTimerHandle DashTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::ResetDash, DashCooldown, false);
 }
 
 void UPFECharacterMovementComponent::StartJump()

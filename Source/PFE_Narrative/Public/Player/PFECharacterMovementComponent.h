@@ -41,7 +41,8 @@ public:
 	// dash
 	void StartDash(const FVector& InDirection);
 	void StopDash();
-	void ResetDash();
+
+	void StartTimerResetDash();
 
 	// jump
 	void StartJump();
@@ -183,6 +184,8 @@ protected:
 	void PhysDash(float DeltaTime, int32 Iterations);
 	virtual void PhysFalling(float deltaTime, int32 Iterations) override;
 	void PhysWallGrab(float DeltaTime, int32 Iterations);
+
+	void ResetDash();
 
 	FVector ActorJumpLocation;
 	

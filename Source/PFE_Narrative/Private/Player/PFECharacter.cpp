@@ -353,11 +353,15 @@ void APFECharacter::NotifyGround()
 	bHasStartWallJump = false;
 	JumpCount = 0;
 
+	PFEMovementComponent->StartTimerResetDash();
+
 	const bool bCanUseBuffer = (GetWorld()->GetTimeSeconds() - LastJumpInputTime) <= PFEMovementComponent->GetJumpBuffer();
 
 	if (bCanUseBuffer)
 	{
-		PrintOnScreen("APFECharacter::NotifyGround falling to walking -> jump buffer ok");
+#if WITH_EDITOR
+		UE_LOG(LogTemp, Warning, TEXT("APFECharacter::NotifyGround : active jump buffer "));
+#endif
 		PFEMovementComponent->StartJump();
 	}
 }
