@@ -367,18 +367,3 @@ void UPFECharacterMovementComponent::DebugWalkAccel()
 			nullptr, FColor::White, 0.f, true);
 	}
 }
-
-void UPFECharacterMovementComponent::DebugJump()
-{
-	FVector Up = PFECharacterOwner->GetActorUpVector();
-
-	FVector Start = ActorJumpLocation;
-	FVector EndJump = Start + Up * JumpHeight * 2;
-
-	// Max Speed (RED)
-	DrawDebugLine(GetWorld(), Start, EndJump, FColor::Red, false, -1.f, 0, 2.f);
-
-	DrawDebugString(GetWorld(), Start + FVector(50,0,100),
-	FString::Printf(TEXT("Jump Speed: %.1f"), Velocity.Z),
-	nullptr, FColor::White, 0.f, true);
-}

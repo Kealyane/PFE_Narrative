@@ -204,7 +204,6 @@ public:
 	void ToggleDebugJumpMovement() { bDebugJumpMovement = !bDebugJumpMovement; }
 	bool bRecordedApex;
 	FVector ApexLocation;
-	void DebugJump();
 
 	UPROPERTY(EditAnywhere, Category = "Movement|Debug")
 	bool bDebugWallMovement = true;
