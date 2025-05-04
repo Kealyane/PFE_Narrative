@@ -138,6 +138,7 @@ void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, F
 #if WITH_EDITOR
 	if (bDebugFloorCheck)
 	{
+		DrawDebugSphere(GetWorld(), End, 30.f, 6, FColor::Magenta, false, 5.f);
 		DrawDebugLine(GetWorld(), Start, End, FColor::Magenta, false, 1.f, 0, 2.f);
 	}
 #endif
@@ -145,7 +146,8 @@ void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, F
 	QueryParams.AddIgnoredActor(PFECharacterOwner);
 
 	FHitResult Hit;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, QueryParams);
+	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity,
+	ECC_Visibility, FCollisionShape::MakeSphere(30.f), QueryParams);
 
 	if (bHit)
 	{
