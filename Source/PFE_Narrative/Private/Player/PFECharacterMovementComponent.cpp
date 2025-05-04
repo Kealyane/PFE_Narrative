@@ -241,6 +241,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	else PFECharacterOwner->bCanDash = false;
 
 	PFECharacterOwner->bIsDashing = true;
+	PFECharacterOwner->bIsJumping = false;
 	DashDirection = InDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
 	
