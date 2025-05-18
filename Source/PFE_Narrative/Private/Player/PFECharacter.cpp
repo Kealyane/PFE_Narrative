@@ -286,13 +286,17 @@ void APFECharacter::WallJump()
 	
 	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
-	bBlockHorizontalInput = true;
+	LockInput();
 
 	PFEMovementComponent->StartWallJump(WallNormal.X);
 	
 	MoveValue = WallNormal.X;
 	FlipCharacter(MoveValue);
-	
+}
+
+void APFECharacter::LockInput()
+{
+	bBlockHorizontalInput = true;
 	FTimerHandle JumpWallHandle;
 	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
 		PFEMovementComponent->GetWallBlockInputDelay(), false);

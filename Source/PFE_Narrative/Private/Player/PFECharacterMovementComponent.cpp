@@ -251,10 +251,28 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 
 	if (bIsInAir) DashCountAir++;
 	else PFECharacterOwner->bCanDash = false;
-
+	
+	if (PFECharacterOwner->GetHasStartWallJump())
+	{
+		DashDirection = PFECharacterOwner->GetWallNormal();
+	}
+	else if (CustomMovementMode == (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB)
+	{
+		DashDirection = PFECharacterOwner->GetWallNormal();
+		PFECharacterOwner->bIsGrabbingWall = false;
+		StopWallGrab();
+		PFECharacterOwner->LockInput();
+		PFECharacterOwner->FlipCharacter(DashDirection.X);
+	}
+	else
+	{
+		DashDirection = InDirection;
+	}
+	
+	
 	PFECharacterOwner->bIsDashing = true;
 	PFECharacterOwner->bIsJumping = false;
-	DashDirection = InDirection.GetSafeNormal();
+	DashDirection = DashDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
 	
 	FTimerHandle DashTimerHandle;

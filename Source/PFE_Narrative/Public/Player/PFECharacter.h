@@ -116,6 +116,11 @@ public:
 
 	UFUNCTION()
 	void SetReflexionArea(bool bIsInside, float ZPos);
+
+	FVector GetWallNormal() const { return WallNormal; }
+	bool GetHasStartWallJump() const { return bHasStartWallJump; }
+	void LockInput();
+	void FlipCharacter(float Direction);
 	
 protected:
 	
@@ -148,8 +153,6 @@ protected:
 	
 	void InitGame();
 	void InitGameMode();
-
-	void FlipCharacter(float Direction);
 	
 	void Move(const FInputActionValue& Value);
 	void MoveEnd(const FInputActionValue& Value);
