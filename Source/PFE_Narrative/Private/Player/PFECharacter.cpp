@@ -97,6 +97,8 @@ void APFECharacter::InitGame()
 	bIsInReflexionArea = false;
 	bBlockHorizontalInput = false;
 	bIsJumping = false;
+	bIsNearWall = false;
+	bIsGrabbingWall = false;
 
 	PFEMovementComponent->ResetVariables();
 	
@@ -233,7 +235,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 
 	const bool bCanUseCoyoteTime = TimeSinceGrounded <= PFEMovementComponent->GetCoyoteTime();
 
-	if (bIsOnGround || bCanUseCoyoteTime)
+	if (!bIsOnGround || bCanUseCoyoteTime)
 	{
 		if (JumpCount < 2) JumpDelegate.Broadcast();
 

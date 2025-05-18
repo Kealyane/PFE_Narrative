@@ -109,6 +109,18 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 		}
 #endif
 	}
+	if (PFECharacterOwner)
+	{
+		if (MovementMode == MOVE_Falling)
+		{
+			PFECharacterOwner->bIsOnGround = false;
+		}
+		if (MovementMode == MOVE_Walking)
+		{
+			PFECharacterOwner->bIsOnGround = true;
+		}
+		
+	}
 }
 
 float UPFECharacterMovementComponent::GetMaxAcceleration() const
