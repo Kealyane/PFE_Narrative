@@ -18,8 +18,6 @@ class UInputAction;
 class UInputComponent;
 struct FInputActionValue;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStartDashDelegate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGrabWallDelegate, bool, bIsTouching);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateSmallFlameDelegate, float, Percent);
@@ -78,11 +76,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bBlockHorizontalInput = false;
-
-	UPROPERTY(BlueprintAssignable)
-	FStartDashDelegate StartDashDelegate;
-	UPROPERTY(BlueprintAssignable)
-	FGrabWallDelegate GrabWallDelegate;
+	
 	UPROPERTY(BlueprintAssignable)
 	FJumpDelegate JumpDelegate;
 	UPROPERTY(BlueprintAssignable)

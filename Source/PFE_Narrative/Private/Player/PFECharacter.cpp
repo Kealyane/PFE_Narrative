@@ -266,14 +266,12 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 void APFECharacter::WallGrabStart()
 {
 	bIsJumping = false;
-	GrabWallDelegate.Broadcast(true);
 	bIsGrabbingWall = true;
 	PFEMovementComponent->StartWallGrab();
 }
 
 void APFECharacter::WallGrabEnd()
 {
-	GrabWallDelegate.Broadcast(false);
 	bIsGrabbingWall = false;
 	PFEMovementComponent->StopWallGrab();
 }
