@@ -41,7 +41,6 @@ public:
 	// dash
 	void StartDash(const FVector& InDirection);
 	void StopDash();
-
 	void StartTimerResetDash();
 
 	// jump
@@ -163,6 +162,7 @@ private:
 	// Dash
 	uint8 DashCountAir = 0;
 	FTimerHandle DashCooldownHandle;
+	bool bDashOnGround = false;
 	
 	float ApexTimeRemaining = 0.f;
 	float PreviousVelocityZ = 0.f;

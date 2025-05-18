@@ -237,6 +237,7 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 void UPFECharacterMovementComponent::PhysWallGrab(float DeltaTime, int32 Iterations)
 {
 	Velocity = FVector::ZeroVector;
+	GravityScale = 0.f;
 }
 
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
@@ -245,12 +246,15 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 
 	if (bIsInAir && DashCountAir >= MaxDashInAir)
 	{
+		PFECharacterOwner->bIsOnGround = false;
 		PFECharacterOwner->bCanDash = false;
 		return;
 	}
 
 	if (bIsInAir) DashCountAir++;
 	else PFECharacterOwner->bCanDash = false;
+
+	bDashOnGround = !bIsInAir;
 	
 	if (CustomMovementMode == (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB)
 	{
@@ -270,6 +274,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	PFECharacterOwner->bIsJumping = false;
 	DashDirection = DashDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
+	PFECharacterOwner->bIsOnGround = true;
 	
 	FTimerHandle DashTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::StopDash, DashDurationInSec, false);
@@ -278,15 +283,10 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 void UPFECharacterMovementComponent::StopDash()
 {
 	PFECharacterOwner->bIsDashing = false;
-	
-	if (IsMovingOnGround() || MovementMode == MOVE_Walking)
-	{
-		SetMovementMode(MOVE_Walking);
-	}
-	else
-	{
-		SetMovementMode(MOVE_Falling);
-	}
+
+	if (bDashOnGround) SetMovementMode(MOVE_Walking);
+	else if (PFECharacterOwner->bIsGrabbingWall) SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
+	else SetMovementMode(MOVE_Falling);
 }
 
 void UPFECharacterMovementComponent::ResetDash()

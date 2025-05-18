@@ -265,10 +265,8 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 
 void APFECharacter::WallGrabStart()
 {
-	if (PFEMovementComponent->IsWalking())
-	{
-		return;
-	}
+	if (bIsOnGround) return;
+	
 	bIsJumping = false;
 	bIsGrabbingWall = true;
 	PFEMovementComponent->StartWallGrab();
