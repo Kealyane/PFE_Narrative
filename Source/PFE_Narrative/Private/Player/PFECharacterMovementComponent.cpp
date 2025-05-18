@@ -252,11 +252,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	if (bIsInAir) DashCountAir++;
 	else PFECharacterOwner->bCanDash = false;
 	
-	if (PFECharacterOwner->GetHasStartWallJump())
-	{
-		DashDirection = PFECharacterOwner->GetWallNormal();
-	}
-	else if (CustomMovementMode == (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB)
+	if (CustomMovementMode == (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB)
 	{
 		DashDirection = PFECharacterOwner->GetWallNormal();
 		PFECharacterOwner->bIsGrabbingWall = false;
