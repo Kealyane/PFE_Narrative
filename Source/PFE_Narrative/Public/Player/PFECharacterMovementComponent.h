@@ -176,7 +176,7 @@ protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual float GetMaxAcceleration() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
-	virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
+	//virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
 	
 	void InitVariables();	
 

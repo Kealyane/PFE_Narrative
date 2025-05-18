@@ -68,7 +68,7 @@ void APFECharacter::Tick(float DeltaSeconds)
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
+	if (OtherActor && OtherActor != this)
 	{
 		bIsNearWall = true;
 		CheckWall();
@@ -78,10 +78,13 @@ void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 void APFECharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (bIsNearWall || bIsGrabbingWall)
+	if (bIsNearWall)
 	{
 		bIsNearWall = false;
-		WallGrabEnd();
+		if (bIsGrabbingWall)
+		{
+			WallGrabEnd();
+		}
 	}
 }
 
@@ -202,7 +205,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 
 void APFECharacter::MoveEnd(const FInputActionValue& Value)
 {
-	if (bIsGrabbingWall || bIsNearWall)
+	if (bIsGrabbingWall)
 	{
 		FTimerHandle DetachHandle;
 		GetWorld()->GetTimerManager().SetTimer(DetachHandle, this, &APFECharacter::WallGrabEnd, PFEMovementComponent->GetWallDetachDelay(), false);
