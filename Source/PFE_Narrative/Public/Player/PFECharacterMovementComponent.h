@@ -41,7 +41,6 @@ public:
 	// dash
 	void StartDash(const FVector& InDirection);
 	void StopDash();
-
 	void StartTimerResetDash();
 
 	// jump
@@ -163,6 +162,7 @@ private:
 	// Dash
 	uint8 DashCountAir = 0;
 	FTimerHandle DashCooldownHandle;
+	bool bDashOnGround = false;
 	
 	float ApexTimeRemaining = 0.f;
 	float PreviousVelocityZ = 0.f;
@@ -176,7 +176,7 @@ protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual float GetMaxAcceleration() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
-	virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
+	//virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
 	
 	void InitVariables();	
 

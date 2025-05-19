@@ -109,6 +109,18 @@ void UPFECharacterMovementComponent::OnMovementModeChanged(EMovementMode Previou
 		}
 #endif
 	}
+	if (PFECharacterOwner)
+	{
+		if (MovementMode == MOVE_Falling)
+		{
+			PFECharacterOwner->bIsOnGround = false;
+		}
+		if (MovementMode == MOVE_Walking)
+		{
+			PFECharacterOwner->bIsOnGround = true;
+		}
+		
+	}
 }
 
 float UPFECharacterMovementComponent::GetMaxAcceleration() const
@@ -129,41 +141,41 @@ float UPFECharacterMovementComponent::GetMaxBrakingDeceleration() const
 	return Super::GetMaxBrakingDeceleration();
 }
 
-void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult,
-	bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult) const
-{
-
-	FVector Start = CapsuleLocation;
-	FVector End = Start - FVector(0.f, 0.f, 150.f);
-#if WITH_EDITOR
-	if (bDebugFloorCheck)
-	{
-		DrawDebugSphere(GetWorld(), End, 30.f, 6, FColor::Magenta, false, 5.f);
-		DrawDebugLine(GetWorld(), Start, End, FColor::Magenta, false, 1.f, 0, 2.f);
-	}
-#endif
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(PFECharacterOwner);
-
-	FHitResult Hit;
-	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity,
-	ECC_Visibility, FCollisionShape::MakeSphere(30.f), QueryParams);
-
-	if (bHit)
-	{
-		bool bWalkable = IsWalkable(Hit);
-
-		OutFloorResult.bBlockingHit = true;
-		OutFloorResult.FloorDist = (Hit.ImpactPoint - CapsuleLocation).Size();
-		OutFloorResult.LineDist = OutFloorResult.FloorDist;
-		OutFloorResult.bWalkableFloor = bWalkable;
-		OutFloorResult.HitResult = Hit;
-	}
-	else
-	{
-		OutFloorResult.Clear();
-	}
-}
+// void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult,
+// 	bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult) const
+// {
+//
+// 	FVector Start = CapsuleLocation;
+// 	FVector End = Start - FVector(0.f, 0.f, 150.f);
+// #if WITH_EDITOR
+// 	if (bDebugFloorCheck)
+// 	{
+// 		DrawDebugSphere(GetWorld(), End, 30.f, 6, FColor::Magenta, false, 5.f);
+// 		DrawDebugLine(GetWorld(), Start, End, FColor::Magenta, false, 1.f, 0, 2.f);
+// 	}
+// #endif
+// 	FCollisionQueryParams QueryParams;
+// 	QueryParams.AddIgnoredActor(PFECharacterOwner);
+//
+// 	FHitResult Hit;
+// 	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity,
+// 	ECC_Visibility, FCollisionShape::MakeSphere(30.f), QueryParams);
+//
+// 	if (bHit)
+// 	{
+// 		bool bWalkable = IsWalkable(Hit);
+//
+// 		OutFloorResult.bBlockingHit = true;
+// 		OutFloorResult.FloorDist = (Hit.ImpactPoint - CapsuleLocation).Size();
+// 		OutFloorResult.LineDist = OutFloorResult.FloorDist;
+// 		OutFloorResult.bWalkableFloor = bWalkable;
+// 		OutFloorResult.HitResult = Hit;
+// 	}
+// 	else
+// 	{
+// 		OutFloorResult.Clear();
+// 	}
+// }
 
 void UPFECharacterMovementComponent::InitVariables()
 {
@@ -225,6 +237,7 @@ void UPFECharacterMovementComponent::PhysFalling(float deltaTime, int32 Iteratio
 void UPFECharacterMovementComponent::PhysWallGrab(float DeltaTime, int32 Iterations)
 {
 	Velocity = FVector::ZeroVector;
+	GravityScale = 0.f;
 }
 
 void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
@@ -233,6 +246,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 
 	if (bIsInAir && DashCountAir >= MaxDashInAir)
 	{
+		PFECharacterOwner->bIsOnGround = false;
 		PFECharacterOwner->bCanDash = false;
 		return;
 	}
@@ -240,10 +254,27 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	if (bIsInAir) DashCountAir++;
 	else PFECharacterOwner->bCanDash = false;
 
+	bDashOnGround = !bIsInAir;
+	
+	if (CustomMovementMode == (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB)
+	{
+		DashDirection = PFECharacterOwner->GetWallNormal();
+		PFECharacterOwner->bIsGrabbingWall = false;
+		StopWallGrab();
+		PFECharacterOwner->LockInput();
+		PFECharacterOwner->FlipCharacter(DashDirection.X);
+	}
+	else
+	{
+		DashDirection = InDirection;
+	}
+	
+	
 	PFECharacterOwner->bIsDashing = true;
 	PFECharacterOwner->bIsJumping = false;
-	DashDirection = InDirection.GetSafeNormal();
+	DashDirection = DashDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
+	PFECharacterOwner->bIsOnGround = true;
 	
 	FTimerHandle DashTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::StopDash, DashDurationInSec, false);
@@ -252,15 +283,10 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 void UPFECharacterMovementComponent::StopDash()
 {
 	PFECharacterOwner->bIsDashing = false;
-	
-	if (IsMovingOnGround() || MovementMode == MOVE_Walking)
-	{
-		SetMovementMode(MOVE_Walking);
-	}
-	else
-	{
-		SetMovementMode(MOVE_Falling);
-	}
+
+	if (bDashOnGround) SetMovementMode(MOVE_Walking);
+	else if (PFECharacterOwner->bIsGrabbingWall) SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
+	else SetMovementMode(MOVE_Falling);
 }
 
 void UPFECharacterMovementComponent::ResetDash()

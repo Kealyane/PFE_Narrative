@@ -68,7 +68,7 @@ void APFECharacter::Tick(float DeltaSeconds)
 void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
                                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor)
+	if (OtherActor && OtherActor != this)
 	{
 		bIsNearWall = true;
 		CheckWall();
@@ -78,10 +78,13 @@ void APFECharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* 
 void APFECharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (bIsNearWall || bIsGrabbingWall)
+	if (bIsNearWall)
 	{
 		bIsNearWall = false;
-		WallGrabEnd();
+		if (bIsGrabbingWall)
+		{
+			WallGrabEnd();
+		}
 	}
 }
 
@@ -94,6 +97,8 @@ void APFECharacter::InitGame()
 	bIsInReflexionArea = false;
 	bBlockHorizontalInput = false;
 	bIsJumping = false;
+	bIsNearWall = false;
+	bIsGrabbingWall = false;
 
 	PFEMovementComponent->ResetVariables();
 	
@@ -202,7 +207,7 @@ void APFECharacter::Move(const FInputActionValue& Value)
 
 void APFECharacter::MoveEnd(const FInputActionValue& Value)
 {
-	if (bIsGrabbingWall || bIsNearWall)
+	if (bIsGrabbingWall)
 	{
 		FTimerHandle DetachHandle;
 		GetWorld()->GetTimerManager().SetTimer(DetachHandle, this, &APFECharacter::WallGrabEnd, PFEMovementComponent->GetWallDetachDelay(), false);
@@ -230,7 +235,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 
 	const bool bCanUseCoyoteTime = TimeSinceGrounded <= PFEMovementComponent->GetCoyoteTime();
 
-	if (bIsOnGround || bCanUseCoyoteTime)
+	if (!bIsOnGround || bCanUseCoyoteTime)
 	{
 		if (JumpCount < 2) JumpDelegate.Broadcast();
 
@@ -260,15 +265,15 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 
 void APFECharacter::WallGrabStart()
 {
+	if (bIsOnGround) return;
+	
 	bIsJumping = false;
-	GrabWallDelegate.Broadcast(true);
 	bIsGrabbingWall = true;
 	PFEMovementComponent->StartWallGrab();
 }
 
 void APFECharacter::WallGrabEnd()
 {
-	GrabWallDelegate.Broadcast(false);
 	bIsGrabbingWall = false;
 	PFEMovementComponent->StopWallGrab();
 }
@@ -279,13 +284,17 @@ void APFECharacter::WallJump()
 	
 	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
-	bBlockHorizontalInput = true;
+	LockInput();
 
 	PFEMovementComponent->StartWallJump(WallNormal.X);
 	
 	MoveValue = WallNormal.X;
 	FlipCharacter(MoveValue);
-	
+}
+
+void APFECharacter::LockInput()
+{
+	bBlockHorizontalInput = true;
 	FTimerHandle JumpWallHandle;
 	GetWorldTimerManager().SetTimer(JumpWallHandle,	this, &APFECharacter::WallJumpReset,
 		PFEMovementComponent->GetWallBlockInputDelay(), false);
