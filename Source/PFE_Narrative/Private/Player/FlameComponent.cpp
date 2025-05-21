@@ -177,20 +177,20 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 			
 			if (CurrentFlameValue == 50.f) return;
 
-			float TickInterval = 0.1f;
-			int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
-			float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
-
-			OnChangeFlameValue.Broadcast(false);
-			GetWorld()->GetTimerManager().SetTimer(
-				ResetFlameTimer,
-				[this, IncrementValue]()
-				{
-					ResetFlameOverTime(IncrementValue);
-				},
-				TickInterval,
-				true
-			);
+			// float TickInterval = 0.1f;
+			// int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
+			// float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
+			//
+			// OnChangeFlameValue.Broadcast(false);
+			// GetWorld()->GetTimerManager().SetTimer(
+			// 	ResetFlameTimer,
+			// 	[this, IncrementValue]()
+			// 	{
+			// 		ResetFlameOverTime(IncrementValue);
+			// 	},
+			// 	TickInterval,
+			// 	true
+			// );
 		}
 	}
 }
