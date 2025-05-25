@@ -22,6 +22,7 @@ enum class ESoundType : uint8
 	AreaZoneDown,
 	AreaZoneUp,
 	SwitchState,
+	Lift,
 };
 
 /**
