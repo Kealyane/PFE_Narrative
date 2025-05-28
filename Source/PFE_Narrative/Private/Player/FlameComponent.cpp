@@ -181,7 +181,7 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 			// int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
 			// float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
 			//
-			// OnChangeFlameValue.Broadcast(false);
+			OnChangeFlameValue.Broadcast(false);
 			// GetWorld()->GetTimerManager().SetTimer(
 			// 	ResetFlameTimer,
 			// 	[this, IncrementValue]()
