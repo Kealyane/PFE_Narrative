@@ -25,6 +25,33 @@ void UFlameComponent::InitFlame()
 	PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
 }
 
+void UFlameComponent::ResetFlameAfterDeath()
+{
+	if (bResetFlameAfterDeath)
+	{
+		CurrentFlameValue = MaxFlameValue / 2.f;
+		OnNormalFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::NORMAL;
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
+	}
+	else
+	{
+		if (CurrentFlameStatus == EFlameStatus::SMALL)
+		{
+			CurrentFlameValue = SmallFlameThreshold - 1;
+			OnSmallFlame.Broadcast();
+		}
+		else if (CurrentFlameStatus == EFlameStatus::HIGH)
+		{
+			CurrentFlameValue = BigFlameThreshold + 1;
+			OnHighFlame.Broadcast();
+		}
+		UpdateProgressBars();
+	}
+	OnChangeFlameValue.Broadcast(false);
+}
+
 void UFlameComponent::BeginPlay()
 {
 	Super::BeginPlay();

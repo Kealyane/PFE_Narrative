@@ -57,6 +57,7 @@ public:
 	UFlameComponent();
 
 	void InitFlame();
+	void ResetFlameAfterDeath();
 
 	UFUNCTION(BlueprintCallable)
 	float GetFlameValue()  const { return CurrentFlameValue; }
@@ -76,12 +77,14 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FFlameStateOnDeathSignature OnDeathFlameState;
 	UPROPERTY(BlueprintAssignable)
-	FChangeFlameValueSignature OnChangeFlameValue;
+	FChangeFlameValueSignature OnChangeFlameValue; // smoke effect true enable, false disable 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SmallFlameThreshold = 30.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BigFlameThreshold = 70.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bResetFlameAfterDeath = false;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Flame Properties", meta = (AllowPrivateAccess = "true"))
