@@ -39,6 +39,10 @@ void APFECharacter::BeginPlay()
 		}
 	}
 	InitGame();
+	if (FlameComponent)
+	{
+		FlameComponent->InitFlame();
+	}
 	InitGameMode();
 
 	if (FlameComponent == nullptr)
@@ -101,11 +105,6 @@ void APFECharacter::InitGame()
 	bIsGrabbingWall = false;
 
 	PFEMovementComponent->ResetVariables();
-	
-	if (FlameComponent)
-	{
-		FlameComponent->InitFlame();
-	}
 }
 
 void APFECharacter::InitGameMode()
@@ -423,6 +422,10 @@ void APFECharacter::Respawn()
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
 	SetActorLocation(RespawnLocation);
 	InitGame();
+	if (FlameComponent)
+	{
+		FlameComponent->ResetFlameAfterDeath();
+	}
 }
 
 void APFECharacter::PrintOnScreen(const FString& InText)
