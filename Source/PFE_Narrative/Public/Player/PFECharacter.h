@@ -34,10 +34,10 @@ class PFE_NARRATIVE_API APFECharacter : public APaperZDCharacter
 public:
 	APFECharacter();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<USpringArmComponent> SpringArm;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UCameraComponent> Camera;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// TObjectPtr<USpringArmComponent> SpringArm;
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	// TObjectPtr<UCameraComponent> Camera;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float DelayBeforeRespawn = 2.f;
