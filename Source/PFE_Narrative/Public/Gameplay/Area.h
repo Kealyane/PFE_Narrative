@@ -7,6 +7,15 @@
 #include "Area.generated.h"
 
 class USoundComponent;
+
+UENUM(BlueprintType)
+enum class EZoneEffect : uint8
+{
+	DECREASE,
+	NORMAL,
+	INCREASE,
+};
+
 /**
  * 
  */
@@ -33,7 +42,7 @@ protected:
 	bool bIsOneShot = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Zone type"))
-	bool bIsDecreasingFlame = true;
+	EZoneEffect ZoneEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area",meta = (AllowPrivateAccess = "true"))
 	float DelayBeforeNormalFlame = 2.f;
 	
@@ -47,6 +56,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
 	float PointUpValue = 75.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
+	float PointNormalValue = 50.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
 	float PointDownValue = 15.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Area|OneShot",meta = (AllowPrivateAccess = "true"))
 	float DisableDuration = 5.f;
@@ -55,4 +66,7 @@ protected:
 	void EnterArea(AActor* OverlappedActor, AActor* OtherActor);
 	UFUNCTION()
 	void ExitArea(AActor* OverlappedActor, AActor* OtherActor);
+
+private:
+	bool bIsDecreasingFlame = false;
 };
