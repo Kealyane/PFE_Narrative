@@ -114,6 +114,8 @@ public:
 	UFlameComponent* GetFlameComponent() const { return FlameComponent; }
 	UFUNCTION()
 	USoundComponent* GetSoundComponent() const { return SoundComponent; }
+	UFUNCTION()
+	bool GetIsLookingRight() const { return bIsLookingRight; }
 
 	UFUNCTION()
 	void StoreKey();
@@ -207,6 +209,7 @@ private:
 	float LastWallJumpInputTime = 0.f;
 
 	bool bHasStartWallJump = false;
+	bool bIsLookingRight = false;
 
 	// DEBUG
 public:
