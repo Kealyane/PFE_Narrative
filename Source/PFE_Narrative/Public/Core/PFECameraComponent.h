@@ -13,16 +13,28 @@ class PFE_NARRATIVE_API UPFECameraComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UPFECameraComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	TObjectPtr<class APFECharacter> PFECharacter;
+
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+	UFUNCTION(BlueprintCallable)
+	void SetPFECharacter(APFECharacter* InCharacter) { PFECharacter = InCharacter; }
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	float YLocation = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	FVector2D DeadZoneSize = FVector2D(100.f, 60.f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	float InterpSpeedSlow = 4.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	float InterpSpeedFast = 6.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	float HorizontalBias = 50.0f;
+	
 };
