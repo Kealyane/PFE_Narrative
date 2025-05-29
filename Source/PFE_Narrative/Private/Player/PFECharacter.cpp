@@ -126,6 +126,7 @@ void APFECharacter::InitGame()
 	bIsJumping = false;
 	bIsNearWall = false;
 	bIsGrabbingWall = false;
+	bIsLookingRight = true;
 
 	PFEMovementComponent->ResetVariables();
 	//SceneCaptureHorizontal->SetActive(false);
@@ -145,11 +146,13 @@ void APFECharacter::FlipCharacter(float Direction)
 	{
 		SetActorRotation(LeftOrientation);
 		GetController()->SetControlRotation(LeftOrientation);
+		bIsLookingRight = false;
 	}
 	else
 	{
 		SetActorRotation(RightOrientation);
 		GetController()->SetControlRotation(RightOrientation);
+		bIsLookingRight = true;
 	}
 }
 
