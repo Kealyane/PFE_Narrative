@@ -25,6 +25,33 @@ void UFlameComponent::InitFlame()
 	PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
 }
 
+void UFlameComponent::ResetFlameAfterDeath()
+{
+	if (bResetFlameAfterDeath)
+	{
+		CurrentFlameValue = MaxFlameValue / 2.f;
+		OnNormalFlame.Broadcast();
+		CurrentFlameStatus = EFlameStatus::NORMAL;
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
+	}
+	else
+	{
+		if (CurrentFlameStatus == EFlameStatus::SMALL)
+		{
+			CurrentFlameValue = SmallFlameThreshold - 1;
+			OnSmallFlame.Broadcast();
+		}
+		else if (CurrentFlameStatus == EFlameStatus::HIGH)
+		{
+			CurrentFlameValue = BigFlameThreshold + 1;
+			OnHighFlame.Broadcast();
+		}
+		UpdateProgressBars();
+	}
+	OnChangeFlameValue.Broadcast(false);
+}
+
 void UFlameComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,13 +65,13 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 {
 	CheckDeath();
 	
-	if ((bInIsOneShot && bDecrease && CurrentFlameStatus == EFlameStatus::SMALL) ||
-	(bInIsOneShot && !bDecrease && CurrentFlameStatus == EFlameStatus::HIGH))
-	{
-		PFECharacter->GetGameMode()->OnDeath.Broadcast();
-		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
-		return;
-	}
+	// if ((bInIsOneShot && bDecrease && CurrentFlameStatus == EFlameStatus::SMALL) ||
+	// (bInIsOneShot && !bDecrease && CurrentFlameStatus == EFlameStatus::HIGH))
+	// {
+	// 	PFECharacter->GetGameMode()->OnDeath.Broadcast();
+	// 	OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
+	// 	return;
+	// }
 
 	if (!bInIsOneShot)
 	{
@@ -93,14 +120,54 @@ void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, f
 	Areas.Add(FAreaEffect(bInIsOneShot, bDecrease, EffectValue, Delay, DelayNormal, InAreaRef));
 	
 	// apply new effect
-	if (bInIsOneShot)
+	//if (bInIsOneShot)
+	//{
+	//	SetFlameValue(Value);
+	//}
+	//else
+	//{
+		LaunchEffect(EffectValue, Delay);
+	//}
+}
+
+void UFlameComponent::StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRef)
+{
+
+	if ((InZoneEffect == EZoneEffect::DECREASE && CurrentFlameStatus == EFlameStatus::SMALL) ||
+		(InZoneEffect == EZoneEffect::INCREASE && CurrentFlameStatus == EFlameStatus::HIGH))
 	{
-		SetFlameValue(Value);
+		PFECharacter->GetGameMode()->OnDeath.Broadcast();
+		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
+		return;
+	}
+	
+	// stop current area effect to apply new one
+	GetWorld()->GetTimerManager().ClearTimer(ResetFlameTimer);
+	if (Areas.Num() > 0)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);
+	}
+	
+	float FlameValue;
+	if (InZoneEffect == EZoneEffect::DECREASE)
+	{
+		if (CurrentFlameStatus == EFlameStatus::HIGH) FlameValue = 50.f;
+		else FlameValue = SmallFlameThreshold-1;
+	}
+	else if (InZoneEffect == EZoneEffect::INCREASE)
+	{
+		if (CurrentFlameStatus == EFlameStatus::NORMAL) FlameValue = BigFlameThreshold+1;
+		else FlameValue = 50.f;
 	}
 	else
 	{
-		LaunchEffect(EffectValue, Delay);
+		FlameValue = 50.f;
 	}
+
+	// store new effect
+	Areas.Add(FAreaEffect(true, InZoneEffect == EZoneEffect::DECREASE, 0.f, 0.f, 0.f, InAreaRef));
+
+	SetFlameValue(FlameValue);
 }
 
 void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
@@ -177,20 +244,20 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 			
 			if (CurrentFlameValue == 50.f) return;
 
-			float TickInterval = 0.1f;
-			int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
-			float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
-
+			// float TickInterval = 0.1f;
+			// int32 NumTicks = FMath::CeilToInt(CurrentArea.DelayBeforeNormalFlame / TickInterval);
+			// float IncrementValue = (50.f - CurrentFlameValue) / NumTicks;
+			//
 			OnChangeFlameValue.Broadcast(false);
-			GetWorld()->GetTimerManager().SetTimer(
-				ResetFlameTimer,
-				[this, IncrementValue]()
-				{
-					ResetFlameOverTime(IncrementValue);
-				},
-				TickInterval,
-				true
-			);
+			// GetWorld()->GetTimerManager().SetTimer(
+			// 	ResetFlameTimer,
+			// 	[this, IncrementValue]()
+			// 	{
+			// 		ResetFlameOverTime(IncrementValue);
+			// 	},
+			// 	TickInterval,
+			// 	true
+			// );
 		}
 	}
 }
@@ -276,11 +343,13 @@ void UFlameComponent::UpdateFlameStatus()
 	{
 		OnSmallFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::SMALL;
+		return;
 	}
 	if (CurrentFlameValue >= SmallFlameThreshold && CurrentFlameValue < BigFlameThreshold && CurrentFlameStatus != EFlameStatus::NORMAL)
 	{
 		OnNormalFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::NORMAL;
+		return;
 	}
 	if (CurrentFlameValue >= BigFlameThreshold && CurrentFlameStatus != EFlameStatus::HIGH)
 	{
@@ -316,4 +385,25 @@ void UFlameComponent::UpdateProgressBars()
 		float PercentBig = (CurrentFlameValue - 50) / 50;
 		PFECharacter->UpdateHighFlameDelegate.Broadcast(PercentBig);
 	}
+}
+
+
+void UFlameComponent::DebugFlameStatus()
+{
+	if (CurrentFlameStatus == EFlameStatus::SMALL)
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Current Flame SMALL"));}
+	else if (CurrentFlameStatus == EFlameStatus::HIGH)
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Current Flame HIGH"));}
+	else
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Current Flame NORMAL"));}
+}
+
+void UFlameComponent::DebugAreaStatus(EZoneEffect InZoneEffect)
+{
+	if (InZoneEffect == EZoneEffect::NORMAL)
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Zone Effect NORMAL"));}
+	else if (InZoneEffect == EZoneEffect::INCREASE)
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Zone Effect INCREASE"));}
+	else
+	{UE_LOG(LogTemp, Warning, TEXT("UFlameComponent::StartPointEffect Zone Effect DECREASE"));}
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 //#include "PaperSpriteComponent.h"
 #include "Components/ActorComponent.h"
+#include "Gameplay/Area.h"
 #include "FlameComponent.generated.h"
 
 
@@ -57,12 +58,16 @@ public:
 	UFlameComponent();
 
 	void InitFlame();
+	void ResetFlameAfterDeath();
 
 	UFUNCTION(BlueprintCallable)
 	float GetFlameValue()  const { return CurrentFlameValue; }
 	
 	UFUNCTION()
 	void StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* AreaRef);
+
+	UFUNCTION()
+	void StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRef);
 
 	UFUNCTION()
 	void EndEffect(bool bInIsOneShot, AArea* AreaRef);
@@ -76,12 +81,14 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FFlameStateOnDeathSignature OnDeathFlameState;
 	UPROPERTY(BlueprintAssignable)
-	FChangeFlameValueSignature OnChangeFlameValue;
+	FChangeFlameValueSignature OnChangeFlameValue; // smoke effect true enable, false disable 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SmallFlameThreshold = 30.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BigFlameThreshold = 70.f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bResetFlameAfterDeath = false;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Flame Properties", meta = (AllowPrivateAccess = "true"))
@@ -121,4 +128,7 @@ private:
 
 	void CheckDeath();
 	void UpdateProgressBars();
+	
+	void DebugFlameStatus();
+	void DebugAreaStatus(EZoneEffect InZoneEffect);
 };
