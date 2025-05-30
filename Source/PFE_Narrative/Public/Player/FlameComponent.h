@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 //#include "PaperSpriteComponent.h"
 #include "Components/ActorComponent.h"
+#include "Gameplay/Area.h"
 #include "FlameComponent.generated.h"
 
 
@@ -66,6 +67,9 @@ public:
 	void StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* AreaRef);
 
 	UFUNCTION()
+	void StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRef);
+
+	UFUNCTION()
 	void EndEffect(bool bInIsOneShot, AArea* AreaRef);
 
 	UPROPERTY(BlueprintAssignable)
@@ -124,4 +128,7 @@ private:
 
 	void CheckDeath();
 	void UpdateProgressBars();
+	
+	void DebugFlameStatus();
+	void DebugAreaStatus(EZoneEffect InZoneEffect);
 };

@@ -26,17 +26,19 @@ void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
 		if (bIsOneShot)
 		{
-			if (bIsDecreasingFlame) SoundComponent->PlaySound(ESoundType::AreaPointDown);
-			else SoundComponent->PlaySound(ESoundType::AreaPointUp);
+			if (ZoneEffect == EZoneEffect::DECREASE) SoundComponent->PlaySound(ESoundType::AreaPointDown);
+			else if (ZoneEffect == EZoneEffect::INCREASE) SoundComponent->PlaySound(ESoundType::AreaPointUp);
 			
-			float FlameValue = bIsDecreasingFlame ? PointDownValue : PointUpValue;
-			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameValue,
-				DelayBeforeNormalFlame, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
+			//float FlameValue = bIsDecreasingFlame ? PointDownValue : PointUpValue;
+			
+			// Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameValue,
+			// 	DelayBeforeNormalFlame, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
+			Character->GetFlameComponent()->StartPointEffect(ZoneEffect,this);
 		}
 		else
 		{
 			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameImpactValue,
-				DelayBetweenEffect, DelayBeforeNormalFlame, bIsDecreasingFlame,this);
+				DelayBetweenEffect, DelayBeforeNormalFlame, ZoneEffect == EZoneEffect::DECREASE,this);
 		}
 	}
 }
