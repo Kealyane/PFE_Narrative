@@ -52,35 +52,26 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		float HalfWidth;
 		float HalfHeight;
 		CameraHalfSize(HalfWidth, HalfHeight);
-
-		ACameraBounds* CameraBounds = nullptr;
-		int32 BestPriority = -1;
-
-		for (ACameraBounds* Bound : ActiveBounds)
-		{
-			if (Bound && Bound->LayerPriority > BestPriority)
-			{
-				CameraBounds = Bound;
-				BestPriority = Bound->LayerPriority;
-			}
-		}
-		if (!CameraBounds) return;
 		
-		if (CameraBounds->GetBoundingBox(EDirection::LEFT, MinX))
-		    {MinX += HalfWidth;}
-		else { MinX = DesiredLocation.X - BIG_VALUE;}
+		if (FindHighPrioBoundForDirection(EDirection::LEFT, MinX))
+			MinX += HalfWidth;
+		else
+			MinX = DesiredLocation.X - BIG_VALUE;
 		
-		if (CameraBounds->GetBoundingBox(EDirection::RIGHT, MaxX))
-		    {MaxX -= HalfWidth;}
-		else { MaxX = DesiredLocation.X + BIG_VALUE;}
+		if (FindHighPrioBoundForDirection(EDirection::RIGHT, MaxX))
+			MaxX -= HalfWidth;
+		else
+			MaxX = DesiredLocation.X + BIG_VALUE;
 		
-		if (CameraBounds->GetBoundingBox(EDirection::DOWN, MinZ))
-		    {MinZ += HalfHeight;}
-		else { MinZ = DesiredLocation.Z - BIG_VALUE;}
+		if (FindHighPrioBoundForDirection(EDirection::DOWN, MinZ))
+			MinZ += HalfHeight;
+		else
+			MinZ = DesiredLocation.Z - BIG_VALUE;
 		
-		if (CameraBounds->GetBoundingBox(EDirection::UP, MaxZ))
-		    {MaxZ -= HalfHeight;}
-		else { MaxZ = DesiredLocation.Z + BIG_VALUE;}
+		if (FindHighPrioBoundForDirection(EDirection::UP, MaxZ))
+			MaxZ -= HalfHeight;
+		else
+			MaxZ = DesiredLocation.Z + BIG_VALUE;
 		
 		if (MaxX > MinX && MaxZ > MinZ)
 		{
@@ -93,7 +84,7 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 						? InterpSpeedFast    
 						: InterpSpeedSlow; 
 
-	float VerticalSpeed = InterpSpeedFast;
+	float VerticalSpeed = DeltaLocation.Z < 0 ? VerticalInterpSpeedFast : InterpSpeedSlow;
 
 	FVector InterpolatedLocation;
 
@@ -143,6 +134,52 @@ void UPFECameraComponent::CameraHalfSize(float& OutHalfWidth, float& OutHalfHeig
 	float FovRad = FMath::DegreesToRadians(90);
 	OutHalfHeight = 0.5f * YLocation /FMath::Tan(0.5F * FovRad);
 	OutHalfWidth = OutHalfHeight * Ratio;
+}
+
+bool UPFECameraComponent::FindHighPrioBoundForDirection(EDirection Dir, float& OutValue) const
+{
+	bool bFound = false;
+	int32 BestPriority = -1;
+	float BestValue = (Dir == EDirection::LEFT || Dir == EDirection::DOWN) ? BIG_VALUE : -BIG_VALUE;
+
+	for (ACameraBounds* Bound : ActiveBounds)
+	{
+		float BoundValue;
+		if (!Bound->GetBoundingBox(Dir, BoundValue)) continue;
+		
+		// highest priority
+		if (Bound->LayerPriority > BestPriority)
+		{
+			BestPriority = Bound->LayerPriority;
+			BestValue = BoundValue;
+			bFound = true;
+		}
+		// same priority
+		else if (Bound->LayerPriority == BestPriority)
+		{
+			if (Dir == EDirection::LEFT || Dir == EDirection::DOWN)
+			{
+				if (BoundValue < BestValue) 
+				{
+					BestValue = BoundValue;
+					bFound = true;
+				}
+			}
+			else
+			{
+				if (BoundValue > BestValue)
+				{
+					BestValue = BoundValue;
+					bFound = true;
+				}
+			}
+		}
+	}
+	if (bFound)
+	{
+		OutValue = BestValue;
+	}
+	return bFound;
 }
 
 
