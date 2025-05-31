@@ -19,6 +19,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	TObjectPtr<class APFECharacter> PFECharacter;
+	TArray<class ACameraBounds*> ActiveBounds;
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -36,5 +37,14 @@ public:
 	float InterpSpeedFast = 6.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
 	float HorizontalBias = 50.0f;
-	
+
+	UFUNCTION(BlueprintCallable)
+	void AddBounds(ACameraBounds* InBounds) { if (!ActiveBounds.Contains(InBounds)) ActiveBounds.Add(InBounds); }
+	UFUNCTION(BlueprintCallable)
+	void RemoveBounds(ACameraBounds* InBounds) { if (ActiveBounds.Contains(InBounds)) ActiveBounds.Remove(InBounds); }
+
+private:
+	void CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const;
+
+	float BIG_VALUE = 100000.f;
 };
