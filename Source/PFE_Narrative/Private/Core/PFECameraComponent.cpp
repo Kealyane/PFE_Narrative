@@ -3,6 +3,7 @@
 
 #include "Core/PFECameraComponent.h"
 
+#include "Core/CameraBounds.h"
 #include "Player/PFECharacter.h"
 
 // Sets default values for this component's properties
@@ -16,7 +17,6 @@ UPFECameraComponent::UPFECameraComponent()
 void UPFECameraComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//GetOwner()->SetActorRotation(FRotator(0,0,-90));
 }
 
 void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -24,8 +24,6 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (PFECharacter == nullptr) return;
-
-
 
 	float Bias = PFECharacter->GetIsLookingRight() ? HorizontalBias : -HorizontalBias;
 
@@ -46,6 +44,49 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	if (bOutsideDeadZoneVertical)
 	{
 		DesiredLocation.Z = CharacterLocation.Z - FMath::Sign(DeltaLocation.Z) * HalfDeadZone.Y;
+	}
+
+	if (ActiveBounds.Num() > 0)
+	{
+		float MinX, MaxX, MinZ, MaxZ;
+		float HalfWidth;
+		float HalfHeight;
+		CameraHalfSize(HalfWidth, HalfHeight);
+
+		ACameraBounds* CameraBounds = nullptr;
+		int32 BestPriority = -1;
+
+		for (ACameraBounds* Bound : ActiveBounds)
+		{
+			if (Bound && Bound->LayerPriority > BestPriority)
+			{
+				CameraBounds = Bound;
+				BestPriority = Bound->LayerPriority;
+			}
+		}
+		if (!CameraBounds) return;
+		
+		if (CameraBounds->GetBoundingBox(EDirection::LEFT, MinX))
+		    {MinX += HalfWidth;}
+		else { MinX = DesiredLocation.X - BIG_VALUE;}
+		
+		if (CameraBounds->GetBoundingBox(EDirection::RIGHT, MaxX))
+		    {MaxX -= HalfWidth;}
+		else { MaxX = DesiredLocation.X + BIG_VALUE;}
+		
+		if (CameraBounds->GetBoundingBox(EDirection::DOWN, MinZ))
+		    {MinZ += HalfHeight;}
+		else { MinZ = DesiredLocation.Z - BIG_VALUE;}
+		
+		if (CameraBounds->GetBoundingBox(EDirection::UP, MaxZ))
+		    {MaxZ -= HalfHeight;}
+		else { MaxZ = DesiredLocation.Z + BIG_VALUE;}
+		
+		if (MaxX > MinX && MaxZ > MinZ)
+		{
+			DesiredLocation.X = FMath::Clamp(DesiredLocation.X, MinX, MaxX);
+			DesiredLocation.Z = FMath::Clamp(DesiredLocation.Z, MinZ, MaxZ);
+		}
 	}
 
 	float HorizontalSpeed = bOutsideDeadZoneHorizontal && PFECharacter->MoveValue > 0.1f
@@ -74,9 +115,6 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	InterpolatedLocation.Y = YLocation;
 
 	GetOwner()->SetActorLocation(InterpolatedLocation);
-	
-	//FVector NewLocation = FMath::VInterpTo(CameraCurrentLocation, DesiredLocation, DeltaTime, InterpSpeed);
-	//GetOwner()->SetActorLocation(NewLocation);
 
 #if WITH_EDITOR
 	{
@@ -91,6 +129,20 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		DrawDebugBox(GetWorld(), DeadZoneCenter, DeadZoneExtent, FColor::Cyan, false, -1.f, 0, 4.f);
 	}
 #endif
+}
+
+void UPFECameraComponent::CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const
+{
+	FVector2D ScreentSize = FVector2D::ZeroVector;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC && PC->GetLocalPlayer())
+	{
+		PC->GetLocalPlayer()->ViewportClient->GetViewportSize(ScreentSize);
+	}
+	float Ratio = ScreentSize.X / ScreentSize.Y;
+	float FovRad = FMath::DegreesToRadians(90);
+	OutHalfHeight = 0.5f * YLocation /FMath::Tan(0.5F * FovRad);
+	OutHalfWidth = OutHalfHeight * Ratio;
 }
 
 
