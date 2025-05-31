@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CameraBounds.h"
 #include "Components/ActorComponent.h"
 #include "PFECameraComponent.generated.h"
 
@@ -36,6 +37,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
 	float InterpSpeedFast = 6.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
+	float VerticalInterpSpeedFast = 8.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="PFECamera")
 	float HorizontalBias = 50.0f;
 
 	UFUNCTION(BlueprintCallable)
@@ -45,6 +48,7 @@ public:
 
 private:
 	void CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const;
+	bool FindHighPrioBoundForDirection(EDirection Dir, float& OutValue) const;
 
 	float BIG_VALUE = 100000.f;
 };
