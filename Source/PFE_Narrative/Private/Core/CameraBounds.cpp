@@ -13,25 +13,9 @@ ACameraBounds::ACameraBounds()
 
 bool ACameraBounds::GetBoundingBox(EDirection InDirection, float& OutValue) const
 {
-	FVector Location = GetActorLocation();
-	FVector BoxExtent = TriggerZone->GetScaledBoxExtent();
-	switch (InDirection)
+	if (const float* FoundValue = CachedBounds.Find(InDirection))
 	{
-	case EDirection::UP:
-		if (!bUp) return false;
-		OutValue =  bUpBridge ? BIG_VALUE : Location.Z + BoxExtent.Z;
-		return true;
-	case EDirection::DOWN:
-		if (!bDown) return false;
-		OutValue = bDownBridge ? -BIG_VALUE : Location.Z - BoxExtent.Z;
-		return true;
-	case EDirection::RIGHT:
-		if (!bRight) return false;
-		OutValue = bRightBridge ? BIG_VALUE : Location.X + BoxExtent.X;
-		return true;
-	case EDirection::LEFT:
-		if (!bLeft) return false;
-		OutValue = bLeftBridge ? -BIG_VALUE : Location.X - BoxExtent.X;
+		OutValue = *FoundValue;
 		return true;
 	}
 	return false;
@@ -40,6 +24,32 @@ bool ACameraBounds::GetBoundingBox(EDirection InDirection, float& OutValue) cons
 void ACameraBounds::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ACameraBounds::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	CachedBounds.Empty();
+
+	FVector Location = GetActorLocation();
+	FVector Extent = TriggerZone->GetScaledBoxExtent();
+
+	if (bLeft)
+	{
+		CachedBounds.Add(EDirection::LEFT, bLeftBridge ? -BIG_VALUE : Location.X - Extent.X);
+	}
+	if (bRight)
+	{
+		CachedBounds.Add(EDirection::RIGHT, bRightBridge ? BIG_VALUE : Location.X + Extent.X);
+	}
+	if (bDown)
+	{
+		CachedBounds.Add(EDirection::DOWN, bDownBridge ? -BIG_VALUE : Location.Z - Extent.Z);
+	}
+	if (bUp)
+	{
+		CachedBounds.Add(EDirection::UP, bUpBridge ? BIG_VALUE : Location.Z + Extent.Z);
+	}
 }
 
 

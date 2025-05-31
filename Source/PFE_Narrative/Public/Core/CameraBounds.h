@@ -53,5 +53,11 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void OnConstruction(const FTransform& Transform) override;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Camera Bounds")
+	TMap<EDirection, float> CachedBounds;
+
 	float BIG_VALUE = 100000.f;
 };
