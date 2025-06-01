@@ -62,6 +62,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetFlameValue()  const { return CurrentFlameValue; }
+	UFUNCTION(BlueprintCallable)
+	void SetFlameValue(float Value);
 	
 	UFUNCTION()
 	void StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* AreaRef);
@@ -101,8 +103,6 @@ protected:
 
 	UFUNCTION()
 	void UpdateFlameValue(float Value);
-
-	void SetFlameValue(float Value);
 
 	FTimerHandle FlameEffectTimer;
 	FTimerHandle ResetFlameTimer;

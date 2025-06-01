@@ -312,6 +312,11 @@ void UFlameComponent::SetFlameValue(float Value)
 	PFECharacter->UpdateHighFlameDelegate.Broadcast(0);
 	
 	CurrentFlameValue = Value;
+	
+	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
+	{
+		PFECharacter->GetGameMode()->OnDeath.Broadcast();
+	}
 
 	UpdateProgressBars();
 	UpdateFlameStatus();
