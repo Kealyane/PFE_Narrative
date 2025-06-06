@@ -53,7 +53,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsAlive = true;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bCanMove = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
