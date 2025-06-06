@@ -220,7 +220,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 	
 	bool bIsWallCoyoteTimeValid = (GetWorld()->GetTimeSeconds() - LastWallContactTime) <= PFEMovementComponent->GetWallCoyoteTime();
 
-	if (bIsGrabbingWall || bIsWallCoyoteTimeValid)
+	if (!bIsOnGround && (bIsGrabbingWall || bIsWallCoyoteTimeValid))
 	{
 		WallGrabEnd();
 		WallJump();
