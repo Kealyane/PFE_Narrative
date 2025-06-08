@@ -35,6 +35,11 @@ void USoundComponent::StopSound()
 	AudioComponent->Stop();
 }
 
+void USoundComponent::StopSmoothSound(float FadeDelay)
+{
+	AudioComponent->FadeOut(FadeDelay, 0.0f); 
+}
+
 
 // Called when the game starts
 void USoundComponent::BeginPlay()
