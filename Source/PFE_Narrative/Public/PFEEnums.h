@@ -23,6 +23,7 @@ enum class ESoundType : uint8
 	AreaZoneUp,
 	SwitchState,
 	Lift,
+	Boat,
 };
 
 /**
