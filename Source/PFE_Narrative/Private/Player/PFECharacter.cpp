@@ -58,9 +58,20 @@ void APFECharacter::Tick(float DeltaSeconds)
 
 	if (bIsInReflexionArea)
 	{
-		float Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().Z);
-		FVector NewLocation = FVector(ReflexionPlaneLocation.X, ReflexionPlaneLocation.Y, -(Distance*2));
-		ReflexionPlane->SetRelativeLocation(NewLocation);
+		float Distance;
+		FVector NewLocation;
+		if (!bIsReflexionHorizontal)
+		{
+			Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().X);
+			NewLocation = FVector(Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);
+			ReflexionPlaneVertical->SetRelativeLocation(NewLocation);
+		}
+		else
+		{
+			Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().Z);
+			NewLocation = FVector(ReflexionHPlaneLocation.X, ReflexionHPlaneLocation.Y, -(Distance*2));
+			ReflexionPlaneHoriontal->SetRelativeLocation(NewLocation);
+		}
 	}
 
 	if (bIsOnGround)
@@ -142,11 +153,18 @@ void APFECharacter::InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent)
 	CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &APFECharacter::OnOverlapEnd);
 }
 
-void APFECharacter::InitReflexionPlane(UStaticMeshComponent* InReflexionPlane)
+void APFECharacter::InitReflexionPlaneHorizontal(UStaticMeshComponent* InReflexionPlaneHorizontal)
 {
-	ReflexionPlane = InReflexionPlane;
-	ReflexionPlaneLocation = ReflexionPlane->GetRelativeLocation();
-	ReflexionPlane->SetHiddenInGame(true);
+	ReflexionPlaneHoriontal = InReflexionPlaneHorizontal;
+	ReflexionHPlaneLocation = ReflexionPlaneHoriontal->GetRelativeLocation();
+	ReflexionPlaneHoriontal->SetHiddenInGame(true);
+}
+
+void APFECharacter::InitReflexionPlaneVertical(UStaticMeshComponent* InReflexionPlaneVertical)
+{
+	ReflexionPlaneVertical = InReflexionPlaneVertical;
+	ReflexionVPlaneLocation = ReflexionPlaneVertical->GetRelativeLocation();
+	ReflexionPlaneVertical->SetHiddenInGame(true);
 }
 
 void APFECharacter::InitFlameComponent(UFlameComponent* InFlameComponent)
@@ -390,19 +408,35 @@ void APFECharacter::UseKey()
 	}
 }
 
-void APFECharacter::SetReflexionArea(bool bIsInside, float ZPos)
+void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation)
 {
 	bIsInReflexionArea = bIsInside;
-	ReflexionAreaGround = ZPos;
-	
+	ReflexionAreaGround = bAxisIsHorizontal ? AxisLocation.Z : AxisLocation.X;
+	bIsReflexionHorizontal = bAxisIsHorizontal;
+
 	if (!bIsInReflexionArea)
 	{
-		ReflexionPlane->SetRelativeLocation(ReflexionPlaneLocation);
-		ReflexionPlane->SetHiddenInGame(true);
+		if (bAxisIsHorizontal)
+		{
+			ReflexionPlaneHoriontal->SetRelativeLocation(ReflexionHPlaneLocation);
+			ReflexionPlaneHoriontal->SetHiddenInGame(true);
+		}
+		else
+		{
+			ReflexionPlaneVertical->SetRelativeLocation(ReflexionVPlaneLocation);
+			ReflexionPlaneVertical->SetHiddenInGame(true);
+		}
 	}
 	else
 	{
-		ReflexionPlane->SetHiddenInGame(false);
+		if (bAxisIsHorizontal)
+		{
+			ReflexionPlaneHoriontal->SetHiddenInGame(false);
+		}
+		else
+		{
+			ReflexionPlaneVertical->SetHiddenInGame(false);
+		}
 	}
 }
 
