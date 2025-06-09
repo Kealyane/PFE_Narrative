@@ -49,7 +49,6 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
-	
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -63,7 +62,14 @@ void APFECharacter::Tick(float DeltaSeconds)
 		if (!bIsReflexionHorizontal)
 		{
 			Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().X);
-			NewLocation = FVector(Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);
+			if (MoveValue < 0.f)
+			{
+				NewLocation = FVector(-Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);	
+			}
+			else
+			{
+				NewLocation = FVector(Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);
+			}
 			ReflexionPlaneVertical->SetRelativeLocation(NewLocation);
 		}
 		else
