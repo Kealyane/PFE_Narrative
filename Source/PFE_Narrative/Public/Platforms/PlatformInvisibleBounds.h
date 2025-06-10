@@ -17,6 +17,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere)
+	bool bIsReflexionHorizontal = true;
 
 	UFUNCTION()
 	void EnterInvisibleArea(AActor* OverlappedActor, AActor* OtherActor);

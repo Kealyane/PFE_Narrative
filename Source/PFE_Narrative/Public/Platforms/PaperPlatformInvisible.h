@@ -27,6 +27,8 @@ protected:
 	TObjectPtr<UPaperSpriteComponent> MirrorRenderComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess="true"), Category="Platform")
+	bool bIsHorizontalMirror = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess="true"), Category="Platform")
 	float DistanceWithReflexion = 100.f;
 
 	#if WITH_EDITOR

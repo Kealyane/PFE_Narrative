@@ -53,7 +53,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsAlive = true;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bCanMove = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
@@ -92,7 +92,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitCapsuleComponent(UCapsuleComponent* InCapsuleComponent);
 	UFUNCTION(BlueprintCallable)
-	void InitReflexionPlane(UStaticMeshComponent* InReflexionPlane);
+	void InitReflexionPlaneHorizontal(UStaticMeshComponent* InReflexionPlaneHorizontal);
+	UFUNCTION(BlueprintCallable)
+	void InitReflexionPlaneVertical(UStaticMeshComponent* InReflexionPlaneVertical);
 	UFUNCTION(BlueprintCallable)
 	void InitFlameComponent(UFlameComponent* InFlameComponent);
 	UFUNCTION(BlueprintCallable)
@@ -115,7 +117,7 @@ public:
 	bool HasKey() const { return NumberOfKeyPickedUp > 0; }
 
 	UFUNCTION()
-	void SetReflexionArea(bool bIsInside, float ZPos);
+	void SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation);
 
 	FVector GetWallNormal() const { return WallNormal; }
 	bool GetHasStartWallJump() const { return bHasStartWallJump; }
@@ -182,9 +184,12 @@ private:
 	TObjectPtr<UPFECharacterMovementComponent> PFEMovementComponent;
 	int NumberOfKeyPickedUp = 0;
 	bool bIsInReflexionArea;
+	bool bIsReflexionHorizontal;
 	float ReflexionAreaGround;
-	TObjectPtr<UStaticMeshComponent> ReflexionPlane;
-	FVector ReflexionPlaneLocation;
+	TObjectPtr<UStaticMeshComponent> ReflexionPlaneHoriontal;
+	TObjectPtr<UStaticMeshComponent> ReflexionPlaneVertical;
+	FVector ReflexionHPlaneLocation;
+	FVector ReflexionVPlaneLocation;
 	FRotator LeftOrientation = FRotator(0.0f, 180.0f, 0.0f);
 	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
 	

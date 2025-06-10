@@ -24,7 +24,14 @@ APaperPlatformInvisible::APaperPlatformInvisible()
 void APaperPlatformInvisible::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeChainProperty(PropertyChangedEvent);
-	MirrorPosition = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z-DistanceWithReflexion);
+	if (bIsHorizontalMirror)
+	{
+		MirrorPosition = FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z-DistanceWithReflexion);
+	}
+	else
+	{
+		MirrorPosition = FVector(GetActorLocation().X+DistanceWithReflexion, GetActorLocation().Y, GetActorLocation().Z);
+	}
 	MirrorRenderComponent->SetWorldLocation(MirrorPosition);
 }
 #endif

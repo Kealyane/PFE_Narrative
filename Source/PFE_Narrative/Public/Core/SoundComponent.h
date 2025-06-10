@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void StopSound();
 
+	UFUNCTION(BlueprintCallable)
+	void StopSmoothSound(float FadeDelay);
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TObjectPtr<UAudioComponent> AudioComponent;
 	

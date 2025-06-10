@@ -15,10 +15,10 @@ AKeyPickup::AKeyPickup()
 void AKeyPickup::BeginPlay()
 {
 	Super::BeginPlay();
-	if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
-	{
-		PFEGameMode->OnDeath.AddDynamic(this, &AKeyPickup::InitKey);
-	}
+	// if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
+	// {
+	// 	PFEGameMode->OnDeath.AddDynamic(this, &AKeyPickup::InitKey);
+	// }
 	InitKey();
 	
 	OnActorBeginOverlap.AddDynamic(this, &AKeyPickup::OnOverlapBegin);
