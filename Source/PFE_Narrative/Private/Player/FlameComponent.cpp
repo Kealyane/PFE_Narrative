@@ -179,7 +179,7 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 	{
 		for (FAreaEffect AreaElt : Areas)
 		{
-			AreaElt.AreaRef->GetSoundComponent()->StopSound();
+			AreaElt.AreaRef->GetSoundComponent()->StopSmoothSound(DelaySmoothSound);
 		}
 		Areas.Reset();
 		return;
@@ -209,7 +209,7 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 
 			if (CurrentArea.bDecrease != PreviousArea.bDecrease)
 			{
-				AreaSoundPlaying->GetSoundComponent()->StopSound();
+				AreaSoundPlaying->GetSoundComponent()->StopSmoothSound(DelaySmoothSound);
 				if (PreviousArea.bDecrease)
 				{
 					PreviousArea.AreaRef->GetSoundComponent()->PlaySound(ESoundType::AreaZoneDown);
@@ -238,7 +238,7 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 		{
 			if (AreaSoundPlaying)
 			{
-				AreaSoundPlaying->GetSoundComponent()->StopSound();
+				AreaSoundPlaying->GetSoundComponent()->StopSmoothSound(DelaySmoothSound);
 				bIsPlayingSound = false;
 			}
 			
@@ -369,7 +369,7 @@ void UFlameComponent::CheckDeath()
 	{
 		for (FAreaEffect AreaElt : Areas)
 		{
-			AreaElt.AreaRef->GetSoundComponent()->StopSound();
+			AreaElt.AreaRef->GetSoundComponent()->StopSmoothSound(DelaySmoothSound);
 		}
 		bIsPlayingSound = false;
 		GetWorld()->GetTimerManager().ClearTimer(FlameEffectTimer);

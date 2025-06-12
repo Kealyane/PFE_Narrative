@@ -141,41 +141,20 @@ float UPFECharacterMovementComponent::GetMaxBrakingDeceleration() const
 	return Super::GetMaxBrakingDeceleration();
 }
 
-// void UPFECharacterMovementComponent::FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult,
-// 	bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult) const
-// {
-//
-// 	FVector Start = CapsuleLocation;
-// 	FVector End = Start - FVector(0.f, 0.f, 150.f);
-// #if WITH_EDITOR
-// 	if (bDebugFloorCheck)
-// 	{
-// 		DrawDebugSphere(GetWorld(), End, 30.f, 6, FColor::Magenta, false, 5.f);
-// 		DrawDebugLine(GetWorld(), Start, End, FColor::Magenta, false, 1.f, 0, 2.f);
-// 	}
-// #endif
-// 	FCollisionQueryParams QueryParams;
-// 	QueryParams.AddIgnoredActor(PFECharacterOwner);
-//
-// 	FHitResult Hit;
-// 	bool bHit = GetWorld()->SweepSingleByChannel(Hit, Start, End, FQuat::Identity,
-// 	ECC_Visibility, FCollisionShape::MakeSphere(30.f), QueryParams);
-//
-// 	if (bHit)
-// 	{
-// 		bool bWalkable = IsWalkable(Hit);
-//
-// 		OutFloorResult.bBlockingHit = true;
-// 		OutFloorResult.FloorDist = (Hit.ImpactPoint - CapsuleLocation).Size();
-// 		OutFloorResult.LineDist = OutFloorResult.FloorDist;
-// 		OutFloorResult.bWalkableFloor = bWalkable;
-// 		OutFloorResult.HitResult = Hit;
-// 	}
-// 	else
-// 	{
-// 		OutFloorResult.Clear();
-// 	}
-// }
+void UPFECharacterMovementComponent::UpdateCharacterStateBeforeMovement(float deltaTime)
+{
+	Super::UpdateCharacterStateBeforeMovement(deltaTime);
+	if (IsFalling())
+	{
+		Velocity.X = FMath::Clamp(Velocity.X,-MaxSpeedOnAir , MaxSpeedOnAir);
+	}
+	else if (MovementMode==MOVE_Custom &&
+		(EPFEMovementMode)CustomMovementMode == EPFEMovementMode::PFEMOVE_DASHING &&
+		!PFECharacterOwner->bIsOnGround)
+	{
+		Velocity.X = FMath::Clamp(Velocity.X,-DashMaxSpeedOnAir , DashMaxSpeedOnAir);
+	}
+}
 
 void UPFECharacterMovementComponent::InitVariables()
 {
@@ -329,6 +308,7 @@ void UPFECharacterMovementComponent::StartWallGrab()
 {
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
 	GravityScale = 0.f;
+	StartTimerResetDash();
 }
 
 void UPFECharacterMovementComponent::StopWallGrab()
