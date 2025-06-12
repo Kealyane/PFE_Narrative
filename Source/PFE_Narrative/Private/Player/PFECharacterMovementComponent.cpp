@@ -329,6 +329,7 @@ void UPFECharacterMovementComponent::StartWallGrab()
 {
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
 	GravityScale = 0.f;
+	StartTimerResetDash();
 }
 
 void UPFECharacterMovementComponent::StopWallGrab()
