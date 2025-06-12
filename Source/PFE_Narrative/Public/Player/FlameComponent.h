@@ -126,6 +126,8 @@ private:
 	bool bIsPlayingSound = false;
 	bool bIsDownSound = false;
 
+	float DelaySmoothSound = 0.4f;
+
 	void CheckDeath();
 	void UpdateProgressBars();
 	

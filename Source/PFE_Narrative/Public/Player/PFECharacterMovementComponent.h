@@ -88,6 +88,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Multiplier applied to deceleration rate in air"))
 	float DecelInAir;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|InAir", meta = (AllowPrivateAccess = "true"))
+	float MaxSpeedOnAir;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Jump",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Half height of jump"))
@@ -129,6 +131,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Dash",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Dash cooldown"))
 	float DashCooldown = 0.7f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Dash", meta = (AllowPrivateAccess = "true"))
+	float DashMaxSpeedOnAir;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement|Wall",
 		meta = (AllowPrivateAccess = "true", ToolTip = "Distance for wall jump"))
@@ -176,6 +180,7 @@ protected:
 	virtual void OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode) override;
 	virtual float GetMaxAcceleration() const override;
 	virtual float GetMaxBrakingDeceleration() const override;
+	virtual void UpdateCharacterStateBeforeMovement(float deltaTime) override; 
 	//virtual void FindFloor(const FVector& CapsuleLocation, FFindFloorResult& OutFloorResult, bool bCanUseCachedLocation, const FHitResult* DownwardSweepResult = 0) const override;
 	
 	void InitVariables();	
