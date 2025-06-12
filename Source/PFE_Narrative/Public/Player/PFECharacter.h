@@ -100,6 +100,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitSoundComponent(USoundComponent* InSoundComponent) { SoundComponent = InSoundComponent; }
 	UFUNCTION(BlueprintCallable)
+	void InitSceneCaptureCamera(USceneCaptureComponent2D* InSceneCaptureVertical, USceneCaptureComponent2D* InSceneCaptureHorizontal)
+	{
+		SceneCaptureVertical = InSceneCaptureVertical;
+		SceneCaptureHorizontal = InSceneCaptureHorizontal;
+	}
+	UFUNCTION(BlueprintCallable)
 	void NotifyGround();
 
 	UFUNCTION()
@@ -186,6 +192,8 @@ private:
 	bool bIsInReflexionArea;
 	bool bIsReflexionHorizontal;
 	float ReflexionAreaGround;
+	TObjectPtr<USceneCaptureComponent2D> SceneCaptureHorizontal;
+	TObjectPtr<USceneCaptureComponent2D> SceneCaptureVertical;
 	TObjectPtr<UStaticMeshComponent> ReflexionPlaneHoriontal;
 	TObjectPtr<UStaticMeshComponent> ReflexionPlaneVertical;
 	FVector ReflexionHPlaneLocation;
