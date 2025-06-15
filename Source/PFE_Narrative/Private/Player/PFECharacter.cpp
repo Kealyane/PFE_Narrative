@@ -308,6 +308,8 @@ void APFECharacter::WallGrabEnd()
 void APFECharacter::WallJump()
 {
 	if (!bHasStartWallJump) bHasStartWallJump = true;
+
+	JumpDelegate.Broadcast();
 	
 	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
