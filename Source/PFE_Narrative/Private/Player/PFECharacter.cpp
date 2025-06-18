@@ -124,8 +124,8 @@ void APFECharacter::InitGame()
 	bIsGrabbingWall = false;
 
 	PFEMovementComponent->ResetVariables();
-	SceneCaptureHorizontal->SetActive(false);
-	SceneCaptureVertical->SetActive(false);
+	//SceneCaptureHorizontal->SetActive(false);
+	//SceneCaptureVertical->SetActive(false);
 }
 
 void APFECharacter::InitGameMode()
@@ -432,13 +432,13 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 		{
 			ReflexionPlaneHoriontal->SetRelativeLocation(ReflexionHPlaneLocation);
 			ReflexionPlaneHoriontal->SetHiddenInGame(true);
-			SceneCaptureHorizontal->SetActive(false);
+			//SceneCaptureHorizontal->SetActive(false);
 		}
 		else
 		{
 			ReflexionPlaneVertical->SetRelativeLocation(ReflexionVPlaneLocation);
 			ReflexionPlaneVertical->SetHiddenInGame(true);
-			SceneCaptureVertical->SetActive(false);
+			//SceneCaptureVertical->SetActive(false);
 		}
 	}
 	else
@@ -446,12 +446,12 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 		if (bAxisIsHorizontal)
 		{
 			ReflexionPlaneHoriontal->SetHiddenInGame(false);
-			SceneCaptureHorizontal->SetActive(true);
+			//SceneCaptureHorizontal->SetActive(true);
 		}
 		else
 		{
 			ReflexionPlaneVertical->SetHiddenInGame(false);
-			SceneCaptureVertical->SetActive(true);
+			//SceneCaptureVertical->SetActive(true);
 		}
 	}
 }
