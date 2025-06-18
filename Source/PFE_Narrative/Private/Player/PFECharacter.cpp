@@ -463,7 +463,7 @@ void APFECharacter::LaunchRespawn()
 	GetWorld()->GetTimerManager().SetTimer(
 	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
 	
-	NumberOfKeyPickedUp = 0;
+	//NumberOfKeyPickedUp = 0;
 	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
 }
 
