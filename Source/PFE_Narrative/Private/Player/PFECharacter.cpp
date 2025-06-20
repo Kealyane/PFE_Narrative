@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Core/PFEGameMode.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -49,6 +50,7 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
+	
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -122,6 +124,8 @@ void APFECharacter::InitGame()
 	bIsGrabbingWall = false;
 
 	PFEMovementComponent->ResetVariables();
+	//SceneCaptureHorizontal->SetActive(false);
+	//SceneCaptureVertical->SetActive(false);
 }
 
 void APFECharacter::InitGameMode()
@@ -304,6 +308,8 @@ void APFECharacter::WallGrabEnd()
 void APFECharacter::WallJump()
 {
 	if (!bHasStartWallJump) bHasStartWallJump = true;
+
+	JumpDelegate.Broadcast();
 	
 	SoundComponent->PlaySound(ESoundType::Jump);
 	bIsDoingWallJump = true;
@@ -426,11 +432,13 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 		{
 			ReflexionPlaneHoriontal->SetRelativeLocation(ReflexionHPlaneLocation);
 			ReflexionPlaneHoriontal->SetHiddenInGame(true);
+			//SceneCaptureHorizontal->SetActive(false);
 		}
 		else
 		{
 			ReflexionPlaneVertical->SetRelativeLocation(ReflexionVPlaneLocation);
 			ReflexionPlaneVertical->SetHiddenInGame(true);
+			//SceneCaptureVertical->SetActive(false);
 		}
 	}
 	else
@@ -438,10 +446,12 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 		if (bAxisIsHorizontal)
 		{
 			ReflexionPlaneHoriontal->SetHiddenInGame(false);
+			//SceneCaptureHorizontal->SetActive(true);
 		}
 		else
 		{
 			ReflexionPlaneVertical->SetHiddenInGame(false);
+			//SceneCaptureVertical->SetActive(true);
 		}
 	}
 }
@@ -453,7 +463,7 @@ void APFECharacter::LaunchRespawn()
 	GetWorld()->GetTimerManager().SetTimer(
 	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
 	
-	NumberOfKeyPickedUp = 0;
+	//NumberOfKeyPickedUp = 0;
 	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
 }
 
