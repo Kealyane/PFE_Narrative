@@ -49,6 +49,8 @@ public:
 private:
 	void CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const;
 	bool FindHighPrioBoundForDirection(EDirection Dir, float& OutValue) const;
+	float GetBoundTargetY() const;
 
 	float BIG_VALUE = 100000.f;
+	float CurrentY = YLocation;
 };

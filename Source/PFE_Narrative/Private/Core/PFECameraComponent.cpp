@@ -28,6 +28,9 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// add Bias when character face right or left
 	float Bias = PFECharacter->GetIsLookingRight() ? HorizontalBias : -HorizontalBias;
 
+	float DesiredY = GetBoundTargetY();
+	CurrentY = FMath::FInterpTo(CurrentY, DesiredY, DeltaTime, 1.f); 
+
 	FVector CharacterLocation = PFECharacter->GetActorLocation();
 	FVector CameraCurrentLocation = GetOwner()->GetActorLocation();
 	FVector DeltaLocation = CharacterLocation - CameraCurrentLocation;
@@ -37,7 +40,7 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	bool bOutsideDeadZoneHorizontal = FMath::Abs(DeltaLocation.X) > HalfDeadZone.X;
 	bool bOutsideDeadZoneVertical = FMath::Abs(DeltaLocation.Z) > HalfDeadZone.Y;
 
-	FVector DesiredLocation = FVector(CameraCurrentLocation.X + Bias, YLocation, CameraCurrentLocation.Z);
+	FVector DesiredLocation = FVector(CameraCurrentLocation.X + Bias, CurrentY, CameraCurrentLocation.Z);
 
 	// desired location outside Dead zone
 	if (bOutsideDeadZoneHorizontal)
@@ -129,7 +132,7 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 		);
 	}
 	
-	InterpolatedLocation.Y = YLocation;
+	InterpolatedLocation.Y = CurrentY;
 
 	GetOwner()->SetActorLocation(InterpolatedLocation);
 
@@ -158,7 +161,7 @@ void UPFECameraComponent::CameraHalfSize(float& OutHalfWidth, float& OutHalfHeig
 	}
 	float Ratio = ScreentSize.X / ScreentSize.Y;
 	float FovRad = FMath::DegreesToRadians(90);
-	OutHalfHeight = 0.5f * YLocation /FMath::Tan(0.5F * FovRad);
+	OutHalfHeight = 0.5f * CurrentY /FMath::Tan(0.5F * FovRad);
 	OutHalfWidth = OutHalfHeight * Ratio;
 }
 
@@ -206,6 +209,25 @@ bool UPFECameraComponent::FindHighPrioBoundForDirection(EDirection Dir, float& O
 		OutValue = BestValue;
 	}
 	return bFound;
+}
+
+float UPFECameraComponent::GetBoundTargetY() const
+{
+	int32 BestPriority = -1;
+	float LocalTargetY = YLocation;
+
+	for (ACameraBounds* Bound : ActiveBounds)
+	{
+		if (!Bound || !Bound->bUseDistance) continue;
+
+		if (Bound->LayerPriority > BestPriority)
+		{
+			LocalTargetY = Bound->DistanceToPlayer;
+			BestPriority = Bound->LayerPriority;
+		}
+	}
+
+	return LocalTargetY;
 }
 
 
