@@ -24,7 +24,10 @@ class PFE_NARRATIVE_API ACameraBounds : public AActor
 	
 public:	
 	ACameraBounds();
-	
+	UPROPERTY(EditAnywhere)
+	bool bUseDistance = false;
+	UPROPERTY(EditAnywhere)
+	float DistanceToPlayer;
 	UPROPERTY(EditAnywhere)
 	bool bUp;
 	UPROPERTY(EditAnywhere)
