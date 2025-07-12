@@ -66,18 +66,22 @@ void APFECharacter::Tick(float DeltaSeconds)
 			Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().X);
 			if (MoveValue < 0.f)
 			{
-				NewLocation = FVector(-Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);	
+				NewLocation = FVector(-(Distance+Distance*DistanceMultInReflexion), ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);	
 			}
 			else
 			{
-				NewLocation = FVector(Distance*2, ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);
+				NewLocation = FVector((Distance+Distance*DistanceMultInReflexion), ReflexionVPlaneLocation.Y, ReflexionVPlaneLocation.Z);
 			}
 			ReflexionPlaneVertical->SetRelativeLocation(NewLocation);
 		}
 		else
 		{
 			Distance = FMath::Abs(ReflexionAreaGround - GetActorLocation().Z);
-			NewLocation = FVector(ReflexionHPlaneLocation.X, ReflexionHPlaneLocation.Y, -(Distance*2));
+			NewLocation = FVector(
+				ReflexionHPlaneLocation.X,
+				ReflexionHPlaneLocation.Y,
+				-(Distance+Distance*DistanceMultInReflexion)
+				);
 			ReflexionPlaneHoriontal->SetRelativeLocation(NewLocation);
 		}
 	}
@@ -420,11 +424,12 @@ void APFECharacter::UseKey()
 	}
 }
 
-void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation)
+void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation, float DistanceMult)
 {
 	bIsInReflexionArea = bIsInside;
 	ReflexionAreaGround = bAxisIsHorizontal ? AxisLocation.Z : AxisLocation.X;
 	bIsReflexionHorizontal = bAxisIsHorizontal;
+	DistanceMultInReflexion = DistanceMult;
 
 	if (!bIsInReflexionArea)
 	{

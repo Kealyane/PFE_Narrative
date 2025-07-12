@@ -123,7 +123,7 @@ public:
 	bool HasKey() const { return NumberOfKeyPickedUp > 0; }
 
 	UFUNCTION()
-	void SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation);
+	void SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation, float DistanceMult);
 
 	FVector GetWallNormal() const { return WallNormal; }
 	bool GetHasStartWallJump() const { return bHasStartWallJump; }
@@ -189,6 +189,7 @@ private:
 	TObjectPtr<APFEGameMode> PFEGameMode;
 	TObjectPtr<UPFECharacterMovementComponent> PFEMovementComponent;
 	int NumberOfKeyPickedUp = 0;
+	
 	bool bIsInReflexionArea;
 	bool bIsReflexionHorizontal;
 	float ReflexionAreaGround;
@@ -200,6 +201,7 @@ private:
 	FVector ReflexionVPlaneLocation;
 	FRotator LeftOrientation = FRotator(0.0f, 180.0f, 0.0f);
 	FRotator RightOrientation = FRotator(0.0f, 0.0f, 0.0f);
+	float DistanceMultInReflexion;
 	
 	float LastTimeOnGround = 0.f;
 	float LastJumpInputTime = 0.f;

@@ -14,6 +14,12 @@ class PFE_NARRATIVE_API APlatformInvisibleBounds : public AActor
 public:	
 	APlatformInvisibleBounds();
 
+	UFUNCTION(BlueprintCallable)
+	void SetDistanceMult(float InDistanceMult) { DistanceMult = InDistanceMult; }
+	
+private:
+	float DistanceMult;
+
 protected:
 	virtual void BeginPlay() override;
 
