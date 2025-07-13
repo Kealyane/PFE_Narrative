@@ -50,7 +50,6 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
-	Camera->Deactivate();
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
