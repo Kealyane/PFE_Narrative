@@ -25,6 +25,9 @@ protected:
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bUseDefaultCamera = true;
+	
 	UFUNCTION(BlueprintCallable)
 	void SetPFECharacter(APFECharacter* InCharacter) { PFECharacter = InCharacter; }
 

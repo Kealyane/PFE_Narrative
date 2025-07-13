@@ -21,6 +21,8 @@ void UPFECameraComponent::BeginPlay()
 
 void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
+	if (bUseDefaultCamera) return;
+	
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (PFECharacter == nullptr) return;
