@@ -23,7 +23,7 @@ APFECharacter::APFECharacter()
 
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
-
+	
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 }
@@ -50,7 +50,6 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
-	
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -126,6 +125,7 @@ void APFECharacter::InitGame()
 	bIsJumping = false;
 	bIsNearWall = false;
 	bIsGrabbingWall = false;
+	bIsLookingRight = true;
 
 	PFEMovementComponent->ResetVariables();
 	//SceneCaptureHorizontal->SetActive(false);
@@ -145,11 +145,13 @@ void APFECharacter::FlipCharacter(float Direction)
 	{
 		SetActorRotation(LeftOrientation);
 		GetController()->SetControlRotation(LeftOrientation);
+		bIsLookingRight = false;
 	}
 	else
 	{
 		SetActorRotation(RightOrientation);
 		GetController()->SetControlRotation(RightOrientation);
+		bIsLookingRight = true;
 	}
 }
 
