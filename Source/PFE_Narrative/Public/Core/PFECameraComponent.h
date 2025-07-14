@@ -49,6 +49,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveBounds(ACameraBounds* InBounds) { if (ActiveBounds.Contains(InBounds)) ActiveBounds.Remove(InBounds); }
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateCameraPosition(float DeltaTime);
+
 private:
 	void CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const;
 	bool FindHighPrioBoundForDirection(EDirection Dir, float& OutValue) const;

@@ -21,10 +21,144 @@ void UPFECameraComponent::BeginPlay()
 
 void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (bUseDefaultCamera) return;
-	
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	// if (PFECharacter == nullptr) return;
+	//
+	// if (bUseDefaultCamera)
+	// {
+	// 	UE_LOG(LogTemp, Display, TEXT("UPFECameraComponent::TickComponent Use default camera"));
+	// 	return;
+	// }
+	//
+	// // add Bias when character face right or left
+	// float Bias = PFECharacter->GetIsLookingRight() ? HorizontalBias : -HorizontalBias;
+	//
+	// float DesiredY = GetBoundTargetY();
+	// CurrentY = FMath::FInterpTo(CurrentY, DesiredY, DeltaTime, 1.f); 
+	//
+	// FVector CharacterLocation = PFECharacter->GetActorLocation();
+	// FVector CameraCurrentLocation = GetOwner()->GetActorLocation();
+	// FVector DeltaLocation = CharacterLocation - CameraCurrentLocation;
+	//
+	// // desired location in Dead zone
+	// FVector2D HalfDeadZone = DeadZoneSize * 0.5;
+	// bool bOutsideDeadZoneHorizontal = FMath::Abs(DeltaLocation.X) > HalfDeadZone.X;
+	// bool bOutsideDeadZoneVertical = FMath::Abs(DeltaLocation.Z) > HalfDeadZone.Y;
+	//
+	// FVector DesiredLocation = FVector(CameraCurrentLocation.X + Bias, CurrentY, CameraCurrentLocation.Z);
+	//
+	// // desired location outside Dead zone
+	// if (bOutsideDeadZoneHorizontal)
+	// {
+	// 	DesiredLocation.X = CharacterLocation.X - FMath::Sign(DeltaLocation.X) * HalfDeadZone.X + Bias;
+	// }
+	// if (bOutsideDeadZoneVertical)
+	// {
+	// 	DesiredLocation.Z = CharacterLocation.Z - FMath::Sign(DeltaLocation.Z) * HalfDeadZone.Y;
+	// }
+	//
+	// bool bHasBoundDown = false;
+	//
+	// // desired location with camera boundaries
+	// if (ActiveBounds.Num() > 0)
+	// {
+	// 	float MinX, MaxX, MinZ, MaxZ;
+	// 	float HalfWidth, HalfHeight;
+	// 	CameraHalfSize(HalfWidth, HalfHeight);
+	//
+	// 	if (FindHighPrioBoundForDirection(EDirection::LEFT, MinX))
+	// 		MinX += HalfWidth;
+	// 	else
+	// 		MinX = DesiredLocation.X - BIG_VALUE;
+	//
+	// 	if (FindHighPrioBoundForDirection(EDirection::RIGHT, MaxX))
+	// 		MaxX -= HalfWidth;
+	// 	else
+	// 		MaxX = DesiredLocation.X + BIG_VALUE;
+	// 	
+	// 	if (FindHighPrioBoundForDirection(EDirection::DOWN, MinZ))
+	// 	{
+	// 		MinZ += HalfHeight;
+	// 		bHasBoundDown = true;
+	// 	}
+	// 	else
+	// 	{
+	// 		MinZ = DesiredLocation.Z - BIG_VALUE;
+	// 	}
+	//
+	// 	if (FindHighPrioBoundForDirection(EDirection::UP, MaxZ))
+	// 		MaxZ -= HalfHeight;
+	// 	else
+	// 		MaxZ = DesiredLocation.Z + BIG_VALUE;
+	//
+	// 	if (MaxX > MinX && MaxZ > MinZ)
+	// 	{
+	// 		DesiredLocation.X = FMath::Clamp(DesiredLocation.X, MinX, MaxX);
+	// 		DesiredLocation.Z = FMath::Clamp(DesiredLocation.Z, MinZ, MaxZ);
+	// 	}
+	// }
+	//
+	// // choose interpolation speed
+	// float HorizontalSpeed = bOutsideDeadZoneHorizontal && PFECharacter->MoveValue > 0.1f
+	// 					? InterpSpeedFast    
+	// 					: InterpSpeedSlow; 
+	//
+	// float VerticalSpeed = DeltaLocation.Z < 0 ? VerticalInterpSpeedFast : InterpSpeedSlow;
+	//
+	// // interpolate camera position
+	// FVector InterpolatedLocation;
+	//
+	// // Horizontal
+	// InterpolatedLocation.X = FMath::FInterpTo(
+	// 	CameraCurrentLocation.X,
+	// 	DesiredLocation.X,
+	// 	DeltaTime,
+	// 	HorizontalSpeed
+	// );
+	//
+	// // Vertical
+	// if (!bHasBoundDown && DeltaLocation.Z < 0)
+	// {
+	// 	// focus on chara if no bounds down
+	// 	InterpolatedLocation.Z = FMath::FInterpTo(
+	// 		CameraCurrentLocation.Z,
+	// 		CharacterLocation.Z,
+	// 		DeltaTime,
+	// 		VerticalSpeed
+	// 	);
+	// }
+	// else
+	// {
+	// 	InterpolatedLocation.Z = FMath::FInterpTo(
+	// 		CameraCurrentLocation.Z,
+	// 		DesiredLocation.Z,
+	// 		DeltaTime,
+	// 		VerticalSpeed
+	// 	);
+	// }
+	//
+	// InterpolatedLocation.Y = CurrentY;
+	//
+	// GetOwner()->SetActorLocation(InterpolatedLocation);
+
+// #if WITH_EDITOR
+// 	{
+// 		FVector CameraLocation = GetOwner()->GetActorLocation();
+// 		FVector Start = FVector(CameraLocation.X, 5.f, -10000.f);
+// 		FVector End   = FVector(CameraLocation.X, 5.f, 10000.f);
+// 		DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, -1.0f, 0, 5.f);
+// 		
+// 		FVector DeadZoneCenter = FVector(CameraLocation.X - 2*Bias, 5.f, CameraLocation.Z);
+// 		FVector DeadZoneExtent = FVector(DeadZoneSize.X * 0.5f, 5.f, DeadZoneSize.Y * 0.5f);
+//
+// 		DrawDebugBox(GetWorld(), DeadZoneCenter, DeadZoneExtent, FColor::Cyan, false, -1.f, 0, 4.f);
+// 	}
+// #endif
+}
+
+void UPFECameraComponent::UpdateCameraPosition(float DeltaTime)
+{
 	if (PFECharacter == nullptr) return;
 
 	// add Bias when character face right or left
@@ -137,20 +271,6 @@ void UPFECameraComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	InterpolatedLocation.Y = CurrentY;
 
 	GetOwner()->SetActorLocation(InterpolatedLocation);
-
-// #if WITH_EDITOR
-// 	{
-// 		FVector CameraLocation = GetOwner()->GetActorLocation();
-// 		FVector Start = FVector(CameraLocation.X, 5.f, -10000.f);
-// 		FVector End   = FVector(CameraLocation.X, 5.f, 10000.f);
-// 		DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, -1.0f, 0, 5.f);
-// 		
-// 		FVector DeadZoneCenter = FVector(CameraLocation.X - 2*Bias, 5.f, CameraLocation.Z);
-// 		FVector DeadZoneExtent = FVector(DeadZoneSize.X * 0.5f, 5.f, DeadZoneSize.Y * 0.5f);
-//
-// 		DrawDebugBox(GetWorld(), DeadZoneCenter, DeadZoneExtent, FColor::Cyan, false, -1.f, 0, 4.f);
-// 	}
-// #endif
 }
 
 void UPFECameraComponent::CameraHalfSize(float& OutHalfWidth, float& OutHalfHeight) const
