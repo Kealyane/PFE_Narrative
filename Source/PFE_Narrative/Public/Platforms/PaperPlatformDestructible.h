@@ -49,6 +49,7 @@ protected:
 	FLinearColor CloseColor = FLinearColor(0.04f,1.f,0.87f,1.f);
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	UFUNCTION()
 	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
@@ -64,4 +65,9 @@ private:
 	void CheckPlayerInPlatform();
 
 	float SphereRadius = 30.f;
+
+	FTimerHandle HitPlayerOnTimer;
+	FTimerHandle HitSwitchTimer;
+	FTimerHandle OverlapPlayerOnTimer;
+	FTimerHandle OverlapSwitchTimer;
 };
