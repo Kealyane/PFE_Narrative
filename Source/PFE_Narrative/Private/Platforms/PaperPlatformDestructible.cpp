@@ -43,6 +43,19 @@ void APaperPlatformDestructible::BeginPlay()
 	InitPlatform();
 }
 
+void APaperPlatformDestructible::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(HitSwitchTimer);
+		World->GetTimerManager().ClearTimer(HitPlayerOnTimer);
+		World->GetTimerManager().ClearTimer(OverlapSwitchTimer);
+		World->GetTimerManager().ClearTimer(OverlapPlayerOnTimer);
+	}
+}
+
 void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
 	const FHitResult& Hit)
 {
@@ -63,17 +76,12 @@ void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FV
 		
 		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
 		{
-			//UE_LOG(LogTemp, Warning, TEXT("hit"));			
-
 			bIsDestroyed = true;
-			FTimerHandle PlayerOnTimer;
-			FTimerHandle SwitchTimer;
-
 			
-			GetWorld()->GetTimerManager().SetTimer(PlayerOnTimer, this,
+			GetWorld()->GetTimerManager().SetTimer(HitPlayerOnTimer, this,
 				&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
 
-			GetWorld()->GetTimerManager().SetTimer(SwitchTimer,
+			GetWorld()->GetTimerManager().SetTimer(HitSwitchTimer,
 				[this]()
 				{
 					bIsDestroyed = false;
@@ -88,14 +96,11 @@ void APaperPlatformDestructible::OnOverlapBegin(AActor* OverlappedActor, AActor*
 	if (!bIsDestroyed)
 	{
 		bIsDestroyed = true;
-		//UE_LOG(LogTemp, Warning, TEXT("overlap !"));
-		FTimerHandle PlayerOnTimer;
-		FTimerHandle SwitchTimer;
 		
-		GetWorld()->GetTimerManager().SetTimer(PlayerOnTimer, this,
+		GetWorld()->GetTimerManager().SetTimer(OverlapPlayerOnTimer, this,
 	&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
 
-		GetWorld()->GetTimerManager().SetTimer(SwitchTimer,
+		GetWorld()->GetTimerManager().SetTimer(OverlapSwitchTimer,
 			[this]()
 			{
 				bIsDestroyed = false;
@@ -113,14 +118,12 @@ void APaperPlatformDestructible::SwitchCollisionPreset()
 		SoundComponent->PlaySound(ESoundType::PlatformDestructible);
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
-		//UE_LOG(LogTemp, Warning, TEXT("Collision Ignore !"));
 	}
 	else
 	{
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 		CheckPlayerInPlatform();
-		//UE_LOG(LogTemp, Warning, TEXT("Collision block !"));
 	}
 	StateChanged.Broadcast(bIsDestroyed);
 }
