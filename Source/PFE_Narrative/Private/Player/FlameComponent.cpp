@@ -47,6 +47,11 @@ void UFlameComponent::ResetFlameAfterDeath()
 			CurrentFlameValue = BigFlameThreshold + 1;
 			OnHighFlame.Broadcast();
 		}
+		else
+		{
+			CurrentFlameValue = MaxFlameValue / 2.f;
+			OnNormalFlame.Broadcast();
+		}
 		UpdateProgressBars();
 	}
 	OnChangeFlameValue.Broadcast(false);
