@@ -38,7 +38,9 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 				bIsActive = true;
 				UpdateCheckpoint(bIsActive);
 			}
-			PFEGameMode->SetCheckpoint(this, GetActorLocation());
+			APFECharacter* Character = Cast<APFECharacter>(OtherActor);
+			EFlameStatus FlameStatus = Character->GetFlameComponent()->GetFlameStatus();
+			PFEGameMode->SetCheckpoint(this, GetActorLocation(), FlameStatus);
 		}
 	}
 }
