@@ -37,6 +37,9 @@ void UFlameComponent::ResetFlameAfterDeath()
 	}
 	else
 	{
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
+		
 		if (CurrentFlameStatus == EFlameStatus::SMALL)
 		{
 			CurrentFlameValue = SmallFlameThreshold - 1;
