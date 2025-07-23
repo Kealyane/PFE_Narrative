@@ -287,6 +287,7 @@ void APFECharacter::JumpStart(const FInputActionValue& Value)
 
 void APFECharacter::Dash(const FInputActionValue& Value)
 {
+	if (bLockDash) return;
 	if (!bIsAlive || !bCanMove) return;
 	
 	if (bCanDash)

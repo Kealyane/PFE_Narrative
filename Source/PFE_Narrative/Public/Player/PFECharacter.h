@@ -55,6 +55,8 @@ public:
 	bool bIsAlive = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bCanMove = true;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bLockDash = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsOnGround = true;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
