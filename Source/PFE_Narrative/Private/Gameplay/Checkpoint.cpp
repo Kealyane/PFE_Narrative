@@ -27,7 +27,6 @@ void ACheckpoint::BeginPlay()
 
 	CheckpointManager = Cast<ACheckpointManager>(
 	UGameplayStatics::GetActorOfClass(GetWorld(), ACheckpointManager::StaticClass()));
-	check(CheckpointManager);
 
 	bIsActive = false;
 	CheckpointLocation = GetActorLocation();
@@ -47,7 +46,7 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 				UpdateCheckpoint(bIsActive);
 			}
 			
-			CheckpointManager->NotifyCheckpointIsReached(this);
+			if (CheckpointManager) CheckpointManager->NotifyCheckpointIsReached(this);
 			
 			APFECharacter* Character = Cast<APFECharacter>(OtherActor);
 			EFlameStatus FlameStatus = Character->GetFlameComponent()->GetFlameStatus();
