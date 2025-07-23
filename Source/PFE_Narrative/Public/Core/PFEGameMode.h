@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Player/FlameComponent.h"
 #include "PFEGameMode.generated.h"
 
 class ACheckpoint;
@@ -24,9 +25,11 @@ public:
 	FCharacterDeathSignature OnDeath;
 
 	UFUNCTION()
-	void SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition);
+	void SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition, EFlameStatus InFlameStatus);
 	UFUNCTION()
 	FVector GetCheckpointPosition() const { return LastCheckpointLocation; }
+	UFUNCTION()
+	EFlameStatus GetCheckpointFlameStatus() const { return FlameStatusAtCheckpoint; }
 
 	UFUNCTION(BlueprintCallable)
 	void LaunchDeathEvent() { OnDeath.Broadcast(); }
@@ -34,6 +37,7 @@ public:
 protected:
 	FVector LastCheckpointLocation;
 	TObjectPtr<ACheckpoint> CurrentCheckpoint;
+	EFlameStatus FlameStatusAtCheckpoint;
 
 	virtual void BeginPlay() override;
 };

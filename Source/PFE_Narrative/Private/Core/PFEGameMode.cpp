@@ -5,17 +5,19 @@
 
 #include "Gameplay/Checkpoint.h"
 
+
 APFEGameMode::APFEGameMode()
 {
 
 }
 
-void APFEGameMode::SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition)
+void APFEGameMode::SetCheckpoint(ACheckpoint* InCheckpoint, const FVector& CheckpointPosition, EFlameStatus InFlameStatus)
 {
 	if (CurrentCheckpoint != nullptr && CurrentCheckpoint != InCheckpoint) CurrentCheckpoint->ResetCheckpoint();
 	
 	CurrentCheckpoint = InCheckpoint;
 	LastCheckpointLocation = CheckpointPosition;
+	FlameStatusAtCheckpoint = InFlameStatus;
 }
 
 void APFEGameMode::BeginPlay()
