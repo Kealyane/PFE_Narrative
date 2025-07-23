@@ -37,6 +37,9 @@ void UFlameComponent::ResetFlameAfterDeath()
 	}
 	else
 	{
+		PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
+		PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
+		
 		if (CurrentFlameStatus == EFlameStatus::SMALL)
 		{
 			CurrentFlameValue = SmallFlameThreshold - 1;
@@ -46,6 +49,11 @@ void UFlameComponent::ResetFlameAfterDeath()
 		{
 			CurrentFlameValue = BigFlameThreshold + 1;
 			OnHighFlame.Broadcast();
+		}
+		else
+		{
+			CurrentFlameValue = MaxFlameValue / 2.f;
+			OnNormalFlame.Broadcast();
 		}
 		UpdateProgressBars();
 	}

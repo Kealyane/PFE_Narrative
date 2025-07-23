@@ -300,7 +300,8 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 void APFECharacter::WallGrabStart()
 {
 	if (bIsOnGround) return;
-	
+
+	JumpCount = 0;
 	bIsJumping = false;
 	bIsGrabbingWall = true;
 	PFEMovementComponent->StartWallGrab();
@@ -478,6 +479,7 @@ void APFECharacter::LaunchRespawn()
 void APFECharacter::Respawn()
 {
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
+	FlameComponent->SetFlameStatus(PFEGameMode->GetCheckpointFlameStatus());
 	SetActorLocation(RespawnLocation);
 	InitGame();
 	if (FlameComponent)
