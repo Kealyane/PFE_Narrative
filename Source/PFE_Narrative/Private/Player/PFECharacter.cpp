@@ -478,6 +478,7 @@ void APFECharacter::LaunchRespawn()
 void APFECharacter::Respawn()
 {
 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
+	FlameComponent->SetFlameStatus(PFEGameMode->GetCheckpointFlameStatus());
 	SetActorLocation(RespawnLocation);
 	InitGame();
 	if (FlameComponent)
