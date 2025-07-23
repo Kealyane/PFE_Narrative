@@ -7,6 +7,7 @@
 #include "Checkpoint.generated.h"
 
 
+class ACheckpointManager;
 class USoundComponent;
 /**
  * 
@@ -29,6 +30,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InitSoundComponent(USoundComponent* InSoundComponent)	{ SoundComponent = InSoundComponent; }
+
+	FVector GetCheckpointLocation() const {return CheckpointLocation;}
+	
 protected:
 	TObjectPtr<class USoundComponent> SoundComponent;
 
@@ -36,4 +40,8 @@ protected:
 
 	UFUNCTION()
 	void CheckpointReached(AActor* OverlappedActor, AActor* OtherActor);
+
+private:
+	FVector CheckpointLocation;
+	ACheckpointManager* CheckpointManager;
 };
