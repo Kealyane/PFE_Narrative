@@ -116,7 +116,7 @@ public:
 	UFlameComponent* GetFlameComponent() const { return FlameComponent; }
 	UFUNCTION()
 	USoundComponent* GetSoundComponent() const { return SoundComponent; }
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	bool GetIsLookingRight() const { return bIsLookingRight; }
 
 	UFUNCTION()
