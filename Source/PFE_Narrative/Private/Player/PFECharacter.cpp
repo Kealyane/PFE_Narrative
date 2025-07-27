@@ -305,11 +305,10 @@ void APFECharacter::WallGrabStart()
 
 	float PlayerPosX = GetActorLocation().X;
 	float DistanceWallPLayer = FMath::Abs(PlayerPosX - WallPosX);
-	float OffSet = DistanceWallPLayer - 50.f;
+	//float OffSet = DistanceWallPLayer - 50.f;
 	//OffSet = WallNormal.X < 0 ? -OffSet : OffSet;
 
 	WallGrabDelegate.Broadcast(true, DistanceWallPLayer);
-	UE_LOG(LogTemp, Warning, TEXT("DistanceWallPLayer %f"), DistanceWallPLayer);
 	
 	JumpCount = 0;
 	bIsJumping = false;
