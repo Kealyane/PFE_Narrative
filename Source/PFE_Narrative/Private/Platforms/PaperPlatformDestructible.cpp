@@ -148,18 +148,36 @@ void APaperPlatformDestructible::CheckPlayerInPlatform()
 		FCollisionShape::MakeSphere(SphereRadius),
 		QueryParams
 	);
-	//DrawDebugSphere(GetWorld(), Start, SphereRadius, 12, FColor::Green, false, 1.0f);
+
 	if (bHit)
 	{
 		for (const FHitResult& Hit : HitResults)
 		{
 			if (APFECharacter* HitCharacter = Cast<APFECharacter>(Hit.GetActor()))
 			{
-				if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(HitCharacter->GetGameMode()))
+				FVector LaunchVelocity;
+				FTimerHandle BlockTimer;
+				if (HitCharacter->GetActorLocation().Z < GetActorLocation().Z)
 				{
-					PFEGameMode->LaunchDeathEvent();
+					PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+					LaunchVelocity = FVector(-100.f, 0.f, -800.f);
+					GetWorld()->GetTimerManager().SetTimer(BlockTimer, this,
+						&APaperPlatformDestructible::Block, 0.2f, false);
 				}
+				else
+				{
+					PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+					LaunchVelocity = FVector(100.f, 0.f, 800.f);
+					GetWorld()->GetTimerManager().SetTimer(BlockTimer, this,
+						&APaperPlatformDestructible::Block, 0.2f, false);
+				}
+				HitCharacter->LaunchCharacter(LaunchVelocity, true, true);
 			}
 		}
 	}
+}
+
+void APaperPlatformDestructible::Block()
+{
+	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 }

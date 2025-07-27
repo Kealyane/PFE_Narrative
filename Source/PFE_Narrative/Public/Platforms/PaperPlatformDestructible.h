@@ -63,6 +63,8 @@ private:
 
 	UFUNCTION()
 	void CheckPlayerInPlatform();
+	UFUNCTION()
+	void Block();
 
 	float SphereRadius = 30.f;
 

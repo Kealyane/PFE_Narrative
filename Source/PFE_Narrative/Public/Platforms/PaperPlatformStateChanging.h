@@ -49,6 +49,10 @@ private:
 	TObjectPtr<UPrimitiveComponent> PrimitiveComponent;
 	UFUNCTION()
 	void SwitchCollider();
+	UFUNCTION()
+	void Block();
+	UFUNCTION()
+	void Ignore();
 
 	UFUNCTION()
 	void CheckPlayerInPlatform();

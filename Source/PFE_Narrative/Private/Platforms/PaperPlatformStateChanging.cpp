@@ -3,7 +3,9 @@
 
 #include "Platforms/PaperPlatformStateChanging.h"
 
+#include "Components/CapsuleComponent.h"
 #include "Core/PFEGameMode.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
 
@@ -82,6 +84,16 @@ void APaperPlatformStateChanging::SwitchCollider()
 	}
 }
 
+void APaperPlatformStateChanging::Block()
+{
+	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+}
+
+void APaperPlatformStateChanging::Ignore()
+{
+	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+}
+
 void APaperPlatformStateChanging::CheckPlayerInPlatform()
 {
 	FVector Start = StartPoint->GetComponentLocation();
@@ -109,10 +121,23 @@ void APaperPlatformStateChanging::CheckPlayerInPlatform()
 		{
 			if (APFECharacter* HitCharacter = Cast<APFECharacter>(Hit.GetActor()))
 			{
-				if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(HitCharacter->GetGameMode()))
+				FVector LaunchVelocity;
+				FTimerHandle BlockTimer;
+				if (HitCharacter->GetActorLocation().Z < GetActorLocation().Z)
 				{
-					PFEGameMode->LaunchDeathEvent();
+					Ignore();
+					LaunchVelocity = FVector(-100.f, 0.f, -800.f);
+					GetWorld()->GetTimerManager().SetTimer(BlockTimer, this,
+						&APaperPlatformStateChanging::Block, 0.2f, false);
 				}
+				else
+				{
+					Ignore();
+					LaunchVelocity = FVector(100.f, 0.f, 800.f);
+					GetWorld()->GetTimerManager().SetTimer(BlockTimer, this,
+						&APaperPlatformStateChanging::Block, 0.2f, false);
+				}
+				HitCharacter->LaunchCharacter(LaunchVelocity, true, true);
 			}
 		}
 	}
