@@ -19,6 +19,7 @@ class UInputComponent;
 struct FInputActionValue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FJumpDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWallGrabDelegate, bool, bIsGrabbing, float, Offset);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateSmallFlameDelegate, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHighFlameDelegate, float, Percent);
@@ -85,6 +86,8 @@ public:
 	FUpdateSmallFlameDelegate UpdateSmallFlameDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FUpdateHighFlameDelegate UpdateHighFlameDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FWallGrabDelegate WallGrabDelegate;
 	
 	UPROPERTY(BlueprintAssignable)
 	FUpdateKeyNumberDelegate UpdateKeyNumberDelegate;
@@ -149,6 +152,7 @@ protected:
 	float DotThreshold = 0.1f;
 	FVector WallNormal;
 	bool bIsNearWall = false;
+	float WallPosX;
 
 	
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;

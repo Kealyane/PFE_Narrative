@@ -303,6 +303,14 @@ void APFECharacter::WallGrabStart()
 {
 	if (bIsOnGround) return;
 
+	float PlayerPosX = GetActorLocation().X;
+	float DistanceWallPLayer = FMath::Abs(PlayerPosX - WallPosX);
+	float OffSet = DistanceWallPLayer - 50.f;
+	//OffSet = WallNormal.X < 0 ? -OffSet : OffSet;
+
+	WallGrabDelegate.Broadcast(true, DistanceWallPLayer);
+	UE_LOG(LogTemp, Warning, TEXT("DistanceWallPLayer %f"), DistanceWallPLayer);
+	
 	JumpCount = 0;
 	bIsJumping = false;
 	bIsGrabbingWall = true;
@@ -312,6 +320,7 @@ void APFECharacter::WallGrabStart()
 void APFECharacter::WallGrabEnd()
 {
 	bIsGrabbingWall = false;
+	WallGrabDelegate.Broadcast(false, 0.f);
 	PFEMovementComponent->StopWallGrab();
 }
 
@@ -384,7 +393,8 @@ bool APFECharacter::CheckWall()
 						return true;
 					}
 				}
-				
+
+				WallPosX = HitResult.ImpactPoint.X;
 				WallNormal = HitResult.ImpactNormal;
 				LastWallContactTime = GetWorld()->GetTimeSeconds();
 				return true;
