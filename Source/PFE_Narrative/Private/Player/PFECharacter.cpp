@@ -107,10 +107,10 @@ void APFECharacter::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	if (bIsNearWall)
 	{
 		bIsNearWall = false;
-		if (bIsGrabbingWall)
-		{
-			WallGrabEnd();
-		}
+		// if (bIsGrabbingWall)
+		// {
+		// 	WallGrabEnd();
+		// }
 	}
 }
 
@@ -141,6 +141,8 @@ void APFECharacter::InitGameMode()
 
 void APFECharacter::FlipCharacter(float Direction)
 {
+	if (bIsGrabbingWall) return;
+	
 	if (Direction < 0.0)
 	{
 		SetActorRotation(LeftOrientation);
