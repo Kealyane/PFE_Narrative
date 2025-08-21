@@ -37,6 +37,7 @@ void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 		}
 		else
 		{
+			Character->GetFlameComponent()->CurrentZoneEffect = ZoneEffect;
 			Character->GetFlameComponent()->StartEffect(bIsOneShot, FlameImpactValue,
 				DelayBetweenEffect, DelayBeforeNormalFlame, ZoneEffect == EZoneEffect::DECREASE,this);
 		}
@@ -50,5 +51,6 @@ void AArea::ExitArea(AActor* OverlappedActor, AActor* OtherActor)
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
 		Character->GetFlameComponent()->EndEffect(bIsOneShot, this);
+		if (!bIsOneShot) Character->GetFlameComponent()->CurrentZoneEffect = EZoneEffect::NORMAL;
 	}
 }
