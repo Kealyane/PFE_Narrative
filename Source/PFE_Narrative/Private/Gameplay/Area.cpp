@@ -24,6 +24,7 @@ void AArea::EnterArea(AActor* OverlappedActor, AActor* OtherActor)
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
+		if (!Character->bIsAlive) return;
 		if (bIsOneShot)
 		{
 			if (ZoneEffect == EZoneEffect::DECREASE) SoundComponent->PlaySound(ESoundType::AreaPointDown);
@@ -50,7 +51,10 @@ void AArea::ExitArea(AActor* OverlappedActor, AActor* OtherActor)
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		APFECharacter* Character = Cast<APFECharacter>(OtherActor);
-		Character->GetFlameComponent()->EndEffect(bIsOneShot, this);
-		if (!bIsOneShot) Character->GetFlameComponent()->CurrentZoneEffect = EZoneEffect::NORMAL;
+		if (!bIsOneShot)
+		{
+			Character->GetFlameComponent()->EndEffect(bIsOneShot, this);
+			Character->GetFlameComponent()->CurrentZoneEffect = EZoneEffect::NORMAL;
+		}
 	}
 }
