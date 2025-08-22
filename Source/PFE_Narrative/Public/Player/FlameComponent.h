@@ -93,6 +93,8 @@ public:
 	float BigFlameThreshold = 70.f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bResetFlameAfterDeath = false;
+	UPROPERTY(BlueprintReadWrite)
+	EZoneEffect CurrentZoneEffect;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Flame Properties", meta = (AllowPrivateAccess = "true"))
