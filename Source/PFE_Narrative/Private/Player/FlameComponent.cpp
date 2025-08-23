@@ -173,7 +173,7 @@ void UFlameComponent::StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRe
 	}
 
 	// store new effect
-	Areas.Add(FAreaEffect(true, InZoneEffect == EZoneEffect::DECREASE, 0.f, 0.f, 0.f, InAreaRef));
+	//Areas.Add(FAreaEffect(true, InZoneEffect == EZoneEffect::DECREASE, 0.f, 0.f, 0.f, InAreaRef));
 
 	SetFlameValue(FlameValue);
 }
