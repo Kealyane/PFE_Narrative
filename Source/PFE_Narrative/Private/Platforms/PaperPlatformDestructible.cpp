@@ -37,7 +37,7 @@ void APaperPlatformDestructible::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("PrimitiveComponent not cast properly"));
 	}
 	
-	OnActorHit.AddDynamic(this, &APaperPlatformDestructible::OnHit);
+	//OnActorHit.AddDynamic(this, &APaperPlatformDestructible::OnHit);
 	OnActorBeginOverlap.AddDynamic(this, &APaperPlatformDestructible::OnOverlapBegin);
 
 	InitPlatform();
@@ -61,18 +61,18 @@ void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FV
 {
 	if (OtherActor && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
-		if (bShowDebug)
-		{
-			// Debug : Draw Impact Normal (Red - length : 50)
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
-			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
-			UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
-
-			// Debug : Draw Down Vector (Blue - length 25)
-			DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
-			DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
-			UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
-		}
+		// if (bShowDebug)
+		// {
+		// 	// Debug : Draw Impact Normal (Red - length : 50)
+		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
+		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
+		// 	UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
+		//
+		// 	// Debug : Draw Down Vector (Blue - length 25)
+		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
+		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
+		// 	UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
+		// }
 		
 		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
 		{
