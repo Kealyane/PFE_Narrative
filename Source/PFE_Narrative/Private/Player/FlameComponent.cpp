@@ -176,7 +176,10 @@ void UFlameComponent::StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRe
 	//Areas.Add(FAreaEffect(true, InZoneEffect == EZoneEffect::DECREASE, 0.f, 0.f, 0.f, InAreaRef));
 
 	SetFlameValue(FlameValue);
+	RestartArea();
 }
+
+
 
 void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 {
@@ -267,6 +270,15 @@ void UFlameComponent::EndEffect(bool bInIsOneShot, AArea* InAreaRef)
 			// 	true
 			// );
 		}
+	}
+}
+
+void UFlameComponent::RestartArea()
+{
+	if (!Areas.IsEmpty())
+	{
+		int32 LastIndex = Areas.Num() - 1;
+		LaunchEffect(Areas[LastIndex].Value, Areas[LastIndex].Delay);
 	}
 }
 

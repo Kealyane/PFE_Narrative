@@ -76,6 +76,9 @@ public:
 	UFUNCTION()
 	void EndEffect(bool bInIsOneShot, AArea* AreaRef);
 
+	UFUNCTION()
+	void RestartArea();
+
 	UPROPERTY(BlueprintAssignable)
 	FSmallFlameSignature OnSmallFlame;
 	UPROPERTY(BlueprintAssignable)
