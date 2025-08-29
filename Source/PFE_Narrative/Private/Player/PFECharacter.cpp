@@ -50,6 +50,8 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
+
+	bCanDetectWall = false;
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -302,6 +304,7 @@ void APFECharacter::Dash(const FInputActionValue& Value)
 void APFECharacter::WallGrabStart()
 {
 	if (bIsOnGround) return;
+	if (bCanDetectWall == false) return;
 
 	float PlayerPosX = GetActorLocation().X;
 	float DistanceWallPLayer = FMath::Abs(PlayerPosX - WallPosX);
@@ -325,6 +328,7 @@ void APFECharacter::WallGrabEnd()
 
 void APFECharacter::WallJump()
 {
+	if (bCanDetectWall == false) return;
 	if (!bHasStartWallJump) bHasStartWallJump = true;
 
 	JumpDelegate.Broadcast();

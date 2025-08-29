@@ -66,6 +66,8 @@ public:
 	bool bIsDashing = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float MoveValue = 0.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bCanDetectWall = false;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingWall = false;
