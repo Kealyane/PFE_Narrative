@@ -67,7 +67,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float MoveValue = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bCanDetectWall = false;
+	bool bCanDetectWall = true;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingWall = false;
