@@ -50,8 +50,6 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
-
-	bCanDetectWall = false;
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
