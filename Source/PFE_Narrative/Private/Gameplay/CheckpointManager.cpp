@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Gameplay/Checkpoint.h"
 #include "Gameplay/CheckpointManager.h"
-
+#include "Gameplay/Checkpoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
 
