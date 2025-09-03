@@ -115,6 +115,17 @@ void APaperPlatformStateChanging::CheckPlayerInPlatform()
 		QueryParams
 	);
 
+// 	DrawDebugCapsule(
+// 	GetWorld(),
+// 	(Start + End) * 0.5f,                          // centre
+// 	(FVector::Dist(Start, End) * 0.5f),            // demi-longueur
+// 	SphereRadius,                                  // rayon
+// 	FRotationMatrix::MakeFromZ(End - Start).ToQuat(), // orientation
+// 	FColor::Yellow,
+// 	false,
+// 	2.0f
+// );
+
 	if (bHit)
 	{
 		for (const FHitResult& Hit : HitResults)

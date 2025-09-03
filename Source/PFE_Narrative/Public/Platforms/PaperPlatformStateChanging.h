@@ -57,5 +57,5 @@ private:
 	UFUNCTION()
 	void CheckPlayerInPlatform();
 
-	float SphereRadius = 10.f;
+	float SphereRadius = 100.f;
 };
