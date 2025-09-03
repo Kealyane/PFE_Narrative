@@ -22,7 +22,7 @@ APaperPlatformDestructible::APaperPlatformDestructible()
 void APaperPlatformDestructible::InitPlatform()
 {
 	bIsDestroyed = false;
-	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	//PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	StateChanged.Broadcast(bIsDestroyed);
 }
 
@@ -38,7 +38,7 @@ void APaperPlatformDestructible::BeginPlay()
 	}
 	
 	//OnActorHit.AddDynamic(this, &APaperPlatformDestructible::OnHit);
-	OnActorBeginOverlap.AddDynamic(this, &APaperPlatformDestructible::OnOverlapBegin);
+	//OnActorBeginOverlap.AddDynamic(this, &APaperPlatformDestructible::OnOverlapBegin);
 
 	InitPlatform();
 }
@@ -56,42 +56,60 @@ void APaperPlatformDestructible::EndPlay(const EEndPlayReason::Type EndPlayReaso
 	}
 }
 
-void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
-	const FHitResult& Hit)
-{
-	if (OtherActor && OtherActor->IsA(APFECharacter::StaticClass()))
-	{
-		// if (bShowDebug)
-		// {
-		// 	// Debug : Draw Impact Normal (Red - length : 50)
-		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
-		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
-		// 	UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
-		//
-		// 	// Debug : Draw Down Vector (Blue - length 25)
-		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
-		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
-		// 	UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
-		// }
-		
-		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
-		{
-			bIsDestroyed = true;
-			
-			GetWorld()->GetTimerManager().SetTimer(HitPlayerOnTimer, this,
-				&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
+// void APaperPlatformDestructible::OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse,
+// 	const FHitResult& Hit)
+// {
+// 	if (OtherActor && OtherActor->IsA(APFECharacter::StaticClass()))
+// 	{
+// 		// if (bShowDebug)
+// 		// {
+// 		// 	// Debug : Draw Impact Normal (Red - length : 50)
+// 		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), FColor::Red, false, 3.0f, 0, 2.0f);
+// 		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (Hit.ImpactNormal * 50), 25.0f, FColor::Red, false, 3.0f, 0, 2.0f);
+// 		// 	UE_LOG(LogTemp, Warning, TEXT("Hit Normal: %s"), *Hit.ImpactNormal.ToString());
+// 		//
+// 		// 	// Debug : Draw Down Vector (Blue - length 25)
+// 		// 	DrawDebugLine(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), FColor::Blue, false, 3.0f, 0, 2.0f);
+// 		// 	DrawDebugDirectionalArrow(GetWorld(), Hit.ImpactPoint, Hit.ImpactPoint + (FVector::DownVector * 25), 10.0f, FColor::Blue, false, 3.0f, 0, 2.0f);
+// 		// 	UE_LOG(LogTemp, Warning, TEXT("FVector::DownVector: %s"), *FVector::DownVector.ToString());
+// 		// }
+// 		
+// 		if (Hit.ImpactNormal == FVector::DownVector && !bIsDestroyed)
+// 		{
+// 			bIsDestroyed = true;
+// 			
+// 			GetWorld()->GetTimerManager().SetTimer(HitPlayerOnTimer, this,
+// 				&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
+// 			
+// 			GetWorld()->GetTimerManager().SetTimer(HitSwitchTimer,
+// 				[this]()
+// 				{
+// 					bIsDestroyed = false;
+// 					SwitchCollisionPreset();
+// 				}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
+// 		}
+// 	}
+// }
 
-			GetWorld()->GetTimerManager().SetTimer(HitSwitchTimer,
-				[this]()
-				{
-					bIsDestroyed = false;
-					SwitchCollisionPreset();
-				}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
-		}
-	}
-}
+// void APaperPlatformDestructible::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+// {
+// 	if (!bIsDestroyed)
+// 	{
+// 		bIsDestroyed = true;
+// 		
+// 		GetWorld()->GetTimerManager().SetTimer(OverlapPlayerOnTimer, this,
+// 	&APaperPlatformDestructible::SwitchCollisionPreset, DelayWhenPlayerOn, false);
+//
+// 		GetWorld()->GetTimerManager().SetTimer(OverlapSwitchTimer,
+// 			[this]()
+// 			{
+// 				bIsDestroyed = false;
+// 				SwitchCollisionPreset();
+// 			}, DelayBeforeSwitch+DelayWhenPlayerOn, false);
+// 	}
+// }
 
-void APaperPlatformDestructible::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
+void APaperPlatformDestructible::LaunchTimersToDestroyPlatform()
 {
 	if (!bIsDestroyed)
 	{
@@ -116,15 +134,16 @@ void APaperPlatformDestructible::SwitchCollisionPreset()
 	if (bIsDestroyed)
 	{
 		SoundComponent->PlaySound(ESoundType::PlatformDestructible);
-		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+		// PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
 	}
-	else
-	{
-		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-		CheckPlayerInPlatform();
-	}
+	// traitement en BP
+	// else
+	// {
+	// 	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	// 	PrimitiveComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	// 	CheckPlayerInPlatform();
+	// }
 	StateChanged.Broadcast(bIsDestroyed);
 }
 

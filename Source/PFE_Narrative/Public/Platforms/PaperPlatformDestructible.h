@@ -51,10 +51,12 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
-	UFUNCTION()
-	void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
-	UFUNCTION()
-	void OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor);
+	// UFUNCTION()
+	// void OnHit(AActor* SelfActor, AActor* OtherActor, FVector NormalImpulse, const FHitResult& Hit);
+	// UFUNCTION()
+	// void OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor);
+	UFUNCTION(BlueprintCallable)
+	void LaunchTimersToDestroyPlatform();
 	UFUNCTION()
 	void SwitchCollisionPreset();
 
