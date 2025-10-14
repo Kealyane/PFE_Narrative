@@ -2,6 +2,8 @@
 
 
 #include "Player/PFECharacterMovementComponent.h"
+
+#include "Components/CapsuleComponent.h"
 #include "Player/PFECharacter.h"
 
 UPFECharacterMovementComponent::UPFECharacterMovementComponent()
@@ -254,6 +256,8 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	DashDirection = DashDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
 	PFECharacterOwner->bIsOnGround = true;
+	PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(90.f);
+	GravityScale = 0.f;
 	
 	FTimerHandle DashTimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(DashTimerHandle, this, &UPFECharacterMovementComponent::StopDash, DashDurationInSec, false);
@@ -262,6 +266,22 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 void UPFECharacterMovementComponent::StopDash()
 {
 	PFECharacterOwner->bIsDashing = false;
+	PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(140.f);
+	GravityScale = GlobalGravityScale;
+
+	FVector Start = GetActorLocation();
+	FVector End = Start - FVector(0.f, 0.f, 145.f);
+
+	FHitResult Hit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(PFECharacterOwner);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start,	End,ECC_Visibility,	Params);
+	if (bHit && Hit.Distance < 140.f)
+	{
+		PFECharacterOwner->SetActorLocation(FVector(Start.X, Start.Y,Start.Z + (140 - Hit.Distance)));
+	}
+
 
 	if (bDashOnGround) SetMovementMode(MOVE_Walking);
 	else if (PFECharacterOwner->bIsGrabbingWall) SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_WALL_GRAB);
