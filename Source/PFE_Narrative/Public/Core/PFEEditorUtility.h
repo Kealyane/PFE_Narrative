@@ -6,6 +6,14 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "PFEEditorUtility.generated.h"
 
+UENUM(BlueprintType)
+enum class EIntensity : uint8
+{
+	Small  UMETA(DisplayName = "Small"),
+	Medium UMETA(DisplayName = "Medium"),
+	High   UMETA(DisplayName = "High")
+};
+
 /**
  * 
  */
