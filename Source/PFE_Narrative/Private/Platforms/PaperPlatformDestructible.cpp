@@ -3,7 +3,6 @@
 
 #include "Platforms/PaperPlatformDestructible.h"
 
-#include "Core/PFEGameMode.h"
 #include "Core/SoundComponent.h"
 #include "Player/PFECharacter.h"
 

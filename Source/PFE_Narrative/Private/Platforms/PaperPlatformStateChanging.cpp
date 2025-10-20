@@ -3,13 +3,8 @@
 
 #include "Platforms/PaperPlatformStateChanging.h"
 
-#include "Components/CapsuleComponent.h"
-#include "Core/PFEGameMode.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PFECharacter.h"
-
-
 
 APaperPlatformStateChanging::APaperPlatformStateChanging()
 {
