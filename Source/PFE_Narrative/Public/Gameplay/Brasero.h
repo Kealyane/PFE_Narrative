@@ -27,6 +27,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideBrasero(bool Hidden);
 
+	/**
+	* Turn on flame brasero, increment door number and check if the door can be open
+	*/
+	void TurnOnBrasero();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USceneComponent> Root;
@@ -55,11 +60,7 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	/**
-	* Turn on flame brasero, increment door number and check if the door can be open
-	*/
-	UFUNCTION()
-	void TurnOnBrasero();
+
 	/**
 	* Turn off flame brasero, decrement door number and close the door
 	*/

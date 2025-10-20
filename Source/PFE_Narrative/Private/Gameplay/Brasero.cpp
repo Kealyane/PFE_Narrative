@@ -48,8 +48,15 @@ void ABrasero::TurnOnBrasero()
 	FlameFlipbook->SetLooping(true);
 	FlameFlipbook->PlayFromStart();
 
-	AffiliatedDoor->IncrementBraseroOn();
-	AffiliatedDoor->CheckNumBraseros();
+	if (!AffiliatedDoor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TurnOn::No Door Affiliated to Brasero %s"), *GetName());
+	}
+	else
+	{
+		AffiliatedDoor->IncrementBraseroOn();
+		AffiliatedDoor->CheckNumBraseros();
+	}
 
 	TurnOnEvent.Broadcast();
 }
@@ -60,9 +67,16 @@ void ABrasero::TurnOffBrasero()
 	
 	FlameFlipbook->SetHiddenInGame(true);
 	FlameFlipbook->Stop();
-	
-	AffiliatedDoor->DecrementBraseroOn();
-	AffiliatedDoor->CheckNumBraseros();
+
+	if (!AffiliatedDoor)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TurnOff::No Door Affiliated to Brasero %s"), *GetName());
+	}
+	else
+	{
+		AffiliatedDoor->DecrementBraseroOn();
+		AffiliatedDoor->CheckNumBraseros();
+	}
 	
 	TurnOffEvent.Broadcast();
 }
