@@ -43,7 +43,7 @@ void AFlamable::BeginPlay()
 			ConnectedFlamables[i]->TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 			ConnectedFlamables[i]->CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 			
-			if (ConnectedFlamables[i] && ConnectedFlamables[i + 1])
+			if (i+1 < ConnectedFlamables.Num())
 			{
 				ConnectedFlamables[i]->NextFlamable = ConnectedFlamables[i+1];
 			}
