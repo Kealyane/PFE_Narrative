@@ -14,6 +14,13 @@ enum class EIntensity : uint8
 	High   UMETA(DisplayName = "High")
 };
 
+UENUM(BlueprintType)
+enum class EDoorKeyType : uint8
+{
+	Normal  UMETA(DisplayName = "Normal"),
+	Trapped UMETA(DisplayName = "Trapped"),
+};
+
 /**
  * 
  */
