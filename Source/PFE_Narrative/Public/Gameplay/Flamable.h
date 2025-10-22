@@ -65,8 +65,4 @@ protected:
 
 	UFUNCTION()
 	void StartBurn(AFlamable* Flamable);
-	
-private:
-	UPROPERTY()
-	TObjectPtr<UMaterialInstanceDynamic> BurnMatDynamic;
 };

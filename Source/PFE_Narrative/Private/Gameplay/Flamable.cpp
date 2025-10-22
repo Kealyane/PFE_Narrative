@@ -32,7 +32,6 @@ void AFlamable::BeginPlay()
 	Super::BeginPlay();
 	
 	bHasBurn = false;
-	BurnMatDynamic = UMaterialInstanceDynamic::Create(BurnMaterialInstance, this);
 
 	if (ConnectedFlamables.Num() > 0)
 	{
@@ -76,7 +75,9 @@ void AFlamable::StartBurn(AFlamable* Flamable)
 	Flamable->ActiveFlamable.Broadcast();
 	Flamable->TriggerBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	Flamable->CollisionBox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	UMaterialInstanceDynamic* BurnMatDynamic = UMaterialInstanceDynamic::Create(BurnMaterialInstance, this);
 	Flamable->Sprite->SetMaterial(0, BurnMatDynamic);
+	BurnMatDynamic->SetScalarParameterValue("BurningTime", GetWorld()->GetTimeSeconds());
 }
 
 void AFlamable::OnFlamableDone()
