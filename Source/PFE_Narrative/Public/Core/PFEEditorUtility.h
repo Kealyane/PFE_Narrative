@@ -6,6 +6,8 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "PFEEditorUtility.generated.h"
 
+class UPFEGameInstance;
+
 UENUM(BlueprintType)
 enum class EIntensity : uint8
 {
@@ -32,4 +34,7 @@ class PFE_NARRATIVE_API UPFEEditorUtility : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintPure, Category = "Editor")
 	static bool IsEditor();
+
+	UFUNCTION(BlueprintPure, Category = "Game")
+	static UPFEGameInstance* GetPFEGameInstance(const UObject* WorldContext);
 };
