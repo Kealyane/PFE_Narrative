@@ -13,7 +13,7 @@ void UPFEGameInstance::Init()
 {
 	Super::Init();
 
-	bHasSaveFile = UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex);
+	bHasSaveFile = CheckSaveFile();
 	
 	if (bHasSaveFile)
 	{
@@ -91,5 +91,10 @@ void UPFEGameInstance::SaveGameDatasASync()
 	}
 
 	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex);
+}
+
+bool UPFEGameInstance::CheckSaveFile()
+{
+	return UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex);
 }
 

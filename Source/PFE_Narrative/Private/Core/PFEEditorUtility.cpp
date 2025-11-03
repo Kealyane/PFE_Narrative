@@ -3,6 +3,9 @@
 
 #include "Core/PFEEditorUtility.h"
 
+#include "Core/PFEUtility.h"
+#include "Core/PFEGameInstance.h"
+
 bool UPFEEditorUtility::IsEditor()
 {
 #if WITH_EDITOR
@@ -10,4 +13,9 @@ bool UPFEEditorUtility::IsEditor()
 #else
 	return false;
 #endif
+}
+
+UPFEGameInstance* UPFEEditorUtility::GetPFEGameInstance(const UObject* WorldContext)
+{
+	return GetTypeGameInstance<UPFEGameInstance>(WorldContext);
 }
