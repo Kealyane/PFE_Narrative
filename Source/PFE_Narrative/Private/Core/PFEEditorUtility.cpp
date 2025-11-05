@@ -19,3 +19,18 @@ UPFEGameInstance* UPFEEditorUtility::GetPFEGameInstance(const UObject* WorldCont
 {
 	return GetTypeGameInstance<UPFEGameInstance>(WorldContext);
 }
+
+void UPFEEditorUtility::WriteBool(TArray<uint8>& Bytes, bool Value)
+{
+	FMemoryWriter Writer(Bytes, true);
+	Writer.Seek(Bytes.Num());
+	Writer << Value;
+}
+
+void UPFEEditorUtility::ReadBool(const TArray<uint8>& Bytes, int32& Offset, bool& OutValue)
+{
+	FMemoryReader Reader(Bytes, true);
+	Reader.Seek(Offset);
+	Reader << OutValue;
+	Offset = Reader.Tell();
+}

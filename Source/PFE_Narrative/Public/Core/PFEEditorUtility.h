@@ -37,4 +37,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Game")
 	static UPFEGameInstance* GetPFEGameInstance(const UObject* WorldContext);
+
+	UFUNCTION(BlueprintCallable, Category="Binary Save|Write")
+	static void WriteBool(UPARAM(ref) TArray<uint8>& Bytes, bool Value);
+
+	UFUNCTION(BlueprintCallable, Category="Binary Save|Read")
+	static void ReadBool(const TArray<uint8>& Bytes, int32& Offset, bool& OutValue);
 };
