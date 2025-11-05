@@ -4,6 +4,7 @@
 #include "Gameplay/Checkpoint.h"
 
 #include "PaperSpriteComponent.h"
+#include "Core/PFEGameInstance.h"
 #include "Core/PFEGameMode.h"
 #include "Core/SoundComponent.h"
 #include "Gameplay/CheckpointManager.h"
@@ -42,8 +43,14 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 		{
 			if (!bIsActive)
 			{
+				UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached active checkpoint"));
 				bIsActive = true;
 				UpdateCheckpoint(bIsActive);
+				if (UPFEGameInstance* PFEGameInstance = Cast<UPFEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached launch save"));
+					PFEGameInstance->SaveGameDatasASync();
+				}
 			}
 			
 			if (CheckpointManager) CheckpointManager->NotifyCheckpointIsReached(this);
