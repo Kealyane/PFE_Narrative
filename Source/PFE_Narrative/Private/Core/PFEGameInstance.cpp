@@ -4,6 +4,7 @@
 #include "Core/PFEGameInstance.h"
 
 #include "Core/SavingSystem/PFESaveGame.h"
+#include "Core/SavingSystem/PFESaveGameParameters.h"
 #include "Core/SavingSystem/Saveable.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/FlameComponent.h"
@@ -13,21 +14,47 @@ void UPFEGameInstance::Init()
 {
 	Super::Init();
 
-	bHasSaveFile = CheckSaveFile();
-	
-	if (bHasSaveFile)
-	{
-		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));
-	}
-	else
-	{
-		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(USaveGame::StaticClass()));
-	}
+	// UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init"));
+	//
+	// bHasSaveFile = CheckSaveFile();
+	//
+	// if (bHasSaveFile)
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init HAS save game file"));
+	// 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init DOES NOT have save game file"));
+	// 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(USaveGame::StaticClass()));
+	// }
+	//
+	// if (UGameplayStatics::DoesSaveGameExist(SlotNameParam, UserIndex))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init HAS save param file"));
+	// 	CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::LoadGameFromSlot(SlotNameParam, UserIndex));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init DOES NOT have save param file"));
+	// 	CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::CreateSaveGameObject(USaveGame::StaticClass()));
+	// }
 }
 
 void UPFEGameInstance::LoadGameDatasSync()
 {
+	if (!CheckSaveFile())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync HAS save game file"));
+		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));	
+	}
+	
 	if (!CurrentSave) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync start loading"));
+	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), USaveable::StaticClass(), FoundActors);
 
 	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
 	{
@@ -39,17 +66,14 @@ void UPFEGameInstance::LoadGameDatasSync()
 		}
 	}
 
-	for (TWeakObjectPtr<AActor>& WeakSaveActor : ActorsToSave)
+	for (AActor* SaveActor : FoundActors)
 	{
-		if (AActor* SaveActor = WeakSaveActor.Get())
+		if (SaveActor->Implements<USaveable>())
 		{
-			if (SaveActor->Implements<USaveable>())
+			if (FSaveActorDatas* Data = CurrentSave->SavedActors.Find(ISaveable::Execute_GetActorID(SaveActor)))
 			{
-				if (FSaveActorDatas* Data = CurrentSave->SavedActors.Find(ISaveable::Execute_GetActorID(SaveActor)))
-				{
-					SaveActor->SetActorTransform(Data->ActorTransform);
-					ISaveable::Execute_OnLoad(SaveActor, Data->BinaryDatas);
-				}
+				SaveActor->SetActorTransform(Data->ActorTransform);
+				ISaveable::Execute_OnLoad(SaveActor, Data->BinaryDatas);
 			}
 		}
 	}
@@ -57,8 +81,16 @@ void UPFEGameInstance::LoadGameDatasSync()
 
 void UPFEGameInstance::SaveGameDatasASync()
 {
-	if (!CurrentSave) return;
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync"));
 
+	if (!CurrentSave)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync DOES NOT have save game file, create one"));
+		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync has a save file to write datas"));
+	
 	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
 	{
 		if (APFECharacter* Player = Cast<APFECharacter>(Character))
@@ -89,12 +121,71 @@ void UPFEGameInstance::SaveGameDatasASync()
 			}
 		}
 	}
-
-	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex);
+	FAsyncSaveGameToSlotDelegate SaveDelegate;
+	SaveDelegate.BindUObject(this, &UPFEGameInstance::OnSaveAsyncGameFinished);
+	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex, SaveDelegate);
+	
 }
 
 bool UPFEGameInstance::CheckSaveFile()
 {
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckSaveFile"));
 	return UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex);
+}
+
+void UPFEGameInstance::ClearSaveGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame"));
+	if (bHasSaveFile)
+	{
+		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
+		CurrentSave = nullptr;
+	}
+	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
+}
+
+void UPFEGameInstance::LoadPreGameDatas()
+{
+	if (!UGameplayStatics::DoesSaveGameExist(SlotNameParam, UserIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadPreGameDatas HAS save param file"));
+		CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::LoadGameFromSlot(SlotNameParam, UserIndex));
+	}
+	
+	if (!CurrentSaveParam) return;
+	
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadPreGameDatas load datas"));
+	SoundLevelMaster = CurrentSaveParam->SoundsVolume.MasterVolume;
+	SoundLevelMusic = CurrentSaveParam->SoundsVolume.MusicVolume;
+	SoundLevelSFX = CurrentSaveParam->SoundsVolume.SFXVolume;
+	SoundLevelAmbiance = CurrentSaveParam->SoundsVolume.AmbianceVolume;
+}
+
+void UPFEGameInstance::SavePreGameDatas()
+{
+	if (!CurrentSaveParam)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SavePreGameDatas DOES NOT have save param file, create one"));
+		CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::CreateSaveGameObject(UPFESaveGameParameters::StaticClass()));
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SavePreGameDatas"));
+	CurrentSaveParam->SoundsVolume.MasterVolume = SoundLevelMaster;
+	CurrentSaveParam->SoundsVolume.MusicVolume = SoundLevelMusic;
+	CurrentSaveParam->SoundsVolume.SFXVolume = SoundLevelSFX;
+	CurrentSaveParam->SoundsVolume.AmbianceVolume = SoundLevelAmbiance;
+
+	UGameplayStatics::AsyncSaveGameToSlot(CurrentSaveParam, SlotNameParam, UserIndex);
+}
+
+void UPFEGameInstance::OnSaveAsyncGameFinished(const FString& InSlotName, const int32 InUserIndex, bool bInSuccess)
+{
+	if (bInSuccess)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::OnSaveAsyncGameFinished launch event SaveGameFinished"));
+		SaveGameFinished.Broadcast();
+	}
+	else
+		UE_LOG(LogTemp, Error, TEXT("Async save %s, failed"), *InSlotName);
 }
 

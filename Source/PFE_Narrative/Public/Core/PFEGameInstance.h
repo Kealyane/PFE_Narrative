@@ -6,7 +6,10 @@
 #include "Engine/GameInstance.h"
 #include "PFEGameInstance.generated.h"
 
+class UPFESaveGameParameters;
 class UPFESaveGame;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSaveGameFinishedSignature);
 /**
  * 
  */
@@ -19,6 +22,8 @@ public:
 	// SAVE
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UPFESaveGame> CurrentSave;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TObjectPtr<UPFESaveGameParameters> CurrentSaveParam;
 
 	virtual void Init() override;
 
@@ -28,6 +33,16 @@ public:
 	void SaveGameDatasASync();
 	UFUNCTION(BlueprintCallable)
 	bool CheckSaveFile();
+	UFUNCTION(BlueprintCallable)
+	void ClearSaveGame();
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnSaveGameFinishedSignature SaveGameFinished;
+
+	UFUNCTION(BlueprintCallable)
+	void LoadPreGameDatas();
+	UFUNCTION(BlueprintCallable)
+	void SavePreGameDatas();
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterToSave(AActor* Actor) { ActorsToSave.Add(Actor); }
@@ -48,9 +63,14 @@ private:
 	// SAVE
 	const FString SlotName = "Slot01";
 	const int32 UserIndex = 0;
+	const FString SlotNameParam = "SlotParam";
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bHasSaveFile;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bHasSaveFileParam;
 
 	TArray<TWeakObjectPtr<AActor>> ActorsToSave;
+	
+	void OnSaveAsyncGameFinished(const FString& SlotName, const int32 UserIndex, bool bSuccess);
 };
