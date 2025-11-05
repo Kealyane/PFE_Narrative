@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/SavingSystem/Saveable.h"
 #include "GameFramework/Actor.h"
 #include "Brasero.generated.h"
 
+class UUniqueIDComponent;
 class UPaperSpriteComponent;
 class USphereComponent;
 class UPaperFlipbookComponent;
@@ -17,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWrongFlameSmallSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FWrongFlameBigSignature);
 
 UCLASS()
-class PFE_NARRATIVE_API ABrasero : public AActor
+class PFE_NARRATIVE_API ABrasero : public AActor, public ISaveable
 {
 	GENERATED_BODY()
 	
@@ -27,12 +29,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideBrasero(bool Hidden);
 
+	UFUNCTION(BlueprintCallable, Category="Save")
+	void SetUniqueIDComp(UUniqueIDComponent* InUniqueIDComponent) { UniqueIDComponent = InUniqueIDComponent; }
+
+	virtual void OnSave_Implementation(TArray<uint8>& OutData) override;
+	virtual void OnLoad_Implementation(const TArray<uint8>& InData) override;
+	virtual FString GetActorID_Implementation() const override;
+
 	/**
 	* Turn on flame brasero, increment door number and check if the door can be open
 	*/
 	void TurnOnBrasero();
 
 protected:
+	
+	TObjectPtr<UUniqueIDComponent> UniqueIDComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<USceneComponent> Root;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -59,6 +71,7 @@ protected:
 	FWrongFlameBigSignature WrongFlameBigEvent;
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 
 	/**

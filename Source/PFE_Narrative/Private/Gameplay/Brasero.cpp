@@ -6,6 +6,8 @@
 #include "PaperSpriteComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "Components/SphereComponent.h"
+#include "Core/PFEGameInstance.h"
+#include "Core/SavingSystem/UniqueIDComponent.h"
 #include "Gameplay/DoorFlame.h"
 
 ABrasero::ABrasero()
@@ -32,12 +34,48 @@ ABrasero::ABrasero()
 	ExplosionFlipbook->Stop();
 }
 
+// SAVE - LOAD
+void ABrasero::OnSave_Implementation(TArray<uint8>& OutData)
+{
+	FMemoryWriter Writer(OutData);
+	Writer << bIsOn;
+}
+
+void ABrasero::OnLoad_Implementation(const TArray<uint8>& InData)
+{
+	FMemoryReader Reader(InData);
+	Reader << bIsOn;
+
+	bIsOn ? TurnOnBrasero() : TurnOffBrasero();
+}
+
+FString ABrasero::GetActorID_Implementation() const
+{
+	return UniqueIDComponent->ActorID;
+}
+// -----------------------
+
 void ABrasero::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		PFE_GI->RegisterToSave(this);
+	}
+	
 	FlameFlipbook->SetHiddenInGame(true);
 	ExplosionFlipbook->SetHiddenInGame(true);
-	bIsOn = false;
+}
+
+void ABrasero::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		PFE_GI->UnregisterFromSave(this);
+	}
 }
 
 void ABrasero::TurnOnBrasero()

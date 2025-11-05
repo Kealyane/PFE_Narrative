@@ -4,33 +4,62 @@
 #include "Gameplay/Door.h"
 
 #include "Components/CapsuleComponent.h"
+#include "Core/PFEGameInstance.h"
+#include "Core/SavingSystem/UniqueIDComponent.h"
 #include "Player/PFECharacter.h"
 
 ADoor::ADoor()
 {
 	bIsOpen = false;
-	//BlockPathCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BlockPathCapsule"));
 }
+
+// SAVE - LOAD
+void ADoor::OnSave_Implementation(TArray<uint8>& OutData)
+{
+	FMemoryWriter Writer(OutData);
+	Writer << bIsOpen;
+}
+
+void ADoor::OnLoad_Implementation(const TArray<uint8>& InData)
+{
+	FMemoryReader Reader(InData);
+	Reader << bIsOpen;
+	
+	if (bIsOpen) OpenDoorDelegate.Broadcast();
+}
+
+FString ADoor::GetActorID_Implementation() const
+{
+	return UniqueIDComponent->ActorID;
+}
+// -----------------------
 
 void ADoor::BeginPlay()
 {
 	Super::BeginPlay();
-	InitDoor(false);
+
+	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		PFE_GI->RegisterToSave(this);
+	}
+		
+	InitDoor(bIsOpen);
 	OnActorBeginOverlap.AddDynamic(this, &ADoor::OnOverlapBegin);
+}
+
+void ADoor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
+	{
+		PFE_GI->UnregisterFromSave(this);
+	}
 }
 
 void ADoor::InitDoor(bool bInIsOpen)
 {
 	bIsOpen = bInIsOpen;
-	// if (bIsOpen)
-	// {
-	// 	BlockPathCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	// }
-	// else
-	// {
-	// 	BlockPathCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	// 	BlockPathCapsule->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block);
-	// }
 }
 
 void ADoor::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
@@ -44,7 +73,6 @@ void ADoor::OnOverlapBegin(AActor* OverlappedActor, AActor* OtherActor)
 				bIsOpen = true;
 				Character->UseKey();
 				OpenDoorDelegate.Broadcast();
-//				BlockPathCapsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 			}
 		}
 	}
