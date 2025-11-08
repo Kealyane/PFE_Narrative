@@ -43,13 +43,17 @@ void UPFEGameInstance::Init()
 
 void UPFEGameInstance::LoadGameDatasSync()
 {
-	if (!CheckSaveFile())
+	if (CheckSaveFile() == true)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync HAS save game file"));
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync have a save game file, load it"));
 		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));	
 	}
 	
-	if (!CurrentSave) return;
+	if (CurrentSave == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync fail to load file"));
+		return;
+	}
 
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync start loading"));
 	
@@ -63,6 +67,9 @@ void UPFEGameInstance::LoadGameDatasSync()
 			Player->SetActorTransform(CurrentSave->PlayerData.PlayerTransform);
 			Player->GetFlameComponent()->SetFlameStatus(CurrentSave->PlayerData.FlameStatus);
 			if (CurrentSave->PlayerData.bHasKey) Player->StoreKey(); // TODO : init without sounds
+
+			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 
@@ -72,11 +79,20 @@ void UPFEGameInstance::LoadGameDatasSync()
 		{
 			if (FSaveActorDatas* Data = CurrentSave->SavedActors.Find(ISaveable::Execute_GetActorID(SaveActor)))
 			{
-				SaveActor->SetActorTransform(Data->ActorTransform);
+				UE_LOG(LogTemp, Warning, TEXT("Actor %s loading"), *SaveActor->GetActorLabel())
+				if (USceneComponent* RootComp = SaveActor->GetRootComponent())
+				{
+					if (RootComp->Mobility != EComponentMobility::Static)
+					{
+						SaveActor->SetActorTransform(Data->ActorTransform);
+					}
+				}
 				ISaveable::Execute_OnLoad(SaveActor, Data->BinaryDatas);
 			}
 		}
 	}
+
+	LoadGameFinished.Broadcast();
 }
 
 void UPFEGameInstance::SaveGameDatasASync()
@@ -98,6 +114,9 @@ void UPFEGameInstance::SaveGameDatasASync()
 			CurrentSave->PlayerData.PlayerTransform = Player->GetTransform();
 			CurrentSave->PlayerData.FlameStatus = Player->GetFlameComponent()->GetFlameStatus();
 			CurrentSave->PlayerData.bHasKey = Player->HasKey();
+
+			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 
@@ -111,7 +130,14 @@ void UPFEGameInstance::SaveGameDatasASync()
 			{
 				FSaveActorDatas Data;
 				Data.ActorID = ISaveable::Execute_GetActorID(SaveActor);
-				Data.ActorTransform = SaveActor->GetTransform();
+
+				if (USceneComponent* RootComp = SaveActor->GetRootComponent())
+				{
+					if (RootComp->Mobility != EComponentMobility::Static)
+					{
+						Data.ActorTransform = SaveActor->GetTransform();
+					}
+				}
 				
 				TArray<uint8> TempData;
 				ISaveable::Execute_OnSave(SaveActor, TempData);

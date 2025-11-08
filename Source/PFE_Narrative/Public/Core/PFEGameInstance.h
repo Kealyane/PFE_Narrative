@@ -10,6 +10,7 @@ class UPFESaveGameParameters;
 class UPFESaveGame;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnSaveGameFinishedSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLoadGameFinishedSignature);
 /**
  * 
  */
@@ -24,6 +25,8 @@ public:
 	TObjectPtr<UPFESaveGame> CurrentSave;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TObjectPtr<UPFESaveGameParameters> CurrentSaveParam;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bUseSaveFile = false;
 
 	virtual void Init() override;
 
@@ -38,6 +41,8 @@ public:
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveGameFinishedSignature SaveGameFinished;
+	UPROPERTY(BlueprintAssignable)
+	FOnLoadGameFinishedSignature LoadGameFinished;
 
 	UFUNCTION(BlueprintCallable)
 	void LoadPreGameDatas();
