@@ -37,6 +37,10 @@ void ACheckpoint::BeginPlay()
 
 void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 {
+	if (UPFEGameInstance* GI = Cast<UPFEGameInstance>(GetGameInstance()))
+	{
+		if (GI->bUseSaveFile) return;
+	}
 	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 	{
 		if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
