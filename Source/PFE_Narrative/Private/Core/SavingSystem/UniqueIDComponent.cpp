@@ -20,5 +20,31 @@ void UUniqueIDComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyC
 		Modify();
 	}
 }
+
+void UUniqueIDComponent::PostDuplicate(bool bDuplicateForPIE)
+{
+	Super::PostDuplicate(bDuplicateForPIE);
+	if (ActorID.IsEmpty())
+	{
+		ActorID = FGuid::NewGuid().ToString();
+		Modify();
+	}
+}
+
+void UUniqueIDComponent::PostEditImport()
+{
+	Super::PostEditImport();
+	if (ActorID.IsEmpty())
+	{
+		ActorID = FGuid::NewGuid().ToString();
+		Modify();
+	}
+}
+
+void UUniqueIDComponent::RegenerateID()
+{
+	ActorID = FGuid::NewGuid().ToString();
+	Modify();
+}
 #endif
 

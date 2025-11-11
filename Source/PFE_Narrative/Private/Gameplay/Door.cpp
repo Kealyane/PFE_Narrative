@@ -30,6 +30,11 @@ void ADoor::OnLoad_Implementation(const TArray<uint8>& InData)
 
 FString ADoor::GetActorID_Implementation() const
 {
+	if (UniqueIDComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DoorKey::UniqueID empty"))
+		return FString();
+	}
 	return UniqueIDComponent->ActorID;
 }
 // -----------------------
@@ -40,6 +45,7 @@ void ADoor::BeginPlay()
 
 	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("id : %s"), *GetActorID_Implementation())
 		PFE_GI->RegisterToSave(this);
 	}
 		

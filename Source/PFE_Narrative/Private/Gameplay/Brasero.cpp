@@ -61,6 +61,7 @@ void ABrasero::BeginPlay()
 
 	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("id : %s"), *UniqueIDComponent->ActorID)
 		PFE_GI->RegisterToSave(this);
 	}
 	

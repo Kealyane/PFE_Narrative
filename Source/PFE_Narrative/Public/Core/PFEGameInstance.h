@@ -50,9 +50,9 @@ public:
 	void SavePreGameDatas();
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterToSave(AActor* Actor) { ActorsToSave.Add(Actor); }
+	void RegisterToSave(AActor* Actor);
 	UFUNCTION(BlueprintCallable)
-	void UnregisterFromSave(AActor* Actor) { ActorsToSave.Remove(Actor); }
+	void UnregisterFromSave(AActor* Actor);
 
 	// AUDIO
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")

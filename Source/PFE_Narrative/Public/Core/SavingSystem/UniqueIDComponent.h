@@ -20,5 +20,10 @@ public:
 
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostDuplicate(bool bDuplicateForPIE) override;
+	virtual void PostEditImport() override;
+
+	UFUNCTION(CallInEditor, Category="Unique ID")
+	void RegenerateID();
 #endif
 };

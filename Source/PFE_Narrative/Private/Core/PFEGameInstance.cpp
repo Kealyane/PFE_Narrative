@@ -85,6 +85,8 @@ void UPFEGameInstance::LoadGameDatasSync()
 					if (RootComp->Mobility != EComponentMobility::Static)
 					{
 						SaveActor->SetActorTransform(Data->ActorTransform);
+						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data->ActorID, (int)Data->ActorTransform.GetLocation().X, (int)Data->ActorTransform.GetLocation().Z);
+						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
 					}
 				}
 				ISaveable::Execute_OnLoad(SaveActor, Data->BinaryDatas);
@@ -136,6 +138,8 @@ void UPFEGameInstance::SaveGameDatasASync()
 					if (RootComp->Mobility != EComponentMobility::Static)
 					{
 						Data.ActorTransform = SaveActor->GetTransform();
+						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
+						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data.ActorID, (int)Data.ActorTransform.GetLocation().X, (int)Data.ActorTransform.GetLocation().Z);
 					}
 				}
 				
@@ -155,7 +159,6 @@ void UPFEGameInstance::SaveGameDatasASync()
 
 bool UPFEGameInstance::CheckSaveFile()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckSaveFile"));
 	return UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex);
 }
 
@@ -202,6 +205,18 @@ void UPFEGameInstance::SavePreGameDatas()
 	CurrentSaveParam->SoundsVolume.AmbianceVolume = SoundLevelAmbiance;
 
 	UGameplayStatics::AsyncSaveGameToSlot(CurrentSaveParam, SlotNameParam, UserIndex);
+}
+
+void UPFEGameInstance::RegisterToSave(AActor* Actor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::RegisterToSave %s"), *Actor->GetActorLabel());
+	ActorsToSave.Add(Actor);
+}
+
+void UPFEGameInstance::UnregisterFromSave(AActor* Actor)
+{
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::UnregisterFromSave %s"), *Actor->GetActorLabel());
+	ActorsToSave.Remove(Actor);
 }
 
 void UPFEGameInstance::OnSaveAsyncGameFinished(const FString& InSlotName, const int32 InUserIndex, bool bInSuccess)
