@@ -69,6 +69,31 @@ void UFlameComponent::BeginPlay()
 	bIsPlayingSound = false;
 }
 
+void UFlameComponent::SetFlameStatus(EFlameStatus Status)
+{
+	CurrentFlameStatus = Status;
+	switch (Status)
+	{
+		case EFlameStatus::NORMAL:
+			UE_LOG(LogTemp, Warning, TEXT("FlameComponent : SetFlameStatus Normal"))
+			CurrentFlameValue = MaxFlameValue / 2.f;
+			OnNormalFlame.Broadcast();
+			break;
+		case EFlameStatus::HIGH:
+			UE_LOG(LogTemp, Warning, TEXT("FlameComponent : SetFlameStatus High"))
+			CurrentFlameValue = BigFlameThreshold + 1;
+			OnHighFlame.Broadcast();
+			break;
+		case EFlameStatus::SMALL:
+			UE_LOG(LogTemp, Warning, TEXT("FlameComponent : SetFlameStatus Small"))
+			CurrentFlameValue = SmallFlameThreshold - 1;
+			OnSmallFlame.Broadcast();
+			break;
+		default: ;
+	}
+	OnChangeFlameValue.Broadcast(false);
+}
+
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
 {
 	CheckDeath();
@@ -304,7 +329,7 @@ void UFlameComponent::UpdateFlameValue(float Value)
 	
 	CurrentFlameValue += Value;
 	
-	UpdateProgressBars();
+	//UpdateProgressBars();
 	UpdateFlameStatus();
 	
 	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
@@ -338,7 +363,7 @@ void UFlameComponent::SetFlameValue(float Value)
 		PFECharacter->GetGameMode()->OnDeath.Broadcast();
 	}
 
-	UpdateProgressBars();
+	//UpdateProgressBars();
 	UpdateFlameStatus();
 }
 
@@ -358,7 +383,7 @@ void UFlameComponent::ResetFlameOverTime(float Value)
 	}
 	
 	CurrentFlameValue += Value;
-	UpdateProgressBars();
+	//UpdateProgressBars();
 	UpdateFlameStatus();
 }
 

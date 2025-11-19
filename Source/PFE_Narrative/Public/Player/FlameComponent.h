@@ -65,7 +65,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetFlameValue(float Value);
 	EFlameStatus GetFlameStatus() const { return CurrentFlameStatus; }
-	void SetFlameStatus(EFlameStatus Status) { CurrentFlameStatus = Status; };
+	void SetFlameStatus(EFlameStatus Status);
 	
 	UFUNCTION()
 	void StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* AreaRef);
