@@ -37,31 +37,35 @@ void ACheckpoint::BeginPlay()
 
 void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 {
+	UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached"));
 	if (UPFEGameInstance* GI = Cast<UPFEGameInstance>(GetGameInstance()))
 	{
-		if (GI->bUseSaveFile) return;
-	}
-	if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
-	{
-		if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
+		UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached found Game Instance"));
+		if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 		{
-			if (!bIsActive)
+			UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached, character is pfecharacter"));
+			if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached active checkpoint"));
-				bIsActive = true;
-				UpdateCheckpoint(bIsActive);
-				if (UPFEGameInstance* PFEGameInstance = Cast<UPFEGameInstance>(UGameplayStatics::GetGameInstance(this)))
+				UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached, found game mode"));
+				if (!bIsActive)
 				{
-					UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached launch save"));
-					PFEGameInstance->SaveGameDatasASync();
+					UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached active checkpoint"));
+					bIsActive = true;
+					GI->bHasReachCheckpoint = true; 
+					if (GI->bUseSaveFile == false)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached launch save"));
+						UpdateCheckpoint(bIsActive);
+						GI->SaveGameDatasASync(OtherActor->GetActorLocation());
+					}
 				}
+				
+				if (CheckpointManager) CheckpointManager->NotifyCheckpointIsReached(this);
+				
+				APFECharacter* Character = Cast<APFECharacter>(OtherActor);
+				EFlameStatus FlameStatus = Character->GetFlameComponent()->GetFlameStatus();
+				PFEGameMode->SetCheckpoint(this, GetActorLocation(), FlameStatus);
 			}
-			
-			if (CheckpointManager) CheckpointManager->NotifyCheckpointIsReached(this);
-			
-			APFECharacter* Character = Cast<APFECharacter>(OtherActor);
-			EFlameStatus FlameStatus = Character->GetFlameComponent()->GetFlameStatus();
-			PFEGameMode->SetCheckpoint(this, GetActorLocation(), FlameStatus);
 		}
 	}
 }
