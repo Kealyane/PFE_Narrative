@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/PFEGameInstance.h"
 #include "Core/PFEGameMode.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -135,7 +136,7 @@ void APFECharacter::InitGameMode()
 {
 	PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this));
 	check(PFEGameMode);
-	PFEGameMode->OnDeath.AddDynamic(this, &APFECharacter::LaunchRespawn);
+	PFEGameMode->OnDeath.AddDynamic(this, &APFECharacter::LoadGame);
 }
 
 void APFECharacter::FlipCharacter(float Direction)
@@ -206,6 +207,11 @@ void APFECharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void APFECharacter::Move(const FInputActionValue& Value)
 {
+	if (!bCanMove)
+	{
+		PFEMovementComponent->StopMovementImmediately();
+		return;
+	}
 	RawMoveInput = Value.Get<float>();
 	
 	if (bIsAlive && bCanMove && (!bIsDoingWallJump || PFEMovementComponent->IsFalling()))
@@ -404,6 +410,14 @@ bool APFECharacter::CheckWall()
 	return false;
 }
 
+void APFECharacter::LoadGame()
+{
+	if (UPFEGameInstance* MyGameInstance = Cast<UPFEGameInstance>(GetGameInstance()))
+	{
+		MyGameInstance->LoadGameDatasWithDelaySync(1.f);
+	}
+}
+
 void APFECharacter::NotifyGround()
 {
 	bIsOnGround = true;
@@ -425,9 +439,9 @@ void APFECharacter::NotifyGround()
 	}
 }
 
-void APFECharacter::StoreKey()
+void APFECharacter::StoreKey(int TotalNumber)
 {
-	NumberOfKeyPickedUp++;
+	NumberOfKeyPickedUp = TotalNumber;
 	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
 }
 
@@ -477,28 +491,28 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 	}
 }
 
-void APFECharacter::LaunchRespawn()
-{
-	bIsAlive = false;
-	FTimerHandle RespawnHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
-	
-	//NumberOfKeyPickedUp = 0;
-	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
-}
-
-void APFECharacter::Respawn()
-{
-	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
-	FlameComponent->SetFlameStatus(PFEGameMode->GetCheckpointFlameStatus());
-	SetActorLocation(RespawnLocation);
-	InitGame();
-	if (FlameComponent)
-	{
-		FlameComponent->ResetFlameAfterDeath();
-	}
-}
+// void APFECharacter::LaunchRespawn()
+// {
+// 	bIsAlive = false;
+// 	FTimerHandle RespawnHandle;
+// 	GetWorld()->GetTimerManager().SetTimer(
+// 	RespawnHandle, this, &APFECharacter::Respawn, 2.0f, false);
+// 	
+// 	//NumberOfKeyPickedUp = 0;
+// 	UpdateKeyNumberDelegate.Broadcast(NumberOfKeyPickedUp);
+// }
+//
+// void APFECharacter::Respawn()
+// {
+// 	FVector RespawnLocation = PFEGameMode->GetCheckpointPosition();
+// 	FlameComponent->SetFlameStatus(PFEGameMode->GetCheckpointFlameStatus());
+// 	SetActorLocation(RespawnLocation);
+// 	InitGame();
+// 	if (FlameComponent)
+// 	{
+// 		FlameComponent->ResetFlameAfterDeath();
+// 	}
+// }
 
 void APFECharacter::PrintOnScreen(const FString& InText)
 {

@@ -125,7 +125,7 @@ public:
 	bool GetIsLookingRight() const { return bIsLookingRight; }
 
 	UFUNCTION()
-	void StoreKey();
+	void StoreKey(int TotalNumber);
 	UFUNCTION()
 	void UseKey();
 	UFUNCTION()
@@ -188,9 +188,12 @@ protected:
 	UFUNCTION()
 	bool CheckWall();
 
+	// UFUNCTION()
+	// void LaunchRespawn();
+	// void Respawn();
+
 	UFUNCTION()
-	void LaunchRespawn();
-	void Respawn();
+	void LoadGame();
 
 	UFUNCTION()
 	void PrintOnScreen(const FString& InText);
