@@ -10,6 +10,7 @@
 class UUniqueIDComponent;
 class UCapsuleComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOpenDoorDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInitDoorLoadDelegate, bool, bIsDoorOpen);
 /**
  * 
  */
@@ -23,6 +24,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOpenDoorDelegate OpenDoorDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FInitDoorLoadDelegate InitDoorLoad;
 
 	UFUNCTION(BlueprintCallable, Category="Save")
 	void SetUniqueIDComp(UUniqueIDComponent* InUniqueIDComponent) { UniqueIDComponent = InUniqueIDComponent; }

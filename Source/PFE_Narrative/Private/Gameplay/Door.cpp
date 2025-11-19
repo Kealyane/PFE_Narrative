@@ -25,7 +25,8 @@ void ADoor::OnLoad_Implementation(const TArray<uint8>& InData)
 	FMemoryReader Reader(InData);
 	Reader << bIsOpen;
 	
-	if (bIsOpen) OpenDoorDelegate.Broadcast();
+	//if (bIsOpen) OpenDoorDelegate.Broadcast();
+	InitDoorLoad.Broadcast(bIsOpen);
 }
 
 FString ADoor::GetActorID_Implementation() const
