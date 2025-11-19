@@ -46,7 +46,8 @@ void ABrasero::OnLoad_Implementation(const TArray<uint8>& InData)
 	FMemoryReader Reader(InData);
 	Reader << bIsOn;
 
-	bIsOn ? TurnOnBrasero() : TurnOffBrasero();
+	//bIsOn ? TurnOnBrasero() : TurnOffBrasero();
+	InitializeBraseroLoad();
 }
 
 FString ABrasero::GetActorID_Implementation() const
@@ -142,6 +143,21 @@ void ABrasero::HideBrasero(bool Hidden)
 		SphereTrigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	else
 		SphereTrigger->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ABrasero::InitializeBraseroLoad()
+{
+	if (bIsOn)
+	{
+		FlameFlipbook->SetHiddenInGame(false);
+		FlameFlipbook->SetLooping(true);
+		FlameFlipbook->PlayFromStart();
+	}
+	else
+	{
+		FlameFlipbook->SetHiddenInGame(true);
+		FlameFlipbook->Stop();
+	}
 }
 
 

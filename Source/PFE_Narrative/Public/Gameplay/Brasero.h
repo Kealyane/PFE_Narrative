@@ -90,5 +90,6 @@ protected:
 	*/
 	UFUNCTION()
 	void WrongFlameBig();
-	
+
+	void InitializeBraseroLoad();
 };
