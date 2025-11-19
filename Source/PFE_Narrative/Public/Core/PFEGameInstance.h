@@ -27,13 +27,24 @@ public:
 	TObjectPtr<UPFESaveGameParameters> CurrentSaveParam;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bUseSaveFile = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bTransitionBetweenLevels = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bHasReachCheckpoint = false;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bHasDied = false;
 
 	virtual void Init() override;
 
 	UFUNCTION(BlueprintCallable)
 	void LoadGameDatasSync();
 	UFUNCTION(BlueprintCallable)
+	void LoadGameDatasWithDelaySync(float DelayNextActions);
+	//UFUNCTION(BlueprintCallable)
 	void SaveGameDatasASync();
+	void SaveGameDatasASync(FVector Location);
+	UFUNCTION(BlueprintCallable)
+	void SavePlayerLocationAsync(FVector Location);
 	UFUNCTION(BlueprintCallable)
 	bool CheckSaveFile();
 	UFUNCTION(BlueprintCallable)
@@ -66,8 +77,11 @@ public:
 	
 private:
 	// SAVE
-	const FString SlotName = "Slot01";
-	const int32 UserIndex = 0;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	FString SlotName = "Slot01";
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	int32 UserIndex = 0;
+	
 	const FString SlotNameParam = "SlotParam";
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -76,6 +90,10 @@ private:
 	bool bHasSaveFileParam;
 
 	TArray<TWeakObjectPtr<AActor>> ActorsToSave;
-	
+
+	// The Save has been done
 	void OnSaveAsyncGameFinished(const FString& SlotName, const int32 UserIndex, bool bSuccess);
+	// load for delay
+	UFUNCTION()
+	void LoadGame();
 };

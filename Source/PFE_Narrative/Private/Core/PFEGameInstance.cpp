@@ -66,7 +66,9 @@ void UPFEGameInstance::LoadGameDatasSync()
 		{
 			Player->SetActorTransform(CurrentSave->PlayerData.PlayerTransform);
 			Player->GetFlameComponent()->SetFlameStatus(CurrentSave->PlayerData.FlameStatus);
-			if (CurrentSave->PlayerData.bHasKey) Player->StoreKey(); // TODO : init without sounds
+			// TODO : init without sounds
+			if (CurrentSave->PlayerData.bHasKey) Player->StoreKey(1);
+			else Player->StoreKey(0);
 
 			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
@@ -95,6 +97,12 @@ void UPFEGameInstance::LoadGameDatasSync()
 	}
 
 	LoadGameFinished.Broadcast();
+}
+
+void UPFEGameInstance::LoadGameDatasWithDelaySync(float DelayNextActions)
+{
+	FTimerHandle LoadHandle;
+	GetWorld()->GetTimerManager().SetTimer(LoadHandle, this, &UPFEGameInstance::LoadGame, DelayNextActions, false);
 }
 
 void UPFEGameInstance::SaveGameDatasASync()
@@ -157,6 +165,89 @@ void UPFEGameInstance::SaveGameDatasASync()
 	
 }
 
+void UPFEGameInstance::SaveGameDatasASync(FVector Location)
+{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync"));
+
+	if (!CurrentSave)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync DOES NOT have save game file, create one"));
+		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync has a save file to write datas"));
+	
+	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
+	{
+		if (APFECharacter* Player = Cast<APFECharacter>(Character))
+		{
+			FTransform NewTransform = FTransform(Location);
+			CurrentSave->PlayerData.PlayerTransform = NewTransform;
+			CurrentSave->PlayerData.FlameStatus = Player->GetFlameComponent()->GetFlameStatus();
+			CurrentSave->PlayerData.bHasKey = Player->HasKey();
+
+			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+		}
+	}
+
+	CurrentSave->SavedActors.Empty();
+
+	for (TWeakObjectPtr<AActor>& WeakSaveActor : ActorsToSave)
+	{
+		if (AActor* SaveActor = WeakSaveActor.Get())
+		{
+			if (SaveActor->Implements<USaveable>())
+			{
+				FSaveActorDatas Data;
+				Data.ActorID = ISaveable::Execute_GetActorID(SaveActor);
+
+				if (USceneComponent* RootComp = SaveActor->GetRootComponent())
+				{
+					if (RootComp->Mobility != EComponentMobility::Static)
+					{
+						Data.ActorTransform = SaveActor->GetTransform();
+						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
+						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data.ActorID, (int)Data.ActorTransform.GetLocation().X, (int)Data.ActorTransform.GetLocation().Z);
+					}
+				}
+				
+				TArray<uint8> TempData;
+				ISaveable::Execute_OnSave(SaveActor, TempData);
+				Data.BinaryDatas = MoveTemp(TempData); // no copy, move memory
+				
+				CurrentSave->SavedActors.Add(Data.ActorID, Data);
+			}
+		}
+	}
+	FAsyncSaveGameToSlotDelegate SaveDelegate;
+	SaveDelegate.BindUObject(this, &UPFEGameInstance::OnSaveAsyncGameFinished);
+	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex, SaveDelegate);
+}
+
+void UPFEGameInstance::SavePlayerLocationAsync(FVector Location)
+{
+	if (!CurrentSave) return;
+
+	FTransform PlayerTransform = FTransform(Location);
+
+	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
+	{
+		if (APFECharacter* Player = Cast<APFECharacter>(Character))
+		{
+			CurrentSave->PlayerData.PlayerTransform = FTransform(Location);
+			CurrentSave->PlayerData.FlameStatus = EFlameStatus::NORMAL;
+			CurrentSave->PlayerData.bHasKey = false;
+
+			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
+		}
+	}
+	FAsyncSaveGameToSlotDelegate SaveDelegate;
+	SaveDelegate.BindUObject(this, &UPFEGameInstance::OnSaveAsyncGameFinished);
+	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex, SaveDelegate);
+}
+
 bool UPFEGameInstance::CheckSaveFile()
 {
 	return UGameplayStatics::DoesSaveGameExist(SlotName, UserIndex);
@@ -165,11 +256,13 @@ bool UPFEGameInstance::CheckSaveFile()
 void UPFEGameInstance::ClearSaveGame()
 {
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame"));
-	if (bHasSaveFile)
+	if (CheckSaveFile() == true)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame - delete game slot"));
 		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
 		CurrentSave = nullptr;
 	}
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame - create save game slot"));
 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 }
 
@@ -228,5 +321,11 @@ void UPFEGameInstance::OnSaveAsyncGameFinished(const FString& InSlotName, const 
 	}
 	else
 		UE_LOG(LogTemp, Error, TEXT("Async save %s, failed"), *InSlotName);
+}
+
+void UPFEGameInstance::LoadGame()
+{
+	bHasDied = true;
+	LoadGameDatasSync();
 }
 
