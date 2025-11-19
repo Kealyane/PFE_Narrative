@@ -69,6 +69,7 @@ void UPFEGameInstance::LoadGameDatasSync()
 			// TODO : init without sounds
 			if (CurrentSave->PlayerData.bHasKey) Player->StoreKey(1);
 			else Player->StoreKey(0);
+			Player->bIsAlive = true;
 
 			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);

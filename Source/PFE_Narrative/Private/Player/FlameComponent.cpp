@@ -344,7 +344,9 @@ void UFlameComponent::UpdateFlameValue(float Value)
 			PFECharacter->GetSoundComponent()->PlaySound(ESoundType::DeathBigFlame);
 		}
 		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
-		
+
+		PFECharacter->bIsAlive = false;
+		CheckDeath();
 		PFECharacter->GetGameMode()->OnDeath.Broadcast();
 	}
 }
@@ -360,6 +362,8 @@ void UFlameComponent::SetFlameValue(float Value)
 	
 	if (CurrentFlameValue >= MaxFlameValue || CurrentFlameValue <= 0.f)
 	{
+		PFECharacter->bIsAlive = false;
+		CheckDeath();
 		PFECharacter->GetGameMode()->OnDeath.Broadcast();
 	}
 
