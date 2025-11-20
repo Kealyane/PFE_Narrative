@@ -49,6 +49,8 @@ public:
 	bool CheckSaveFile();
 	UFUNCTION(BlueprintCallable)
 	void ClearSaveGame();
+	UFUNCTION(BlueprintCallable)
+	void ResetSaveGameFile();
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveGameFinishedSignature SaveGameFinished;

@@ -267,6 +267,16 @@ void UPFEGameInstance::ClearSaveGame()
 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 }
 
+void UPFEGameInstance::ResetSaveGameFile()
+{
+	if (CheckSaveFile() == true)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::ResetSaveGameFile - delete game slot"));
+		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
+		CurrentSave = nullptr;
+	}
+}
+
 void UPFEGameInstance::LoadPreGameDatas()
 {
 	if (!UGameplayStatics::DoesSaveGameExist(SlotNameParam, UserIndex))
