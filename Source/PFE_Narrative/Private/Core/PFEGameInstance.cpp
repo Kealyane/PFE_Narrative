@@ -13,32 +13,6 @@
 void UPFEGameInstance::Init()
 {
 	Super::Init();
-
-	// UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init"));
-	//
-	// bHasSaveFile = CheckSaveFile();
-	//
-	// if (bHasSaveFile)
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init HAS save game file"));
-	// 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init DOES NOT have save game file"));
-	// 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(USaveGame::StaticClass()));
-	// }
-	//
-	// if (UGameplayStatics::DoesSaveGameExist(SlotNameParam, UserIndex))
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init HAS save param file"));
-	// 	CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::LoadGameFromSlot(SlotNameParam, UserIndex));
-	// }
-	// else
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::Init DOES NOT have save param file"));
-	// 	CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::CreateSaveGameObject(USaveGame::StaticClass()));
-	// }
 }
 
 void UPFEGameInstance::LoadGameDatasSync()
@@ -275,6 +249,53 @@ void UPFEGameInstance::ResetSaveGameFile()
 		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
 		CurrentSave = nullptr;
 	}
+}
+
+bool UPFEGameInstance::CheckHasReachCheckpoint(uint8 Level)
+{
+	if (CurrentSave == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - Current Save nullptr"))
+		return false;
+	}
+	if (CurrentSave->LevelCheckpoint.Contains(Level))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - level checkpoint has key %d"), Level);
+		return CurrentSave->LevelCheckpoint[Level];
+	}
+	UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - level checkpoint does not have key %d"), Level);
+	return false;
+}
+
+void UPFEGameInstance::SaveLevelCheckpoint(uint8 Level, bool ClearMap)
+{
+	if (!CurrentSave)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint DOES NOT have save game file, create one"));
+		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
+	}
+	if (ClearMap)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint clear map, add (%d, false) "), Level);
+		CurrentSave->LevelCheckpoint.Empty();
+		CurrentSave->LevelCheckpoint.Add(Level, false);
+	}
+	else
+	{
+		if (CurrentSave->LevelCheckpoint.Contains(Level))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint modif (%d, true) "), Level);
+			CurrentSave->LevelCheckpoint[Level] = true;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint add (%d, false) "), Level);
+			CurrentSave->LevelCheckpoint.Add(Level, false);
+		}
+	}
+	FAsyncSaveGameToSlotDelegate SaveDelegate;
+	SaveDelegate.BindUObject(this, &UPFEGameInstance::OnSaveAsyncGameFinished);
+	UGameplayStatics::AsyncSaveGameToSlot(CurrentSave, SlotName, UserIndex, SaveDelegate);
 }
 
 void UPFEGameInstance::LoadPreGameDatas()

@@ -51,6 +51,10 @@ public:
 	void ClearSaveGame();
 	UFUNCTION(BlueprintCallable)
 	void ResetSaveGameFile();
+	UFUNCTION(BlueprintCallable)
+	bool CheckHasReachCheckpoint(uint8 Level);
+	UFUNCTION(BlueprintCallable)
+	void SaveLevelCheckpoint(uint8 Level, bool ClearMap);
 	
 	UPROPERTY(BlueprintAssignable)
 	FOnSaveGameFinishedSignature SaveGameFinished;
