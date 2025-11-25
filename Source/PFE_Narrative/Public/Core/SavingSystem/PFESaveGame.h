@@ -55,4 +55,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	uint8 LevelToLoad;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	TMap<uint8, bool> LevelCheckpoint;
 };
