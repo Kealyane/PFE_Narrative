@@ -40,23 +40,19 @@ void ACheckpoint::CheckpointReached(AActor* OverlappedActor, AActor* OtherActor)
 	UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached"));
 	if (UPFEGameInstance* GI = Cast<UPFEGameInstance>(GetGameInstance()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached found Game Instance"));
 		if (OtherActor != nullptr && OtherActor->IsA(APFECharacter::StaticClass()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached, character is pfecharacter"));
 			if (APFEGameMode* PFEGameMode = Cast<APFEGameMode>(UGameplayStatics::GetGameMode(this)))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached, found game mode"));
 				if (!bIsActive)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached active checkpoint"));
 					bIsActive = true;
-					GI->bHasReachCheckpoint = true; 
 					if (GI->bUseSaveFile == false)
 					{
 						UE_LOG(LogTemp, Warning, TEXT("ACheckpoint::CheckpointReached launch save"));
-						UpdateCheckpoint(bIsActive);
 						GI->SaveGameDatasASync(OtherActor->GetActorLocation());
+						UpdateCheckpoint(bIsActive);
 					}
 				}
 				
