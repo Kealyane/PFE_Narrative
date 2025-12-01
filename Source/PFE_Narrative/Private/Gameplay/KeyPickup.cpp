@@ -39,7 +39,7 @@ void AKeyPickup::BeginPlay()
 
 	if (UPFEGameInstance* PFE_GI = Cast<UPFEGameInstance>(GetWorld()->GetGameInstance()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("id : %s"), *GetActorID_Implementation())
+		//UE_LOG(LogTemp, Warning, TEXT("id : %s"), *GetActorID_Implementation())
 		PFE_GI->RegisterToSave(this);
 	}
 	

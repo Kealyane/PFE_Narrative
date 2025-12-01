@@ -58,6 +58,10 @@ void ACheckpointManager::BeginPlay()
 	Super::BeginPlay();
 	ACharacter* GlobalCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	Character = Cast<APFECharacter>(GlobalCharacter);
-	check(Character);
+	//check(Character);
+	if (!Character)
+	{
+		UE_LOG(LogTemp, Error, TEXT("CheckpointManager::BeginPlay Character not found"));
+	}
 	CurrentIndex = 0;
 }
