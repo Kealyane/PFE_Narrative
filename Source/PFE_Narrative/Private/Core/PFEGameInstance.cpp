@@ -19,17 +19,16 @@ void UPFEGameInstance::LoadGameDatasSync()
 {
 	if (CheckSaveFile() == true)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync have a save game file, load it"));
 		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, UserIndex));	
 	}
 	
 	if (CurrentSave == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync fail to load file"));
 		return;
 	}
-
+#if WITH_EDITOR
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadGameDatasSync start loading"));
+#endif
 	
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), USaveable::StaticClass(), FoundActors);
@@ -40,13 +39,10 @@ void UPFEGameInstance::LoadGameDatasSync()
 		{
 			Player->SetActorTransform(CurrentSave->PlayerData.PlayerTransform);
 			Player->GetFlameComponent()->SetFlameStatus(CurrentSave->PlayerData.FlameStatus);
-			// TODO : init without sounds
+
 			if (CurrentSave->PlayerData.bHasKey) Player->StoreKey(1);
 			else Player->StoreKey(0);
 			Player->bIsAlive = true;
-
-			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
-			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 
@@ -56,14 +52,14 @@ void UPFEGameInstance::LoadGameDatasSync()
 		{
 			if (FSaveActorDatas* Data = CurrentSave->SavedActors.Find(ISaveable::Execute_GetActorID(SaveActor)))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Actor %s loading"), *SaveActor->GetActorLabel())
+#if WITH_EDITOR
+				UE_LOG(LogTemp, Warning, TEXT("Actor %s loading"), *SaveActor->GetActorLabel());
+#endif
 				if (USceneComponent* RootComp = SaveActor->GetRootComponent())
 				{
 					if (RootComp->Mobility != EComponentMobility::Static)
 					{
 						SaveActor->SetActorTransform(Data->ActorTransform);
-						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data->ActorID, (int)Data->ActorTransform.GetLocation().X, (int)Data->ActorTransform.GetLocation().Z);
-						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
 					}
 				}
 				ISaveable::Execute_OnLoad(SaveActor, Data->BinaryDatas);
@@ -82,15 +78,10 @@ void UPFEGameInstance::LoadGameDatasWithDelaySync(float DelayNextActions)
 
 void UPFEGameInstance::SaveGameDatasASync()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync"));
-
 	if (!CurrentSave)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync DOES NOT have save game file, create one"));
 		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync has a save file to write datas"));
 	
 	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
 	{
@@ -99,9 +90,6 @@ void UPFEGameInstance::SaveGameDatasASync()
 			CurrentSave->PlayerData.PlayerTransform = Player->GetTransform();
 			CurrentSave->PlayerData.FlameStatus = Player->GetFlameComponent()->GetFlameStatus();
 			CurrentSave->PlayerData.bHasKey = Player->HasKey();
-
-			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
-			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 
@@ -121,8 +109,6 @@ void UPFEGameInstance::SaveGameDatasASync()
 					if (RootComp->Mobility != EComponentMobility::Static)
 					{
 						Data.ActorTransform = SaveActor->GetTransform();
-						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
-						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data.ActorID, (int)Data.ActorTransform.GetLocation().X, (int)Data.ActorTransform.GetLocation().Z);
 					}
 				}
 				
@@ -142,15 +128,10 @@ void UPFEGameInstance::SaveGameDatasASync()
 
 void UPFEGameInstance::SaveGameDatasASync(FVector Location)
 {
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync"));
-
 	if (!CurrentSave)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync DOES NOT have save game file, create one"));
 		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveGameDatasASync has a save file to write datas"));
 	
 	if (ACharacter* Character = UGameplayStatics::GetPlayerCharacter(this, 0))
 	{
@@ -160,9 +141,6 @@ void UPFEGameInstance::SaveGameDatasASync(FVector Location)
 			CurrentSave->PlayerData.PlayerTransform = NewTransform;
 			CurrentSave->PlayerData.FlameStatus = Player->GetFlameComponent()->GetFlameStatus();
 			CurrentSave->PlayerData.bHasKey = Player->HasKey();
-
-			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
-			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 
@@ -182,8 +160,6 @@ void UPFEGameInstance::SaveGameDatasASync(FVector Location)
 					if (RootComp->Mobility != EComponentMobility::Static)
 					{
 						Data.ActorTransform = SaveActor->GetTransform();
-						UE_LOG(LogTemp, Warning, TEXT("%s location (%d, %d)"),*SaveActor->GetActorLabel(), (int)SaveActor->GetTransform().GetLocation().X, (int)SaveActor->GetTransform().GetLocation().Z);
-						UE_LOG(LogTemp, Warning, TEXT("%s data location (%d, %d)"),*Data.ActorID, (int)Data.ActorTransform.GetLocation().X, (int)Data.ActorTransform.GetLocation().Z);
 					}
 				}
 				
@@ -213,9 +189,6 @@ void UPFEGameInstance::SavePlayerLocationAsync(FVector Location)
 			CurrentSave->PlayerData.PlayerTransform = FTransform(Location);
 			CurrentSave->PlayerData.FlameStatus = EFlameStatus::NORMAL;
 			CurrentSave->PlayerData.bHasKey = false;
-
-			UE_LOG(LogTemp, Warning, TEXT("world value :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
-			UE_LOG(LogTemp, Warning, TEXT("save game :: player location (%d, %d)"),(int)Player->GetTransform().GetLocation().X, (int)Player->GetTransform().GetLocation().Z);
 		}
 	}
 	FAsyncSaveGameToSlotDelegate SaveDelegate;
@@ -230,14 +203,11 @@ bool UPFEGameInstance::CheckSaveFile()
 
 void UPFEGameInstance::ClearSaveGame()
 {
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame"));
 	if (CheckSaveFile() == true)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame - delete game slot"));
 		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
 		CurrentSave = nullptr;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::ClearSaveGame - create save game slot"));
 	CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 }
 
@@ -245,7 +215,9 @@ void UPFEGameInstance::ResetSaveGameFile()
 {
 	if (CheckSaveFile() == true)
 	{
+#if WITH_EDITOR
 		UE_LOG(LogTemp, Warning, TEXT("GameInstance::ResetSaveGameFile - delete game slot"));
+#endif
 		UGameplayStatics::DeleteGameInSlot(SlotName, UserIndex);
 		CurrentSave = nullptr;
 	}
@@ -255,15 +227,12 @@ bool UPFEGameInstance::CheckHasReachCheckpoint(uint8 Level)
 {
 	if (CurrentSave == nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - Current Save nullptr"))
 		return false;
 	}
 	if (CurrentSave->LevelCheckpoint.Contains(Level))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - level checkpoint has key %d"), Level);
 		return CurrentSave->LevelCheckpoint[Level];
 	}
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::CheckHasReachCheckpoint - level checkpoint does not have key %d"), Level);
 	return false;
 }
 
@@ -271,12 +240,10 @@ void UPFEGameInstance::SaveLevelCheckpoint(uint8 Level, bool ClearMap)
 {
 	if (!CurrentSave)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint DOES NOT have save game file, create one"));
 		CurrentSave = Cast<UPFESaveGame>(UGameplayStatics::CreateSaveGameObject(UPFESaveGame::StaticClass()));
 	}
 	if (ClearMap)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint clear map, add (%d, false) "), Level);
 		CurrentSave->LevelCheckpoint.Empty();
 		CurrentSave->LevelCheckpoint.Add(Level, false);
 	}
@@ -284,12 +251,10 @@ void UPFEGameInstance::SaveLevelCheckpoint(uint8 Level, bool ClearMap)
 	{
 		if (CurrentSave->LevelCheckpoint.Contains(Level))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint modif (%d, true) "), Level);
 			CurrentSave->LevelCheckpoint[Level] = true;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("GameInstance::SaveLevelCheckpoint add (%d, false) "), Level);
 			CurrentSave->LevelCheckpoint.Add(Level, false);
 		}
 	}
@@ -302,13 +267,11 @@ void UPFEGameInstance::LoadPreGameDatas()
 {
 	if (!UGameplayStatics::DoesSaveGameExist(SlotNameParam, UserIndex))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadPreGameDatas HAS save param file"));
 		CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::LoadGameFromSlot(SlotNameParam, UserIndex));
 	}
 	
 	if (!CurrentSaveParam) return;
 	
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::LoadPreGameDatas load datas"));
 	SoundLevelMaster = CurrentSaveParam->SoundsVolume.MasterVolume;
 	SoundLevelMusic = CurrentSaveParam->SoundsVolume.MusicVolume;
 	SoundLevelSFX = CurrentSaveParam->SoundsVolume.SFXVolume;
@@ -319,11 +282,8 @@ void UPFEGameInstance::SavePreGameDatas()
 {
 	if (!CurrentSaveParam)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance::SavePreGameDatas DOES NOT have save param file, create one"));
 		CurrentSaveParam = Cast<UPFESaveGameParameters>(UGameplayStatics::CreateSaveGameObject(UPFESaveGameParameters::StaticClass()));
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("GameInstance::SavePreGameDatas"));
 	CurrentSaveParam->SoundsVolume.MasterVolume = SoundLevelMaster;
 	CurrentSaveParam->SoundsVolume.MusicVolume = SoundLevelMusic;
 	CurrentSaveParam->SoundsVolume.SFXVolume = SoundLevelSFX;
@@ -334,13 +294,17 @@ void UPFEGameInstance::SavePreGameDatas()
 
 void UPFEGameInstance::RegisterToSave(AActor* Actor)
 {
+#if WITH_EDITOR
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::RegisterToSave %s"), *Actor->GetActorLabel());
+#endif
 	ActorsToSave.Add(Actor);
 }
 
 void UPFEGameInstance::UnregisterFromSave(AActor* Actor)
 {
+#if WITH_EDITOR
 	UE_LOG(LogTemp, Warning, TEXT("GameInstance::UnregisterFromSave %s"), *Actor->GetActorLabel());
+#endif
 	ActorsToSave.Remove(Actor);
 }
 
