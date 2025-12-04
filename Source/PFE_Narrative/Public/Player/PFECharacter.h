@@ -133,6 +133,10 @@ public:
 
 	UFUNCTION()
 	void SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, const FVector& AxisLocation, float DistanceMult);
+	UFUNCTION()
+	void EnterReflexionArea();
+	UFUNCTION()
+	void ExitReflexionArea();
 
 	FVector GetWallNormal() const { return WallNormal; }
 	bool GetHasStartWallJump() const { return bHasStartWallJump; }

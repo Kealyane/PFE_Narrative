@@ -23,6 +23,7 @@ void APlatformInvisibleBounds::EnterInvisibleArea(AActor* OverlappedActor, AActo
 	{
 		if (APFECharacter* Character = Cast<APFECharacter>(OtherActor))
 		{
+			Character->EnterReflexionArea();
 			if (bIsReflexionHorizontal)
 				Character->SetReflexionArea(true, bIsReflexionHorizontal, GetActorLocation(), DistanceMult);
 			else
@@ -37,6 +38,7 @@ void APlatformInvisibleBounds::ExitInvisibleArea(AActor* OverlappedActor, AActor
 	{
 		if (APFECharacter* Character = Cast<APFECharacter>(OtherActor))
 		{
+			Character->ExitReflexionArea();
 			if (bIsReflexionHorizontal)
 				Character->SetReflexionArea(false, bIsReflexionHorizontal, FVector::Zero(), DistanceMult);
 			else

@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SceneCaptureComponent2D.h"
 #include "Core/PFEGameInstance.h"
 #include "Core/PFEGameMode.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -50,6 +51,8 @@ void APFECharacter::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("Flame Component empty"));
 	}
+
+	ExitReflexionArea();
 }
 
 void APFECharacter::Tick(float DeltaSeconds)
@@ -489,6 +492,18 @@ void APFECharacter::SetReflexionArea(bool bIsInside, bool bAxisIsHorizontal, con
 			//SceneCaptureVertical->SetActive(true);
 		}
 	}
+}
+
+void APFECharacter::EnterReflexionArea()
+{
+	SceneCaptureHorizontal->SetActive(true);
+	SceneCaptureVertical->SetActive(true);
+}
+
+void APFECharacter::ExitReflexionArea()
+{
+	SceneCaptureHorizontal->SetActive(false);
+	SceneCaptureVertical->SetActive(false);
 }
 
 // void APFECharacter::LaunchRespawn()
