@@ -169,6 +169,7 @@ void UFlameComponent::StartPointEffect(EZoneEffect InZoneEffect, AArea* InAreaRe
 	if ((InZoneEffect == EZoneEffect::DECREASE && CurrentFlameStatus == EFlameStatus::SMALL) ||
 		(InZoneEffect == EZoneEffect::INCREASE && CurrentFlameStatus == EFlameStatus::HIGH))
 	{
+		PFECharacter->bIsAlive = false;
 		PFECharacter->GetGameMode()->OnDeath.Broadcast();
 		OnDeathFlameState.Broadcast(CurrentFlameStatus == EFlameStatus::HIGH);
 		return;
