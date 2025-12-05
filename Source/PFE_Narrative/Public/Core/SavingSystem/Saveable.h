@@ -36,5 +36,5 @@ public:
 	void OnLoad(const TArray<uint8>& InData);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Save")
-	FString GetActorID() const;
+	FString GetActorID();
 };

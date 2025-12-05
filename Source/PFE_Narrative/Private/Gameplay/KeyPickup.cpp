@@ -28,7 +28,7 @@ void AKeyPickup::OnLoad_Implementation(const TArray<uint8>& InData)
 	bHasBeenTaken ?	SetKeyVisibility(false) : SetKeyVisibility(true);
 }
 
-FString AKeyPickup::GetActorID_Implementation() const
+FString AKeyPickup::GetActorID_Implementation()
 {
 	return UniqueIDComponent->ActorID;
 }

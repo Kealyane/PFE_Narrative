@@ -50,7 +50,7 @@ void ABrasero::OnLoad_Implementation(const TArray<uint8>& InData)
 	InitializeBraseroLoad();
 }
 
-FString ABrasero::GetActorID_Implementation() const
+FString ABrasero::GetActorID_Implementation()
 {
 	return UniqueIDComponent->ActorID;
 }

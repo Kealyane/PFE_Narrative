@@ -22,7 +22,7 @@ public:
 
 	virtual void OnSave_Implementation(TArray<uint8>& OutData) override;
 	virtual void OnLoad_Implementation(const TArray<uint8>& InData) override;
-	virtual FString GetActorID_Implementation() const override;
+	virtual FString GetActorID_Implementation() override;
 
 	UFUNCTION(BlueprintCallable, Category="Save")
 	void SetUniqueIDComp(UUniqueIDComponent* InUniqueIDComponent) { UniqueIDComponent = InUniqueIDComponent; }

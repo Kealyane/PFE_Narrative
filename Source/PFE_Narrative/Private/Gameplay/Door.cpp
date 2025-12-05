@@ -29,7 +29,7 @@ void ADoor::OnLoad_Implementation(const TArray<uint8>& InData)
 	InitDoorLoad.Broadcast(bIsOpen);
 }
 
-FString ADoor::GetActorID_Implementation() const
+FString ADoor::GetActorID_Implementation()
 {
 	if (UniqueIDComponent == nullptr)
 	{
