@@ -25,6 +25,23 @@ void APaperPlatformStateChanging::InitPlatform()
 	SwitchCollider();
 }
 
+void APaperPlatformStateChanging::ShowPlayerDetection()
+{
+	FVector Start = StartPoint->GetComponentLocation();
+	FVector End = EndPoint->GetComponentLocation();
+	
+	DrawDebugCapsule(
+		GetWorld(),
+		(Start + End) * 0.5f,                          // centre
+		(FVector::Dist(Start, End) * 0.5f),            // demi-longueur
+		SphereRadius,                                  // rayon
+		FRotationMatrix::MakeFromZ(End - Start).ToQuat(), // orientation
+		FColor::Yellow,
+		false,
+		2.0f
+	);
+}
+
 void APaperPlatformStateChanging::BeginPlay()
 {
 	Super::BeginPlay();
@@ -109,17 +126,6 @@ void APaperPlatformStateChanging::CheckPlayerInPlatform()
 		FCollisionShape::MakeSphere(SphereRadius),
 		QueryParams
 	);
-
-// 	DrawDebugCapsule(
-// 	GetWorld(),
-// 	(Start + End) * 0.5f,                          // centre
-// 	(FVector::Dist(Start, End) * 0.5f),            // demi-longueur
-// 	SphereRadius,                                  // rayon
-// 	FRotationMatrix::MakeFromZ(End - Start).ToQuat(), // orientation
-// 	FColor::Yellow,
-// 	false,
-// 	2.0f
-// );
 
 	if (bHit)
 	{

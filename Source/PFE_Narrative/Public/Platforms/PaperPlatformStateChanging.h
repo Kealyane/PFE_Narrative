@@ -28,6 +28,9 @@ public:
 	TObjectPtr<USceneComponent> EndPoint;
 	
 	void InitPlatform();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerDetection();
 	
 protected:
 
@@ -39,7 +42,9 @@ protected:
 	float DelayBeforeOpening = 0.2f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Platform Settings", meta = (ToolTip="Delay before enable collider"))
 	float DelayBeforeClosing = 0.2f;
-	
+	UPROPERTY(EditDefaultsOnly, Category="Platform Settings")
+	float SphereRadius = 100.f;
+
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
@@ -57,5 +62,4 @@ private:
 	UFUNCTION()
 	void CheckPlayerInPlatform();
 
-	float SphereRadius = 100.f;
 };
