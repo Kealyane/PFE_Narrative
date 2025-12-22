@@ -256,7 +256,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 	DashDirection = DashDirection.GetSafeNormal();
 	SetMovementMode(MOVE_Custom, (uint8)EPFEMovementMode::PFEMOVE_DASHING);
 	PFECharacterOwner->bIsOnGround = true;
-	PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(90.f);
+	//PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(90.f);
 	GravityScale = 0.f;
 	
 	FTimerHandle DashTimerHandle;
@@ -266,7 +266,7 @@ void UPFECharacterMovementComponent::StartDash(const FVector& InDirection)
 void UPFECharacterMovementComponent::StopDash()
 {
 	PFECharacterOwner->bIsDashing = false;
-	PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(140.f);
+	//PFECharacterOwner->GetCapsuleComponent()->SetCapsuleHalfHeight(140.f);
 	GravityScale = GlobalGravityScale;
 
 	FVector Start = GetActorLocation();
