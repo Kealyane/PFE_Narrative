@@ -19,7 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FHighFlameSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFlameStateOnDeathSignature, bool, bIsHighFlame);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FChangeFlameValueSignature, bool, bIsChangeFlameValueActive);
 
-UENUM()
+UENUM(BlueprintType)
 enum class EFlameStatus : uint8
 {
 	SMALL,

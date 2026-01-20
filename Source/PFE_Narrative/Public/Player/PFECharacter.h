@@ -6,6 +6,7 @@
 #include "PaperZDCharacter.h"
 #include "PFECharacter.generated.h"
 
+enum class EFlameStatus : uint8;
 class UFlameComponent;
 class APFEGameMode;
 class UTimelineComponent;
@@ -114,6 +115,8 @@ public:
 	}
 	UFUNCTION(BlueprintCallable)
 	void NotifyGround();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	EFlameStatus GetFlameStatus();
 
 	UFUNCTION()
 	APFEGameMode* GetGameMode() const { return PFEGameMode; }

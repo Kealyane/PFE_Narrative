@@ -442,6 +442,11 @@ void APFECharacter::NotifyGround()
 	}
 }
 
+EFlameStatus APFECharacter::GetFlameStatus()
+{
+	return GetFlameComponent()->GetFlameStatus();
+}
+
 void APFECharacter::StoreKey(int TotalNumber)
 {
 	NumberOfKeyPickedUp = TotalNumber;
