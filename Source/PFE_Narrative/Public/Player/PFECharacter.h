@@ -24,6 +24,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FWallGrabDelegate, bool, bIsGrabbin
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateKeyNumberDelegate, int, NbKey);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateSmallFlameDelegate, float, Percent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHighFlameDelegate, float, Percent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFlameStatusChangedDelegate, EFlameStatus, FlameStatus);
 
 /**
  * 
@@ -91,6 +92,8 @@ public:
 	FUpdateHighFlameDelegate UpdateHighFlameDelegate;
 	UPROPERTY(BlueprintAssignable)
 	FWallGrabDelegate WallGrabDelegate;
+	UPROPERTY(BlueprintAssignable)
+	FFlameStatusChangedDelegate FlameStatusChangedDelegate;
 	
 	UPROPERTY(BlueprintAssignable)
 	FUpdateKeyNumberDelegate UpdateKeyNumberDelegate;
@@ -145,6 +148,7 @@ public:
 	bool GetHasStartWallJump() const { return bHasStartWallJump; }
 	void LockInput();
 	void FlipCharacter(float Direction);
+	void FlameStatusChanged(EFlameStatus NewStatus) const { FlameStatusChangedDelegate.Broadcast(NewStatus); }
 	
 protected:
 	
