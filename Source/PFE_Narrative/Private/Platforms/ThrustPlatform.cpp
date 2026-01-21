@@ -39,17 +39,15 @@ void AThrustPlatform::Tick(float DeltaTime)
 
 		CurrentVelocity = FMath::VInterpTo(CurrentVelocity, FVector::ZeroVector, DeltaTime, StopFrictionValue);
 		NewLocation = CurrentPos + CurrentVelocity * DeltaTime;
+		SetActorLocation(NewLocation);
 		
-		if (FVector::DistSquared(NewLocation, Target) < 1.f)
+		if (CurrentVelocity.SizeSquared() < 1.f)
 		{
-			SetActorLocation(Target);
 			CurrentVelocity = FVector::ZeroVector;
 			CurrentState = EThrustPlatformState::Idle;
 			OnStopPlatform.Broadcast();
 			return;
 		}
-
-		SetActorLocation(Target);
 	}
 }
 
