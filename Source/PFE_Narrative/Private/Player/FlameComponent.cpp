@@ -23,6 +23,7 @@ void UFlameComponent::InitFlame()
 	OnChangeFlameValue.Broadcast(false);
 	PFECharacter->UpdateSmallFlameDelegate.Broadcast(0.f);
 	PFECharacter->UpdateHighFlameDelegate.Broadcast(0.f);
+	PFECharacter->FlameStatusChanged(CurrentFlameStatus);
 }
 
 void UFlameComponent::ResetFlameAfterDeath()
@@ -58,6 +59,7 @@ void UFlameComponent::ResetFlameAfterDeath()
 		UpdateProgressBars();
 	}
 	OnChangeFlameValue.Broadcast(false);
+	PFECharacter->FlameStatusChanged(CurrentFlameStatus);
 }
 
 void UFlameComponent::BeginPlay()
@@ -92,6 +94,7 @@ void UFlameComponent::SetFlameStatus(EFlameStatus Status)
 		default: ;
 	}
 	OnChangeFlameValue.Broadcast(false);
+	PFECharacter->FlameStatusChanged(CurrentFlameStatus);
 }
 
 void UFlameComponent::StartEffect(bool bInIsOneShot, float Value, float Delay, float DelayNormal, bool bDecrease, AArea* InAreaRef)
@@ -398,18 +401,21 @@ void UFlameComponent::UpdateFlameStatus()
 	{
 		OnSmallFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::SMALL;
+		PFECharacter->FlameStatusChanged(EFlameStatus::SMALL);
 		return;
 	}
 	if (CurrentFlameValue >= SmallFlameThreshold && CurrentFlameValue < BigFlameThreshold && CurrentFlameStatus != EFlameStatus::NORMAL)
 	{
 		OnNormalFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::NORMAL;
+		PFECharacter->FlameStatusChanged(EFlameStatus::NORMAL);
 		return;
 	}
 	if (CurrentFlameValue >= BigFlameThreshold && CurrentFlameStatus != EFlameStatus::HIGH)
 	{
 		OnHighFlame.Broadcast();
 		CurrentFlameStatus = EFlameStatus::HIGH;
+		PFECharacter->FlameStatusChanged(EFlameStatus::HIGH);
 	}
 }
 
