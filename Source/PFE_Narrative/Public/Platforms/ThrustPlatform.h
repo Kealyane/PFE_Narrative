@@ -59,4 +59,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AllowMove(float XSpeed, float ZSpeed);
+
+	UFUNCTION(BlueprintCallable)
+	void SetZSpeed(float ZSpeed) { TargetVelocity.Z = ZSpeed; }
 };
