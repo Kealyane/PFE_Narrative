@@ -37,6 +37,8 @@ protected:
 	float SmoothValue = 2.f;
 	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = true))
 	float StopFrictionValue = 0.2f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	float StartXSpeed = 300.f;
 
 	EThrustPlatformState CurrentState;
 	
@@ -44,6 +46,8 @@ protected:
 	FVector CurrentVelocity = FVector::ZeroVector;
 	FVector TargetVelocity = FVector::ZeroVector;
 	FVector NewLocation;
+	UPROPERTY(BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	float NextXSpeed;
 
 	// Stop
 	FVector Target;
@@ -66,6 +70,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetZSpeed(float ZSpeed) { TargetVelocity.Z = ZSpeed; }
+
+	UFUNCTION(BlueprintCallable)
+	void StopFromHit();
+
 	// SAVE
 	UFUNCTION(BlueprintCallable, Category="Save")
 	void SetUniqueIDComp(UUniqueIDComponent* InUniqueIDComponent) { UniqueIDComponent = InUniqueIDComponent; }

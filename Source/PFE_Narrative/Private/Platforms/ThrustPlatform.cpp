@@ -18,6 +18,7 @@ void AThrustPlatform::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentState = EThrustPlatformState::Idle;
+	NextXSpeed = StartXSpeed;
 }
 
 // Called every frame
@@ -67,6 +68,10 @@ void AThrustPlatform::AllowMove(float XSpeed, float ZSpeed)
 	CurrentState = EThrustPlatformState::Movement;
 }
 
+void AThrustPlatform::StopFromHit()
+{
+	CurrentState = EThrustPlatformState::Idle;
+}
 
 // LOAD - SAVE
 
