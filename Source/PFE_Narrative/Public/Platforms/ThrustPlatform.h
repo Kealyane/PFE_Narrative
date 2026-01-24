@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Core/SavingSystem/Saveable.h"
 #include "GameFramework/Actor.h"
 #include "ThrustPlatform.generated.h"
 
+class UUniqueIDComponent;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FStopPlatformSignature);
 
 UENUM()
@@ -17,7 +19,7 @@ enum EThrustPlatformState : uint8
 };
 
 UCLASS()
-class PFE_NARRATIVE_API AThrustPlatform : public AActor
+class PFE_NARRATIVE_API AThrustPlatform : public AActor, public ISaveable
 {
 	GENERATED_BODY()
 	
@@ -50,6 +52,8 @@ protected:
 	UPROPERTY(BlueprintAssignable)
 	FStopPlatformSignature OnStopPlatform;
 
+	TObjectPtr<UUniqueIDComponent> UniqueIDComponent;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -62,4 +66,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetZSpeed(float ZSpeed) { TargetVelocity.Z = ZSpeed; }
+	// SAVE
+	UFUNCTION(BlueprintCallable, Category="Save")
+	void SetUniqueIDComp(UUniqueIDComponent* InUniqueIDComponent) { UniqueIDComponent = InUniqueIDComponent; }
+	
+	virtual void OnSave_Implementation(TArray<uint8>& OutData) override;
+	virtual void OnLoad_Implementation(const TArray<uint8>& InData) override;
+	virtual FString GetActorID_Implementation() override;
 };

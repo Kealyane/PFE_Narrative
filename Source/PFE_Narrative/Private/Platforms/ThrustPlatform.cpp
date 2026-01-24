@@ -3,6 +3,8 @@
 
 #include "Platforms/ThrustPlatform.h"
 
+#include "Core/SavingSystem/UniqueIDComponent.h"
+
 // Sets default values
 AThrustPlatform::AThrustPlatform()
 {
@@ -63,6 +65,31 @@ void AThrustPlatform::AllowMove(float XSpeed, float ZSpeed)
 {
 	TargetVelocity = FVector(XSpeed, 0.0f, ZSpeed);
 	CurrentState = EThrustPlatformState::Movement;
+}
+
+
+// LOAD - SAVE
+
+void AThrustPlatform::OnSave_Implementation(TArray<uint8>& OutData)
+{
+	FMemoryWriter Writer(OutData);
+	Writer << NextXSpeed;
+}
+
+void AThrustPlatform::OnLoad_Implementation(const TArray<uint8>& InData)
+{
+	FMemoryReader Reader(InData);
+	Reader << NextXSpeed;
+}
+
+FString AThrustPlatform::GetActorID_Implementation()
+{
+	if (UniqueIDComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ThrustPlatform::UniqueID empty"))
+		return FString();
+	}
+	return UniqueIDComponent->ActorID;
 }
 
 
